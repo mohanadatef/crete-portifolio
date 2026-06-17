@@ -127,6 +127,31 @@
       <excludeFolder url="file://$MODULE_DIR$/backend/vendor/tijsverkoyen/css-to-inline-styles" />
       <excludeFolder url="file://$MODULE_DIR$/backend/vendor/vlucas/phpdotenv" />
       <excludeFolder url="file://$MODULE_DIR$/backend/vendor/voku/portable-ascii" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/storage/api-docs" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/storage/app" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/storage/framework" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/darkaonline/l5-swagger" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/laravel/pail" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/laravel/pint" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/laravel/prompts" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/league/flysystem-local" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/league/uri" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/league/uri-interfaces" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/nunomaduro/termwind" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/phpstan/phpdoc-parser" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/radebatz/type-info-extras" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/staabm/side-effects-detector" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/swagger-api/swagger-ui" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/symfony/clock" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/symfony/mailer" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/symfony/polyfill-php83" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/symfony/polyfill-php84" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/symfony/polyfill-php85" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/symfony/polyfill-uuid" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/symfony/type-info" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/symfony/uid" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/symfony/yaml" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/zircote/swagger-php" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

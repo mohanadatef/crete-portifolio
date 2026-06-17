@@ -45,7 +45,7 @@ export class ProjectsComponent implements OnInit {
     if (this.filters.type) params.type = this.filters.type;
     if (this.filters.status) params.status = this.filters.status;
 
-    this.http.get<any>('http://127.0.0.1:8000/api/v1/admin/projects', {
+    this.http.get<any>('http://backend.test/api/v1/admin/projects', {
         headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` },
         params: params
     }).subscribe({
@@ -72,7 +72,7 @@ export class ProjectsComponent implements OnInit {
       data.append('images[]', file, file.name);
     });
 
-    this.http.post('http://127.0.0.1:8000/api/v1/admin/projects', data, {
+    this.http.post('http://backend.test/api/v1/admin/projects', data, {
         headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
     }).subscribe({
       next: () => {

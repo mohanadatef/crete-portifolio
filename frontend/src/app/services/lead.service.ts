@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class LeadService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://127.0.0.1:8000/api/v1';
+  private apiUrl = 'http://backend.test/api/v1';
 
   submitLead(data: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/public/leads`, data);

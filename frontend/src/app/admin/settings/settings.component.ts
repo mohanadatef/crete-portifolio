@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 })
 export class SettingsComponent implements OnInit {
   private http = inject(HttpClient);
-  private apiUrl = 'http://127.0.0.1:8000/api/v1/admin/settings';
+  private apiUrl = 'http://backend.test/api/v1/admin/settings';
   
   settings = {
     seo_title: '',

@@ -17,7 +17,7 @@ export class HomeComponent implements OnInit {
   status: 'loading' | 'success' | 'error' = 'loading';
 
   ngOnInit() {
-    this.http.get<any[]>('http://127.0.0.1:8000/api/v1/public/projects').subscribe({
+    this.http.get<any[]>('http://backend.test/api/v1/public/projects').subscribe({
       next: (data) => {
         this.projects = data.slice(0, 3); // Show top 3 on home
         this.status = 'success';
