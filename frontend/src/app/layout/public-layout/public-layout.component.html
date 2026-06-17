@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-20">
         <div class="flex-shrink-0 flex items-center">
-          <a routerLink="/" class="text-3xl font-extrabold tracking-tighter text-crete-blue">
+          <a routerLink="/" dir="ltr" class="text-3xl font-extrabold tracking-tighter text-crete-blue inline-block">
             CRETE<span class="text-crete-gold">.</span>
           </a>
         </div>
@@ -18,7 +18,9 @@
           </button>
         </nav>
         <div class="flex items-center">
-          <button class="bg-crete-gold text-white px-5 py-2.5 rounded-md text-sm font-bold hover:bg-yellow-600 transition shadow-sm">Get Started</button>
+          <a routerLink="/contact" class="bg-crete-gold text-white px-5 py-2.5 rounded-md text-sm font-bold hover:bg-yellow-600 transition shadow-sm">
+            {{ 'NAV.GET_STARTED' | translate }}
+          </a>
         </div>
       </div>
     </div>

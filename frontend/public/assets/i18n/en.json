@@ -4,12 +4,37 @@
     "ABOUT": "About Us",
     "PROJECTS": "Projects",
     "BLOG": "Blog",
-    "CONTACT": "Contact Us"
+    "CONTACT": "Contact Us",
+    "GET_STARTED": "Get Started"
   },
   "HOME": {
     "HERO_TITLE": "Premium Real Estate for Your Future",
     "HERO_SUBTITLE": "Discover our exclusive projects and properties tailored for you.",
-    "EXPLORE_PROJECTS": "Explore Projects"
+    "EXPLORE_PROJECTS": "Explore Projects",
+    "LATEST_PROJECTS": "Latest Projects",
+    "NO_PROJECTS": "No projects available yet.",
+    "DETAILS": "Details \u2192"
+  },
+  "PROJECTS": {
+    "TITLE": "Discover our exclusive real estate portfolio",
+    "TYPE": "Type",
+    "ALL_TYPES": "All Types",
+    "RESIDENTIAL": "Residential",
+    "COMMERCIAL": "Commercial",
+    "MIN_PRICE": "Min Price",
+    "MAX_PRICE": "Max Price",
+    "BEDROOMS": "Bedrooms",
+    "ANY": "Any",
+    "FILTER_BTN": "Filter Projects",
+    "LOADING": "Loading...",
+    "ERROR": "Failed to load projects. Please try again later.",
+    "NOT_FOUND": "No projects found matching your criteria.",
+    "AVAILABLE": "Available",
+    "SOLD_OUT": "Sold Out",
+    "BEDS": "Beds",
+    "BATHS": "Baths",
+    "SQM": "sqm",
+    "INQUIRE": "Inquire Now \u2192"
   },
   "CONTACT": {
     "TITLE": "Contact Us",

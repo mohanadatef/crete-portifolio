@@ -5,7 +5,7 @@
         {{ 'NAV.PROJECTS' | translate }}
       </h2>
       <p class="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
-        Discover our exclusive real estate portfolio
+        {{ 'PROJECTS.TITLE' | translate }}
       </p>
     </div>
 
@@ -13,25 +13,25 @@
     <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'PROJECTS.TYPE' | translate }}</label>
           <select [(ngModel)]="filters.type" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-crete-gold focus:border-crete-gold">
-            <option value="">All Types</option>
-            <option value="residential">Residential</option>
-            <option value="commercial">Commercial</option>
+            <option value="">{{ 'PROJECTS.ALL_TYPES' | translate }}</option>
+            <option value="residential">{{ 'PROJECTS.RESIDENTIAL' | translate }}</option>
+            <option value="commercial">{{ 'PROJECTS.COMMERCIAL' | translate }}</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Min Price</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'PROJECTS.MIN_PRICE' | translate }}</label>
           <input type="number" [(ngModel)]="filters.min_price" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-crete-gold focus:border-crete-gold" placeholder="0">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Max Price</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'PROJECTS.MAX_PRICE' | translate }}</label>
           <input type="number" [(ngModel)]="filters.max_price" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-crete-gold focus:border-crete-gold" placeholder="No limit">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'PROJECTS.BEDROOMS' | translate }}</label>
           <select [(ngModel)]="filters.bedrooms" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-crete-gold focus:border-crete-gold">
-            <option [ngValue]="null">Any</option>
+            <option [ngValue]="null">{{ 'PROJECTS.ANY' | translate }}</option>
             <option [ngValue]="1">1+</option>
             <option [ngValue]="2">2+</option>
             <option [ngValue]="3">3+</option>
@@ -41,7 +41,7 @@
       </div>
       <div class="mt-4 flex justify-end">
         <button (click)="applyFilters()" class="bg-crete-blue text-white px-6 py-2 rounded-md hover:bg-blue-900 transition">
-          Filter Projects
+          {{ 'PROJECTS.FILTER_BTN' | translate }}
         </button>
       </div>
     </div>
@@ -53,12 +53,12 @@
 
     <!-- Error State -->
     <div *ngIf="status === 'error'" class="text-center py-20 text-red-600">
-      Failed to load projects. Please try again later.
+      {{ 'PROJECTS.ERROR' | translate }}
     </div>
 
     <!-- Empty State -->
     <div *ngIf="status === 'success' && projects.length === 0" class="text-center py-20 text-gray-500">
-      No projects found matching your criteria.
+      {{ 'PROJECTS.NOT_FOUND' | translate }}
     </div>
 
     <!-- Projects Grid -->
@@ -69,24 +69,25 @@
                [alt]="project.title_en" 
                class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
           <div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-bold text-crete-blue shadow">
-            {{ project.status === 1 ? 'Available' : 'Sold Out' }}
+            {{ project.status === 1 ? ('PROJECTS.AVAILABLE' | translate) : ('PROJECTS.SOLD_OUT' | translate) }}
           </div>
           <div class="absolute bottom-4 left-4 bg-black bg-opacity-50 px-3 py-1 rounded text-white text-sm">
-            {{ project.type | titlecase }}
+            {{ translate.currentLang() === 'ar' && project.type === 'residential' ? 'سكني' : 
+               translate.currentLang() === 'ar' && project.type === 'commercial' ? 'تجاري' : project.type }}
           </div>
         </div>
         <div class="p-6">
-          <h3 class="text-xl font-bold text-gray-900 mb-2">{{ project.title_en }}</h3>
-          <p class="text-gray-600 line-clamp-2 mb-4">{{ project.description_en }}</p>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">{{ translate.currentLang() === 'ar' ? (project.title_ar || project.title_en) : project.title_en }}</h3>
+          <p class="text-gray-600 line-clamp-2 mb-4">{{ translate.currentLang() === 'ar' ? (project.description_ar || project.description_en) : project.description_en }}</p>
           <div class="flex justify-between items-center text-sm text-gray-500 mb-4">
-            <span class="flex items-center"><span class="mr-1">🛏️</span> {{ project.bedrooms }} Beds</span>
-            <span class="flex items-center"><span class="mr-1">🚿</span> {{ project.bathrooms }} Baths</span>
-            <span class="flex items-center"><span class="mr-1">📐</span> {{ project.area_sqm }} sqm</span>
+            <span class="flex items-center"><span class="mr-1">🛏️</span> {{ project.bedrooms }} {{ 'PROJECTS.BEDS' | translate }}</span>
+            <span class="flex items-center"><span class="mr-1">🚿</span> {{ project.bathrooms }} {{ 'PROJECTS.BATHS' | translate }}</span>
+            <span class="flex items-center"><span class="mr-1">📐</span> {{ project.area_sqm }} {{ 'PROJECTS.SQM' | translate }}</span>
           </div>
           <div class="flex justify-between items-center border-t pt-4">
             <span class="text-2xl font-bold text-crete-gold">${{ project.price | number }}</span>
             <a routerLink="/contact" [queryParams]="{ project: project.id }" class="text-crete-blue font-semibold hover:text-crete-gold transition">
-              Inquire Now &rarr;
+              {{ 'PROJECTS.INQUIRE' | translate }}
             </a>
           </div>
         </div>

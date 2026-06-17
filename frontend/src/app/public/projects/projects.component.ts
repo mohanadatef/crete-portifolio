@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
+import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-projects',
@@ -14,6 +14,7 @@ import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 })
 export class ProjectsComponent implements OnInit {
   private http = inject(HttpClient);
+  public translate = inject(TranslateService);
   
   projects: any[] = [];
   status: 'loading' | 'success' | 'error' = 'loading';
