@@ -1,0 +1,28 @@
+<div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 max-w-4xl">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">General Settings (SEO & Tracking)</h2>
+
+  <div *ngIf="status === 'success'" class="bg-green-50 text-green-800 p-4 rounded-lg mb-6 border border-green-200">
+    Settings saved successfully!
+  </div>
+  <div *ngIf="status === 'error'" class="bg-red-50 text-red-800 p-4 rounded-lg mb-6 border border-red-200">
+    Failed to save settings.
+  </div>
+
+  <form (ngSubmit)="saveSettings()" class="space-y-6">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Default SEO Title</label>
+      <input type="text" name="seo_title" [(ngModel)]="settings.seo_title" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. My Awesome Real Estate">
+      <p class="text-xs text-gray-500 mt-1">This title will be used as the default title for your website pages.</p>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Google Tag Manager / Analytics Script</label>
+      <textarea rows="6" name="google_tag" [(ngModel)]="settings.google_tag" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm" placeholder="<!-- Paste your GTM script here -->"></textarea>
+      <p class="text-xs text-gray-500 mt-1">This script will be dynamically injected into the &lt;head&gt; of all public pages.</p>
+    </div>
+
+    <button type="submit" [disabled]="status === 'loading'" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition">
+      {{ status === 'loading' ? 'Saving...' : 'Save Settings' }}
+    </button>
+  </form>
+</div>

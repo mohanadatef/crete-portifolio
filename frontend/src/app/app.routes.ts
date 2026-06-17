@@ -1,0 +1,49 @@
+import { Routes } from '@angular/router';
+import { PublicLayoutComponent } from './layout/public-layout/public-layout.component';
+import { AdminLayoutComponent } from './layout/admin-layout/admin-layout.component';
+import { HomeComponent } from './public/home/home.component';
+import { LoginComponent } from './admin/login/login.component';
+import { DashboardComponent } from './admin/dashboard/dashboard.component';
+import { ProjectsComponent } from './admin/projects/projects.component';
+import { PagesComponent } from './admin/pages/pages.component';
+import { SettingsComponent } from './admin/settings/settings.component';
+import { LandingPagesComponent } from './admin/landing-pages/landing-pages.component';
+import { LeadsComponent } from './admin/leads/leads.component';
+import { CategoriesComponent } from './admin/blog/categories/categories.component';
+import { PostsComponent } from './admin/blog/posts/posts.component';
+import { BlogComponent } from './public/blog/blog.component';
+import { ContactComponent } from './public/contact/contact.component';
+
+import { authGuard } from './guards/auth.guard';
+
+export const routes: Routes = [
+    {
+        path: '',
+        component: PublicLayoutComponent,
+        children: [
+            { path: '', component: HomeComponent },
+            { path: 'blog', component: BlogComponent },
+            { path: 'contact', component: ContactComponent }
+        ]
+    },
+    {
+        path: 'admin/login',
+        component: LoginComponent
+    },
+    {
+        path: 'admin',
+        component: AdminLayoutComponent,
+        canActivate: [authGuard],
+        children: [
+            { path: 'dashboard', component: DashboardComponent },
+            { path: 'projects', component: ProjectsComponent },
+            { path: 'pages', component: PagesComponent },
+            { path: 'settings', component: SettingsComponent },
+            { path: 'landing-pages', component: LandingPagesComponent },
+            { path: 'leads', component: LeadsComponent },
+            { path: 'blog/categories', component: CategoriesComponent },
+            { path: 'blog/posts', component: PostsComponent },
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+        ]
+    }
+];

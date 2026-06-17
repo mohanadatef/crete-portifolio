@@ -1,0 +1,25 @@
+{
+  "NAV": {
+    "HOME": "Home",
+    "ABOUT": "About Us",
+    "PROJECTS": "Projects",
+    "BLOG": "Blog",
+    "CONTACT": "Contact Us"
+  },
+  "HOME": {
+    "HERO_TITLE": "Premium Real Estate for Your Future",
+    "HERO_SUBTITLE": "Discover our exclusive projects and properties tailored for you.",
+    "EXPLORE_PROJECTS": "Explore Projects"
+  },
+  "CONTACT": {
+    "TITLE": "Contact Us",
+    "SUBTITLE": "We'd love to hear from you.",
+    "NAME": "Full Name",
+    "EMAIL": "Email Address",
+    "PHONE": "Phone Number",
+    "MESSAGE": "Message",
+    "SEND": "Send Message",
+    "SUCCESS": "Thank you! Your message has been sent successfully. We will contact you soon.",
+    "ERROR": "An error occurred. Please try again later."
+  }
+}

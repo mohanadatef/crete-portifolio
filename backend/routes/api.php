@@ -1,0 +1,63 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| is assigned the "api" middleware group. Enjoy building your API!
+|
+*/
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\LeadController;
+use App\Http\Controllers\BlogCategoryController;
+use App\Http\Controllers\BlogPostController;
+
+// Public APIs
+Route::get('/public/pages/{slug}', [PageController::class, 'showPublic']);
+Route::get('public/settings', [App\Http\Controllers\SettingController::class, 'indexPublic']);
+Route::get('public/projects', [App\Http\Controllers\ProjectController::class, 'indexPublic']);
+Route::get('/public/projects/{slug}', [ProjectController::class, 'showPublic']);
+
+Route::get('/public/landing-pages/{slug}', [LandingPageController::class, 'showPublic']);
+Route::post('/public/leads', [LeadController::class, 'store']); // Public form submission
+
+Route::get('/public/blog/categories', [BlogCategoryController::class, 'indexPublic']);
+Route::get('/public/blog/posts', [BlogPostController::class, 'indexPublic']);
+Route::get('/public/blog/posts/{slug}', [BlogPostController::class, 'showPublic']);
+
+Route::post('/admin/login', [AuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/admin/logout', [AuthController::class, 'logout']);
+    
+    Route::get('/admin/dashboard', function () {
+        return response()->json([
+            'projects_count' => \App\Models\Project::count(),
+            'pages_count' => \App\Models\Page::count(),
+            'landing_pages_count' => \App\Models\LandingPage::count(),
+            'blog_posts_count' => \App\Models\BlogPost::count(),
+            'leads_count' => \App\Models\Lead::count(),
+        ]);
+    });
+
+    Route::apiResource('/admin/pages', PageController::class);
+    Route::apiResource('/admin/projects', ProjectController::class);
+    Route::post('/admin/settings/bulk', [SettingController::class, 'updateBulk']);
+    Route::apiResource('/admin/settings', SettingController::class);
+    
+    // Phase 3 & 4
+    Route::apiResource('/admin/landing-pages', LandingPageController::class);
+    Route::apiResource('/admin/leads', LeadController::class)->except(['store', 'update']); // Admin only views and deletes
+    Route::apiResource('/admin/blog-categories', BlogCategoryController::class);
+    Route::apiResource('/admin/blog-posts', BlogPostController::class);
+});
