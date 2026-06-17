@@ -42,13 +42,15 @@ export class ContactComponent implements OnInit {
     
     if (typeof window !== 'undefined' && (window as any).grecaptcha) {
       (window as any).grecaptcha.ready(() => {
-        (window as any).grecaptcha.execute('6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI', {action: 'submit'}).then((token: string) => {
+        // REPLACE 'YOUR_REAL_RECAPTCHA_SITE_KEY' WITH YOUR ACTUAL RECAPTCHA V3 SITE KEY
+        (window as any).grecaptcha.execute('YOUR_REAL_RECAPTCHA_SITE_KEY', {action: 'submit'}).then((token: string) => {
           this.submitData(token);
         });
       });
     } else {
-      // Fallback if script didn't load
-      this.submitData('fallback_token');
+      // Fallback if script didn't load - fail visibly instead of failing validation on backend
+      this.status = 'error';
+      alert('Security check failed to load. Please refresh the page or disable your adblocker and try again.');
     }
   }
 
