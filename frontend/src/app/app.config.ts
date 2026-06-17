@@ -5,6 +5,7 @@ import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 
 import { routes } from './app.routes';
+import { provideClientHydration } from '@angular/platform-browser';
 
 @Injectable({ providedIn: 'root' })
 export class CustomTranslateLoader implements TranslateLoader {
@@ -26,6 +27,6 @@ export const appConfig: ApplicationConfig = {
         useClass: CustomTranslateLoader,
         deps: [HttpClient]
       }
-    } as any)
+    } as any), provideClientHydration()
   ]
 };

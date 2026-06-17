@@ -26,18 +26,19 @@ class LeadController extends Controller
             'recaptcha_token' => 'nullable|string', // ReCAPTCHA token from frontend
         ]);
 
-        // Dummy ReCAPTCHA Verification (Replace with real secret key in production)
+        // Real reCAPTCHA Verification
         if ($request->filled('recaptcha_token')) {
             $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-                'secret' => env('RECAPTCHA_SECRET_KEY', 'dummy_secret_key'),
+                'secret' => config('services.recaptcha.secret', 'dummy_secret_key'),
                 'response' => $request->recaptcha_token,
-            ]);
+            ])->json();
             
-            // In a real scenario, you'd check $response->json()['success']
-            // For now, we will just proceed.
+            abort_if(!($response['success'] ?? false) || ($response['score'] ?? 0) < 0.5, 422, 'Failed spam check');
         }
 
-        $lead = Lead::create($validated);
+        // Exclude recaptcha_token so Eloquent doesn't crash
+        $data = collect($validated)->except('recaptcha_token')->all();
+        $lead = Lead::create($data);
 
         // Dispatch Email Notification to Sales Team
         try {

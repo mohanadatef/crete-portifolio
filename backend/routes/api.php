@@ -35,11 +35,12 @@ Route::get('/public/blog/categories', [BlogCategoryController::class, 'indexPubl
 Route::get('/public/blog/posts', [BlogPostController::class, 'indexPublic']);
 Route::get('/public/blog/posts/{slug}', [BlogPostController::class, 'showPublic']);
 
-Route::post('/admin/login', [AuthController::class, 'login']);
+Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/logout', [AuthController::class, 'logout']);
     
+    Route::post('/admin/media', [\App\Http\Controllers\MediaController::class, 'store']);
     Route::get('/admin/dashboard', function () {
         return response()->json([
             'projects_count' => \App\Models\Project::count(),

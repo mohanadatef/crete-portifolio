@@ -11,9 +11,27 @@ class ProjectController extends Controller
         return response()->json(\App\Models\Project::latest()->get());
     }
 
-    public function indexPublic()
+    public function indexPublic(Request $request)
     {
-        return response()->json(\App\Models\Project::where('status', 1)->latest()->get());
+        $query = \App\Models\Project::where('status', 1);
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        if ($request->filled('bedrooms')) {
+            $query->where('bedrooms', $request->bedrooms);
+        }
+
+        return response()->json($query->paginate(12));
     }
 
     public function showPublic($slug)
