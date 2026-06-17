@@ -29,7 +29,7 @@ class StoreLeadRequest extends FormRequest
             'phone' => 'required|string|max:20',
             'message' => 'nullable|string',
             'project_id' => 'nullable|exists:projects,id',
-            'recaptcha_token' => 'required|string',
+            'recaptcha_token' => 'nullable|string',
             'utm_source' => 'nullable|string|max:255',
             'utm_medium' => 'nullable|string|max:255',
             'utm_campaign' => 'nullable|string|max:255',

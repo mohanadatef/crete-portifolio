@@ -39,16 +39,22 @@ export class ContactComponent implements OnInit {
 
   onSubmit() {
     this.status = 'loading';
+    const siteKey = 'YOUR_REAL_RECAPTCHA_SITE_KEY'; // REPLACE 'YOUR_REAL_RECAPTCHA_SITE_KEY' WITH YOUR ACTUAL RECAPTCHA V3 SITE KEY
     
-    if (typeof window !== 'undefined' && (window as any).grecaptcha) {
+    if (siteKey !== 'YOUR_REAL_RECAPTCHA_SITE_KEY' && typeof window !== 'undefined' && (window as any).grecaptcha) {
       (window as any).grecaptcha.ready(() => {
-        // REPLACE 'YOUR_REAL_RECAPTCHA_SITE_KEY' WITH YOUR ACTUAL RECAPTCHA V3 SITE KEY
-        (window as any).grecaptcha.execute('YOUR_REAL_RECAPTCHA_SITE_KEY', {action: 'submit'}).then((token: string) => {
+        (window as any).grecaptcha.execute(siteKey, {action: 'submit'}).then((token: string) => {
           this.submitData(token);
+        }).catch(() => {
+          this.status = 'error';
+          alert('Security check failed. Please check your configuration.');
         });
       });
+    } else if (siteKey === 'YOUR_REAL_RECAPTCHA_SITE_KEY') {
+      // Bypass mode (local dev or keys not configured yet)
+      this.submitData('');
     } else {
-      // Fallback if script didn't load - fail visibly instead of failing validation on backend
+      // Fallback if script didn't load and it WAS configured
       this.status = 'error';
       alert('Security check failed to load. Please refresh the page or disable your adblocker and try again.');
     }
