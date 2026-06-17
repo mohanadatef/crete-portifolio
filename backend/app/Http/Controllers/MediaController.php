@@ -14,8 +14,13 @@ class MediaController extends Controller
 
         $path = $request->file('image')->store('media', 'public');
 
-        // Optional: Save to media table if you use one
-        // Media::create(['path' => $path]);
+        $file = $request->file('image');
+        \App\Models\Media::create([
+            'file_name' => $file->getClientOriginalName(),
+            'path' => $path,
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize()
+        ]);
 
         return response()->json([
             'url' => asset("storage/{$path}"),
