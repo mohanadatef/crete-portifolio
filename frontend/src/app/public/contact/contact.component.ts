@@ -24,7 +24,16 @@ export class ContactComponent {
 
   onSubmit() {
     this.status = 'loading';
-    this.leadService.submitLead(this.formData).subscribe({
+    
+    // Generate dummy reCAPTCHA token (Replace with real reCAPTCHA v3 implementation)
+    const recaptchaToken = 'dummy_frontend_recaptcha_token_123';
+
+    const payload = {
+      ...this.formData,
+      recaptcha_token: recaptchaToken
+    };
+
+    this.leadService.submitLead(payload).subscribe({
       next: () => {
         this.status = 'success';
         this.formData = { name: '', email: '', phone: '', message: '' };

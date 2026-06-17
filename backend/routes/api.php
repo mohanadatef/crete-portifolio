@@ -24,12 +24,12 @@ use App\Http\Controllers\BlogPostController;
 
 // Public APIs
 Route::get('/public/pages/{slug}', [PageController::class, 'showPublic']);
-Route::get('public/settings', [App\Http\Controllers\SettingController::class, 'indexPublic']);
-Route::get('public/projects', [App\Http\Controllers\ProjectController::class, 'indexPublic']);
+Route::get('/public/settings', [SettingController::class, 'indexPublic']);
+Route::get('/public/projects', [ProjectController::class, 'index']);
 Route::get('/public/projects/{slug}', [ProjectController::class, 'showPublic']);
+Route::post('/public/leads', [LeadController::class, 'store'])->middleware('throttle:5,1'); // Public form submission
 
 Route::get('/public/landing-pages/{slug}', [LandingPageController::class, 'showPublic']);
-Route::post('/public/leads', [LeadController::class, 'store']); // Public form submission
 
 Route::get('/public/blog/categories', [BlogCategoryController::class, 'indexPublic']);
 Route::get('/public/blog/posts', [BlogPostController::class, 'indexPublic']);

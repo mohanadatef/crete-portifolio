@@ -36,6 +36,15 @@ class ProjectController extends Controller
             'images' => 'nullable|array'
         ]);
 
+        if ($request->hasFile('images')) {
+            $imagePaths = [];
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('projects', 'public');
+                $imagePaths[] = '/storage/' . $path;
+            }
+            $validated['images'] = $imagePaths;
+        }
+
         $project = \App\Models\Project::create($validated);
         return response()->json($project, 201);
     }
@@ -60,6 +69,15 @@ class ProjectController extends Controller
             'featured' => 'boolean',
             'images' => 'nullable|array'
         ]);
+
+        if ($request->hasFile('images')) {
+            $imagePaths = [];
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('projects', 'public');
+                $imagePaths[] = '/storage/' . $path;
+            }
+            $validated['images'] = $imagePaths;
+        }
 
         $project->update($validated);
         return response()->json($project);

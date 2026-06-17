@@ -16,3 +16,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/sitemap.xml', function () {
+    $projects = \App\Models\Project::where('status', 1)->get();
+    
+    $content = view('sitemap', [
+        'projects' => $projects,
+        'frontend_url' => env('FRONTEND_URL', 'http://127.0.0.1:4200')
+    ])->render();
+
+    return response($content)->header('Content-Type', 'text/xml');
+});

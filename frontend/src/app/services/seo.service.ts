@@ -34,9 +34,21 @@ export class SeoService {
 
   updateTitle(title: string) {
     this.titleService.setTitle(title);
+    this.metaService.updateTag({ property: 'og:title', content: title });
   }
 
   updateMeta(name: string, content: string) {
     this.metaService.updateTag({ name, content });
+    if (name === 'description') {
+      this.metaService.updateTag({ property: 'og:description', content });
+    }
+  }
+
+  updateOgImage(imageUrl: string) {
+    this.metaService.updateTag({ property: 'og:image', content: imageUrl });
+  }
+
+  updateOgUrl(url: string) {
+    this.metaService.updateTag({ property: 'og:url', content: url });
   }
 }
