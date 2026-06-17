@@ -50,5 +50,29 @@ export class SeoService {
 
   updateOgUrl(url: string) {
     this.metaService.updateTag({ property: 'og:url', content: url });
+    this.updateCanonicalUrl(url);
+  }
+
+  updateCanonicalUrl(url: string) {
+    let link: HTMLLinkElement | null = this.document.querySelector("link[rel='canonical']");
+    if (!link) {
+      link = this.document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      this.document.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
+  }
+
+  updateHreflang(languages: { lang: string, url: string }[]) {
+    languages.forEach(l => {
+      let link: HTMLLinkElement | null = this.document.querySelector(`link[rel='alternate'][hreflang='${l.lang}']`);
+      if (!link) {
+        link = this.document.createElement('link');
+        link.setAttribute('rel', 'alternate');
+        link.setAttribute('hreflang', l.lang);
+        this.document.head.appendChild(link);
+      }
+      link.setAttribute('href', l.url);
+    });
   }
 }

@@ -1,0 +1,46 @@
+name: Laravel CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, dom, fileinfo, mysql
+        coverage: none
+
+    - name: Install Dependencies
+      run: |
+        cd backend
+        composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+    - name: Copy .env
+      run: |
+        cd backend
+        php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+    - name: Generate key
+      run: |
+        cd backend
+        php artisan key:generate
+
+    - name: Create Database
+      run: |
+        cd backend
+        touch database/database.sqlite
+      
+    - name: Execute tests
+      run: |
+        cd backend
+        DB_CONNECTION=sqlite DB_DATABASE=database/database.sqlite php artisan test

@@ -29,16 +29,28 @@ export class ProjectsComponent implements OnInit {
   
   selectedFiles: File[] = [];
 
+  filters: any = {
+    search: '',
+    type: '',
+    status: ''
+  };
+
   ngOnInit() {
     this.loadProjects();
   }
 
   loadProjects() {
-    this.http.get<any[]>('http://127.0.0.1:8000/api/admin/projects', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    let params: any = {};
+    if (this.filters.search) params.search = this.filters.search;
+    if (this.filters.type) params.type = this.filters.type;
+    if (this.filters.status) params.status = this.filters.status;
+
+    this.http.get<any>('http://127.0.0.1:8000/api/v1/admin/projects', {
+        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` },
+        params: params
     }).subscribe({
       next: (data) => {
-        this.projects = data;
+        this.projects = data.data || data; // Handle pagination wrapper if needed
         this.status = 'success';
       },
       error: () => this.status = 'error'
@@ -60,8 +72,8 @@ export class ProjectsComponent implements OnInit {
       data.append('images[]', file, file.name);
     });
 
-    this.http.post('http://127.0.0.1:8000/api/admin/projects', data, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    this.http.post('http://127.0.0.1:8000/api/v1/admin/projects', data, {
+        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
     }).subscribe({
       next: () => {
         this.showModal = false;

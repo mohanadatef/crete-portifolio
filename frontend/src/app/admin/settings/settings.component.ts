@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 })
 export class SettingsComponent implements OnInit {
   private http = inject(HttpClient);
-  private apiUrl = 'http://127.0.0.1:8000/api/admin/settings';
+  private apiUrl = 'http://127.0.0.1:8000/api/v1/admin/settings';
   
   settings = {
     seo_title: '',
@@ -29,7 +29,7 @@ export class SettingsComponent implements OnInit {
     // Note: To fetch auth token, we would typically have an interceptor. 
     // Assuming token is sent via interceptor. For simplicity, we just call the endpoint.
     this.http.get<any[]>(this.apiUrl, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
     }).subscribe({
       next: (data) => {
         data.forEach(item => {
@@ -43,7 +43,7 @@ export class SettingsComponent implements OnInit {
   saveSettings() {
     this.status = 'loading';
     this.http.post(`${this.apiUrl}/bulk`, this.settings, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
     }).subscribe({
       next: () => {
         this.status = 'success';

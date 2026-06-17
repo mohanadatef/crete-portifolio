@@ -3,26 +3,31 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class BlogCategoryController extends Controller
 {
     public function index()
     {
-        return response()->json(\App\Models\BlogCategory::latest()->get());
+        return response()->json(\App\Models\BlogCategory::latest()->paginate(15));
     }
 
+    #[OA\Get(
+        path: "/public/blog/categories",
+        summary: "Get public blog categories",
+        tags: ["Public Blog"],
+        responses: [
+            new OA\Response(response: 200, description: "Successful operation")
+        ]
+    )]
     public function indexPublic()
     {
         return response()->json(\App\Models\BlogCategory::latest()->get());
     }
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\StoreBlogCategoryRequest $request)
     {
-        $validated = $request->validate([
-            'slug' => 'required|unique:blog_categories,slug',
-            'name_ar' => 'required',
-            'name_en' => 'required'
-        ]);
+        $validated = $request->validated();
 
         $category = \App\Models\BlogCategory::create($validated);
         return response()->json($category, 201);
@@ -33,15 +38,11 @@ class BlogCategoryController extends Controller
         return response()->json(\App\Models\BlogCategory::findOrFail($id));
     }
 
-    public function update(Request $request, $id)
+    public function update(\App\Http\Requests\UpdateBlogCategoryRequest $request, $id)
     {
         $category = \App\Models\BlogCategory::findOrFail($id);
         
-        $validated = $request->validate([
-            'slug' => 'required|unique:blog_categories,slug,' . $id,
-            'name_ar' => 'required',
-            'name_en' => 'required'
-        ]);
+        $validated = $request->validated();
 
         $category->update($validated);
         return response()->json($category);

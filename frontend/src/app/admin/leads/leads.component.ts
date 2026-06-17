@@ -15,8 +15,8 @@ export class LeadsComponent implements OnInit {
   status: 'loading' | 'success' | 'error' = 'loading';
 
   ngOnInit() {
-    this.http.get<any[]>('http://127.0.0.1:8000/api/admin/leads', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    this.http.get<any[]>('http://127.0.0.1:8000/api/v1/admin/leads', {
+        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
     }).subscribe({
       next: (data) => {
         this.leads = data;

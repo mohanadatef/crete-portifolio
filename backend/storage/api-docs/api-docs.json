@@ -1,0 +1,313 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Real Estate API Documentation",
+        "description": "Real Estate API documentation",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000/api",
+            "description": "Local API Server"
+        }
+    ],
+    "paths": {
+        "/public/blog/categories": {
+            "get": {
+                "tags": [
+                    "Public Blog"
+                ],
+                "summary": "Get public blog categories",
+                "operationId": "c2d3422f05c6d78be761c319caebb7b0",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        },
+        "/public/blog/posts": {
+            "get": {
+                "tags": [
+                    "Public Blog"
+                ],
+                "summary": "Get public blog posts",
+                "operationId": "bf0d68bea41a6898ceed55009df7e753",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        },
+        "/public/blog/posts/{slug}": {
+            "get": {
+                "tags": [
+                    "Public Blog"
+                ],
+                "summary": "Get a specific blog post by slug",
+                "operationId": "5662a97cac321aa144838d7ac5ed0c14",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Blog post slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "404": {
+                        "description": "Blog post not found"
+                    }
+                }
+            }
+        },
+        "/public/landing-pages/{slug}": {
+            "get": {
+                "tags": [
+                    "Public Landing Pages"
+                ],
+                "summary": "Get a specific landing page by slug",
+                "operationId": "0c8dc8dcda2faebf11b746b922f55f12",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Landing page slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "404": {
+                        "description": "Landing Page not found"
+                    }
+                }
+            }
+        },
+        "/public/leads": {
+            "post": {
+                "tags": [
+                    "Public Leads"
+                ],
+                "summary": "Submit a new lead",
+                "operationId": "314c3537cab4583a43adbddeb9bbf595",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "phone",
+                                    "recaptcha_token",
+                                    "privacy_consent"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "phone": {
+                                        "type": "string"
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    },
+                                    "project_id": {
+                                        "type": "integer"
+                                    },
+                                    "recaptcha_token": {
+                                        "type": "string"
+                                    },
+                                    "privacy_consent": {
+                                        "type": "boolean"
+                                    },
+                                    "utm_source": {
+                                        "type": "string"
+                                    },
+                                    "utm_medium": {
+                                        "type": "string"
+                                    },
+                                    "utm_campaign": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Lead created successfully"
+                    },
+                    "422": {
+                        "description": "Validation error or Spam check failed"
+                    }
+                }
+            }
+        },
+        "/public/pages/{slug}": {
+            "get": {
+                "tags": [
+                    "Public Pages"
+                ],
+                "summary": "Get a specific page by slug",
+                "operationId": "7262787159206028c19b9811dc724c2d",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Page slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "404": {
+                        "description": "Page not found"
+                    }
+                }
+            }
+        },
+        "/public/projects": {
+            "get": {
+                "tags": [
+                    "Public Projects"
+                ],
+                "summary": "Get list of published projects",
+                "operationId": "d53ba2c92b6a0c16794bcf614877d246",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Project type filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "min_price",
+                        "in": "query",
+                        "description": "Minimum price",
+                        "required": false,
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "max_price",
+                        "in": "query",
+                        "description": "Maximum price",
+                        "required": false,
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "bedrooms",
+                        "in": "query",
+                        "description": "Number of bedrooms",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        },
+        "/public/projects/{slug}": {
+            "get": {
+                "tags": [
+                    "Public Projects"
+                ],
+                "summary": "Get a specific project by slug",
+                "operationId": "6374369dbec3ccf4c2976bc067796666",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Project slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "404": {
+                        "description": "Project not found"
+                    }
+                }
+            }
+        },
+        "/public/settings": {
+            "get": {
+                "tags": [
+                    "Public Settings"
+                ],
+                "summary": "Get public website settings",
+                "operationId": "6ead7f9ffc3797738efd81acd8d6650d",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Public Blog",
+            "description": "Public Blog"
+        },
+        {
+            "name": "Public Landing Pages",
+            "description": "Public Landing Pages"
+        },
+        {
+            "name": "Public Leads",
+            "description": "Public Leads"
+        },
+        {
+            "name": "Public Pages",
+            "description": "Public Pages"
+        },
+        {
+            "name": "Public Projects",
+            "description": "Public Projects"
+        },
+        {
+            "name": "Public Settings",
+            "description": "Public Settings"
+        }
+    ]
+}

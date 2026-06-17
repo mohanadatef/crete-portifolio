@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Media extends Model
 {
     use HasFactory;
-    protected $guarded = [];
+    protected $fillable = ['file_name', 'path', 'mime_type', 'size'];
 }

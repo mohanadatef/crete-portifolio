@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
-  const token = localStorage.getItem('token');
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   
   if (token) {
     return true;

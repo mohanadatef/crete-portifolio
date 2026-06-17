@@ -2,31 +2,22 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
-     *
-     * @return void
      */
-    public function run()
+    public function run(): void
     {
-        \App\Models\User::create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('password123'),
-        ]);
+        // User::factory(10)->create();
 
-        \App\Models\Setting::create([
-            'key' => 'seo_title',
-            'value' => 'CRETE Developments | Premium Real Estate'
-        ]);
-
-        \App\Models\Setting::create([
-            'key' => 'google_tag',
-            'value' => "<!-- Google Tag Manager default script -->\n<script>console.log('Google Tag Script Injected Dynamicially!');</script>"
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
         ]);
     }
 }

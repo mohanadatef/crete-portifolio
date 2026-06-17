@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class SettingController extends Controller
 {
@@ -11,17 +12,22 @@ class SettingController extends Controller
         return response()->json(\App\Models\Setting::all());
     }
 
+    #[OA\Get(
+        path: "/public/settings",
+        summary: "Get public website settings",
+        tags: ["Public Settings"],
+        responses: [
+            new OA\Response(response: 200, description: "Successful operation")
+        ]
+    )]
     public function indexPublic()
     {
         return response()->json(\App\Models\Setting::all()->pluck('value', 'key'));
     }
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\StoreSettingRequest $request)
     {
-        $validated = $request->validate([
-            'key' => 'required|unique:settings,key',
-            'value' => 'nullable'
-        ]);
+        $validated = $request->validated();
 
         $setting = \App\Models\Setting::create($validated);
         return response()->json($setting, 201);
@@ -44,14 +50,11 @@ class SettingController extends Controller
         return response()->json(\App\Models\Setting::findOrFail($id));
     }
 
-    public function update(Request $request, $id)
+    public function update(\App\Http\Requests\UpdateSettingRequest $request, $id)
     {
         $setting = \App\Models\Setting::findOrFail($id);
         
-        $validated = $request->validate([
-            'key' => 'required|unique:settings,key,' . $id,
-            'value' => 'nullable'
-        ]);
+        $validated = $request->validated();
 
         $setting->update($validated);
         return response()->json($setting);
