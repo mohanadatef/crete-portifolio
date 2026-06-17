@@ -22,6 +22,7 @@ export const routes: Routes = [
         component: PublicLayoutComponent,
         children: [
             { path: '', component: HomeComponent },
+            { path: 'projects', loadComponent: () => import('./public/projects/projects.component').then(m => m.ProjectsComponent) },
             { path: 'blog', component: BlogComponent },
             { path: 'contact', component: ContactComponent }
         ]
