@@ -38,12 +38,19 @@
   },
   "CONTACT": {
     "TITLE": "Contact Us",
-    "SUBTITLE": "We'd love to hear from you.",
+    "SUBTITLE": "We'd love to hear from you. Leave us a message and we'll get back to you shortly.",
+    "GET_IN_TOUCH": "Get in Touch",
+    "GET_IN_TOUCH_DESC": "Fill out the form and our real estate experts will assist you with finding your dream property.",
+    "ADDRESS": "Dubai, United Arab Emirates",
     "NAME": "Full Name",
     "EMAIL": "Email Address",
     "PHONE": "Phone Number",
     "MESSAGE": "Message",
     "SEND": "Send Message",
+    "SENDING": "Sending...",
+    "CONSENT_AGREE": "I agree to the",
+    "PRIVACY_POLICY": "Privacy Policy",
+    "CONSENT_DESC": "We collect this data to contact you regarding your inquiry.",
     "SUCCESS": "Thank you! Your message has been sent successfully. We will contact you soon.",
     "ERROR": "An error occurred. Please try again later."
   }

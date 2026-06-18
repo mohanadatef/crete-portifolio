@@ -3,11 +3,12 @@ import { LeadService } from '../../services/lead.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, TranslatePipe, TranslateDirective],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss'
 })
