@@ -15,7 +15,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     this.http.get('http://backend.test/api/v1/admin/dashboard', {
-        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
+        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
     }).subscribe(res => {
       this.stats = res;
     });

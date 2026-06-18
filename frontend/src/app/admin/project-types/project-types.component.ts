@@ -30,7 +30,7 @@ export class ProjectTypesComponent implements OnInit {
 
   loadProjectTypes() {
     this.http.get<any>('http://backend.test/api/v1/admin/project-types', {
-      headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
+      headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
     }).subscribe({
       next: (res) => {
         const paginatedData = res.data || {};
@@ -70,7 +70,7 @@ export class ProjectTypesComponent implements OnInit {
   }
 
   saveType() {
-    const headers = { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` };
+    const headers = { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` };
     const payload = {
       ...this.formData,
       is_active: this.formData.is_active ? 1 : 0
@@ -98,7 +98,7 @@ export class ProjectTypesComponent implements OnInit {
   deleteType(id: number) {
     if (confirm('Are you sure you want to delete this project type?')) {
       this.http.delete(`http://backend.test/api/v1/admin/project-types/${id}`, {
-        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
+        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
       }).subscribe({
         next: () => this.loadProjectTypes(),
         error: (err) => alert('Error deleting project type')

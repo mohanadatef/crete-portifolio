@@ -29,7 +29,7 @@ export class SettingsComponent implements OnInit {
     // Note: To fetch auth token, we would typically have an interceptor. 
     // Assuming token is sent via interceptor. For simplicity, we just call the endpoint.
     this.http.get<any[]>(this.apiUrl, {
-        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
+        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
     }).subscribe({
       next: (data) => {
         data.forEach(item => {
@@ -43,7 +43,7 @@ export class SettingsComponent implements OnInit {
   saveSettings() {
     this.status = 'loading';
     this.http.post(`${this.apiUrl}/bulk`, this.settings, {
-        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
+        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
     }).subscribe({
       next: () => {
         this.status = 'success';

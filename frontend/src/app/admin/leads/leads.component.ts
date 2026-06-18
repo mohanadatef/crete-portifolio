@@ -16,7 +16,7 @@ export class LeadsComponent implements OnInit {
 
   ngOnInit() {
     this.http.get<any[]>('http://backend.test/api/v1/admin/leads', {
-        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
+        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
     }).subscribe({
       next: (data) => {
         this.leads = data;

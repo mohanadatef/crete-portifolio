@@ -44,7 +44,7 @@ export class ProjectsComponent implements OnInit {
 
   loadProjectTypes() {
     this.http.get<any>('http://backend.test/api/v1/admin/project-types/active', {
-      headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
+      headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
     }).subscribe({
       next: (res) => {
         this.projectTypes = res.data || [];
@@ -60,7 +60,7 @@ export class ProjectsComponent implements OnInit {
     if (this.filters.status !== '') params.status = this.filters.status;
 
     this.http.get<any>('http://backend.test/api/v1/admin/projects', {
-        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` },
+        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` },
         params: params
     }).subscribe({
       next: (response) => {
@@ -113,7 +113,7 @@ export class ProjectsComponent implements OnInit {
     });
 
     this.http.post('http://backend.test/api/v1/admin/projects', data, {
-        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
+        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
     }).subscribe({
       next: () => {
         this.showModal = false;
