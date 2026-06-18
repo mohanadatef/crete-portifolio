@@ -10,6 +10,8 @@ use App\Modules\User\DTOs\UserDTO;
 use App\Modules\User\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
 
+use App\Modules\User\DTOs\UserFilterDTO;
+
 class UserController extends Controller
 {
     public function __construct(private readonly UserService $userService)
@@ -18,8 +20,8 @@ class UserController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->input('per_page', 15);
-        $users = $this->userService->getAllUsers($perPage);
+        $filter = UserFilterDTO::fromRequest($request);
+        $users = $this->userService->getAllUsers($filter);
 
         return $this->successResponse(
             UserResource::collection($users)->response()->getData(true),
@@ -44,7 +46,8 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
             'roles' => 'nullable|array',
-            'roles.*' => 'string|exists:roles,name'
+            'roles.*' => 'string|exists:roles,name',
+            'is_active' => 'boolean',
         ]);
 
         $dto = UserDTO::fromRequest($request);
@@ -64,7 +67,8 @@ class UserController extends Controller
             'email' => 'sometimes|required|email|unique:users,email,' . $id,
             'password' => 'nullable|min:6',
             'roles' => 'nullable|array',
-            'roles.*' => 'string|exists:roles,name'
+            'roles.*' => 'string|exists:roles,name',
+            'is_active' => 'boolean',
         ]);
 
         $dto = UserDTO::fromRequest($request);

@@ -26,7 +26,14 @@ class ProjectResource extends JsonResource
             'featured' => (bool)$this->featured,
             'price' => $this->price,
             'area' => $this->area,
-            'type' => $this->type,
+            'project_type' => $this->whenLoaded('projectType', function () {
+                return [
+                    'id' => $this->projectType->id,
+                    'name_ar' => $this->projectType->name_ar,
+                    'name_en' => $this->projectType->name_en,
+                    'slug' => $this->projectType->slug,
+                ];
+            }),
             'bedrooms' => $this->bedrooms,
             'delivery_date' => $this->delivery_date,
             'developer' => $this->developer,

@@ -22,6 +22,11 @@ class AuthService
         }
 
         $user = Auth::user();
+        if (!$user->is_active) {
+            Auth::logout();
+            throw new Exception('Your account is currently inactive. Please contact the administrator.', 401);
+        }
+
         $user->load('roles.permissions');
         $token = $user->createToken('admin_token')->plainTextToken;
 

@@ -5,7 +5,7 @@ namespace App\Modules\Project\DTOs;
 readonly class ProjectFilterDTO
 {
     public function __construct(
-        public ?string $type = null,
+        public ?int $project_type_id = null,
         public ?string $location = null,
         public ?int $status = null,
         public ?string $search = null,
@@ -18,7 +18,7 @@ readonly class ProjectFilterDTO
     public static function fromRequest(\Illuminate\Http\Request $request): self
     {
         return new self(
-            type: $request->input('type'),
+            project_type_id: $request->input('project_type_id') !== null ? (int) $request->input('project_type_id') : null,
             location: $request->input('location'),
             status: $request->has('status') ? (int) $request->input('status') : null,
             search: $request->input('search'),

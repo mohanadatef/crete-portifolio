@@ -30,6 +30,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/public/settings', [SettingController::class, 'indexPublic']);
     Route::get('/public/projects', [ProjectController::class, 'indexPublic']);
     Route::get('/public/projects/{slug}', [ProjectController::class, 'showPublic']);
+    Route::get('/public/project-types', [App\Modules\ProjectType\Controllers\ProjectTypeController::class, 'active']);
     Route::post('/public/leads', [LeadController::class, 'store'])->middleware('throttle:5,1'); // Public form submission
 
     Route::get('/public/landing-pages/{slug}', [LandingPageController::class, 'showPublic']);
@@ -63,6 +64,11 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('/admin/roles', RoleController::class);
 
         Route::apiResource('/admin/projects', ProjectController::class);
+        
+        // Project Types Management
+        Route::get('/admin/project-types/active', [App\Modules\ProjectType\Controllers\ProjectTypeController::class, 'active']);
+        Route::apiResource('/admin/project-types', App\Modules\ProjectType\Controllers\ProjectTypeController::class);
+
         Route::post('/admin/settings/bulk', [SettingController::class, 'updateBulk']);
         Route::apiResource('/admin/settings', SettingController::class);
         

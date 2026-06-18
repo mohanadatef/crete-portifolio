@@ -10,6 +10,7 @@
             <a routerLink="/admin/dashboard" class="block py-2 px-4 rounded hover:bg-white/10 transition">Dashboard</a>
             
             <a *appHasPermission="'manage-projects'" routerLink="/admin/projects" class="block py-2 px-4 rounded hover:bg-white/10 transition">Projects</a>
+            <a *appHasPermission="'manage-project-types'" routerLink="/admin/project-types" class="block py-2 px-4 rounded hover:bg-white/10 transition">Project Types</a>
             <a *appHasPermission="'manage-pages'" routerLink="/admin/landing-pages" class="block py-2 px-4 rounded hover:bg-white/10 transition">Landing Pages</a>
             <a *appHasPermission="'manage-leads'" routerLink="/admin/leads" class="block py-2 px-4 rounded hover:bg-white/10 transition">Leads</a>
             <a *appHasPermission="'manage-pages'" routerLink="/admin/pages" class="block py-2 px-4 rounded hover:bg-white/10 transition">Pages</a>

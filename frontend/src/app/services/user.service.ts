@@ -7,6 +7,7 @@ export interface User {
   name: string;
   email: string;
   roles?: { id: number; name: string }[];
+  is_active?: boolean;
 }
 
 @Injectable({
@@ -17,8 +18,11 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
-  getUsers(): Observable<any> {
-    return this.http.get<any>(this.apiUrl);
+  getUsers(page: number = 1, perPage: number = 15, search: string = '', role: string = '') {
+    let url = `${this.apiUrl}?page=${page}&per_page=${perPage}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (role) url += `&role=${encodeURIComponent(role)}`;
+    return this.http.get(url);
   }
 
   getUser(id: number): Observable<any> {

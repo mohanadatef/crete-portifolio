@@ -23,7 +23,7 @@ class Project extends Model
         'featured',
         'price',
         'area',
-        'type',
+        'project_type_id',
         'bedrooms',
         'delivery_date',
         'developer'
@@ -46,5 +46,10 @@ class Project extends Model
     public function projectImages()
     {
         return $this->hasMany(ProjectImage::class);
+    }
+
+    public function projectType()
+    {
+        return $this->belongsTo(\App\Modules\ProjectType\Models\ProjectType::class, 'project_type_id');
     }
 }

@@ -25,7 +25,7 @@ class UpdateProjectRequest extends FormRequest
             'featured' => 'boolean',
             'price' => 'nullable|numeric',
             'area' => 'nullable|numeric',
-            'type' => 'nullable|string',
+            'project_type_id' => 'nullable|exists:project_types,id',
             'bedrooms' => 'nullable|numeric',
             'delivery_date' => 'nullable|date',
             'developer' => 'nullable|string',

@@ -1,0 +1,83 @@
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <!-- Header -->
+  <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+    <div>
+      <h2 class="text-xl font-bold text-gray-800">Project Types Management</h2>
+      <p class="text-sm text-gray-500 mt-1">Manage project types used in filters and forms</p>
+    </div>
+    <button (click)="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+      </svg>
+      Add Type
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+          <th class="p-4 font-semibold">Name (AR)</th>
+          <th class="p-4 font-semibold">Name (EN)</th>
+          <th class="p-4 font-semibold">Slug</th>
+          <th class="p-4 font-semibold">Status</th>
+          <th class="p-4 font-semibold text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <tr *ngFor="let t of projectTypes" class="hover:bg-gray-50/50 transition-colors">
+          <td class="p-4 font-medium text-gray-800">{{ t.name_ar }}</td>
+          <td class="p-4 text-gray-600">{{ t.name_en }}</td>
+          <td class="p-4 text-gray-500 text-sm">{{ t.slug }}</td>
+          <td class="p-4">
+            <span *ngIf="t.is_active" class="px-2.5 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">Active</span>
+            <span *ngIf="!t.is_active" class="px-2.5 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">Inactive</span>
+          </td>
+          <td class="p-4 text-right">
+            <button (click)="editType(t)" class="text-blue-600 hover:text-blue-800 font-medium text-sm mr-3">Edit</button>
+            <button (click)="deleteType(t.id)" class="text-red-600 hover:text-red-800 font-medium text-sm">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="projectTypes.length === 0">
+          <td colspan="5" class="p-8 text-center text-gray-500">No project types found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Form -->
+  <div *ngIf="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg">
+      <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white z-10 rounded-t-xl">
+        <h3 class="text-lg font-bold">{{ isEditing ? 'Edit' : 'Add' }} Project Type</h3>
+        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <form (ngSubmit)="saveType()" class="p-6">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Name (AR) *</label>
+          <input type="text" [(ngModel)]="formData.name_ar" name="name_ar" required class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Name (EN) *</label>
+          <input type="text" [(ngModel)]="formData.name_en" name="name_en" required class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Slug *</label>
+          <input type="text" [(ngModel)]="formData.slug" name="slug" required class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500">
+        </div>
+        <div class="flex items-center gap-2 mt-6 mb-6">
+          <input type="checkbox" [(ngModel)]="formData.is_active" name="is_active" id="isActiveCheckbox">
+          <label for="isActiveCheckbox" class="text-sm font-medium text-gray-700">Active</label>
+        </div>
+        
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <button type="button" (click)="closeModal()" class="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded font-medium transition-colors">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition-colors">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

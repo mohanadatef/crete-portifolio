@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             'manage-users',
             'manage-roles',
             'manage-projects',
+            'manage-project-types',
             'manage-pages',
             'manage-leads',
             'manage-blog',

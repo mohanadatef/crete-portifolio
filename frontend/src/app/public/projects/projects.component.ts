@@ -17,10 +17,11 @@ export class ProjectsComponent implements OnInit {
   public translate = inject(TranslateService);
   
   projects: any[] = [];
+  projectTypes: any[] = [];
   status: 'loading' | 'success' | 'error' = 'loading';
   
   filters = {
-    type: '',
+    project_type_id: '',
     location: '',
     min_price: null,
     max_price: null,
@@ -28,13 +29,23 @@ export class ProjectsComponent implements OnInit {
   };
 
   ngOnInit() {
+    this.loadProjectTypes();
     this.loadProjects();
+  }
+
+  loadProjectTypes() {
+    this.http.get<any>('http://backend.test/api/v1/public/project-types').subscribe({
+      next: (res) => {
+        this.projectTypes = res.data || [];
+      },
+      error: (err) => console.error('Error loading project types', err)
+    });
   }
 
   loadProjects() {
     this.status = 'loading';
     let params: any = {};
-    if (this.filters.type) params.type = this.filters.type;
+    if (this.filters.project_type_id) params.project_type_id = this.filters.project_type_id;
     if (this.filters.location) params.location = this.filters.location;
     if (this.filters.min_price) params.min_price = this.filters.min_price;
     if (this.filters.max_price) params.max_price = this.filters.max_price;

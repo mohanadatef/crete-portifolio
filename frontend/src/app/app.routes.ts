@@ -57,6 +57,12 @@ export const routes: Routes = [
                 data: { permission: 'manage-projects' }
             },
             { 
+                path: 'project-types', 
+                loadComponent: () => import('./admin/project-types/project-types.component').then(m => m.ProjectTypesComponent),
+                canActivate: [permissionGuard],
+                data: { permission: 'manage-project-types' }
+            },
+            { 
                 path: 'pages', 
                 component: PagesComponent,
                 canActivate: [permissionGuard],

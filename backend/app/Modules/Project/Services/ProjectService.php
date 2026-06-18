@@ -10,7 +10,7 @@ class ProjectService
 {
     public function getProjects(ProjectFilterDTO $filter, int $perPage = 15, bool $onlyPublished = false): LengthAwarePaginator
     {
-        $query = Project::query();
+        $query = Project::with(['projectImages', 'projectType']);
 
         if ($onlyPublished) {
             $query->where('status', 1);
@@ -18,8 +18,8 @@ class ProjectService
             $query->where('status', $filter->status);
         }
 
-        if ($filter->type) {
-            $query->where('type', $filter->type);
+        if ($filter->project_type_id) {
+            $query->where('project_type_id', $filter->project_type_id);
         }
 
         if ($filter->location) {

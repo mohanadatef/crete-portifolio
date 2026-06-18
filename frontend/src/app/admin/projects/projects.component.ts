@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 export class ProjectsComponent implements OnInit {
   private http = inject(HttpClient);
   projects: any[] = [];
+  projectTypes: any[] = [];
   status: 'loading' | 'success' | 'error' = 'loading';
   showModal = false;
   
@@ -23,27 +24,40 @@ export class ProjectsComponent implements OnInit {
     description_ar: '',
     description_en: '',
     location: '',
-    status: 1,
-    featured: 0
+    project_type_id: '',
+    status: true,
+    featured: false
   };
   
   selectedFiles: File[] = [];
 
   filters: any = {
     search: '',
-    type: '',
+    project_type_id: '',
     status: ''
   };
 
   ngOnInit() {
+    this.loadProjectTypes();
     this.loadProjects();
+  }
+
+  loadProjectTypes() {
+    this.http.get<any>('http://backend.test/api/v1/admin/project-types/active', {
+      headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` }
+    }).subscribe({
+      next: (res) => {
+        this.projectTypes = res.data || [];
+      },
+      error: (err) => console.error('Error loading project types', err)
+    });
   }
 
   loadProjects() {
     let params: any = {};
     if (this.filters.search) params.search = this.filters.search;
-    if (this.filters.type) params.type = this.filters.type;
-    if (this.filters.status) params.status = this.filters.status;
+    if (this.filters.project_type_id) params.project_type_id = this.filters.project_type_id;
+    if (this.filters.status !== '') params.status = this.filters.status;
 
     this.http.get<any>('http://backend.test/api/v1/admin/projects', {
         headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` },
@@ -63,10 +77,34 @@ export class ProjectsComponent implements OnInit {
     this.selectedFiles = Array.from(event.target.files);
   }
 
+  openModal() {
+    this.formData = {
+      title_ar: '',
+      title_en: '',
+      slug: '',
+      description_ar: '',
+      description_en: '',
+      location: '',
+      project_type_id: '',
+      status: true,
+      featured: false
+    };
+    this.selectedFiles = [];
+    this.showModal = true;
+  }
+
+  closeModal() {
+    this.showModal = false;
+  }
+
   saveProject() {
     const data = new FormData();
     Object.keys(this.formData).forEach(key => {
-      data.append(key, this.formData[key]);
+      let value = this.formData[key];
+      if (key === 'status' || key === 'featured') {
+        value = value ? '1' : '0';
+      }
+      data.append(key, value);
     });
 
     // Append multiple files

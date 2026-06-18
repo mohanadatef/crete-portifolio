@@ -7,11 +7,29 @@ use App\Modules\User\DTOs\UserDTO;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
 
+use App\Modules\User\DTOs\UserFilterDTO;
+use Illuminate\Database\Eloquent\Builder;
+
 class UserService
 {
-    public function getAllUsers(int $perPage = 15): LengthAwarePaginator
+    public function getAllUsers(UserFilterDTO $filter): LengthAwarePaginator
     {
-        return User::with('roles')->latest()->paginate($perPage);
+        $query = User::with('roles')->latest();
+
+        if ($filter->search) {
+            $query->where(function (Builder $q) use ($filter) {
+                $q->where('name', 'like', '%' . $filter->search . '%')
+                  ->orWhere('email', 'like', '%' . $filter->search . '%');
+            });
+        }
+
+        if ($filter->role) {
+            $query->whereHas('roles', function (Builder $q) use ($filter) {
+                $q->where('name', $filter->role);
+            });
+        }
+
+        return $query->paginate($filter->perPage, ['*'], 'page', $filter->page);
     }
 
     public function getUserById(int $id): User
