@@ -11,6 +11,7 @@ import { DOCUMENT, CommonModule } from '@angular/common';
   styleUrl: './public-layout.component.scss'
 })
 export class PublicLayoutComponent {
+  isMobileMenuOpen = false;
   translate = inject(TranslateService);
   document = inject(DOCUMENT);
 

@@ -12,13 +12,53 @@
         }
     ],
     "paths": {
+        "/admin/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login for admin users",
+                "operationId": "9222ab366440a6df8e9576bc12612962",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                }
+            }
+        },
         "/public/blog/categories": {
             "get": {
                 "tags": [
                     "Public Blog"
                 ],
                 "summary": "Get public blog categories",
-                "operationId": "c2d3422f05c6d78be761c319caebb7b0",
+                "operationId": "c26417449797311baf694a9d25bf1334",
                 "responses": {
                     "200": {
                         "description": "Successful operation"
@@ -32,7 +72,7 @@
                     "Public Blog"
                 ],
                 "summary": "Get public blog posts",
-                "operationId": "bf0d68bea41a6898ceed55009df7e753",
+                "operationId": "70775ffaa0f4c3183d76a130f89daac8",
                 "responses": {
                     "200": {
                         "description": "Successful operation"
@@ -46,7 +86,7 @@
                     "Public Blog"
                 ],
                 "summary": "Get a specific blog post by slug",
-                "operationId": "5662a97cac321aa144838d7ac5ed0c14",
+                "operationId": "dff084a674678b27163b1664743ae4c0",
                 "parameters": [
                     {
                         "name": "slug",
@@ -68,41 +108,13 @@
                 }
             }
         },
-        "/public/landing-pages/{slug}": {
-            "get": {
-                "tags": [
-                    "Public Landing Pages"
-                ],
-                "summary": "Get a specific landing page by slug",
-                "operationId": "0c8dc8dcda2faebf11b746b922f55f12",
-                "parameters": [
-                    {
-                        "name": "slug",
-                        "in": "path",
-                        "description": "Landing page slug",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation"
-                    },
-                    "404": {
-                        "description": "Landing Page not found"
-                    }
-                }
-            }
-        },
         "/public/leads": {
             "post": {
                 "tags": [
                     "Public Leads"
                 ],
                 "summary": "Submit a new lead",
-                "operationId": "314c3537cab4583a43adbddeb9bbf595",
+                "operationId": "6b31c89255c8d363254be3a7de83b6cd",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -161,13 +173,41 @@
                 }
             }
         },
+        "/public/landing-pages/{slug}": {
+            "get": {
+                "tags": [
+                    "Public Landing Pages"
+                ],
+                "summary": "Get a specific landing page by slug",
+                "operationId": "263371c7b586e48412d3f503db2be845",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Landing page slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    },
+                    "404": {
+                        "description": "Landing Page not found"
+                    }
+                }
+            }
+        },
         "/public/pages/{slug}": {
             "get": {
                 "tags": [
                     "Public Pages"
                 ],
                 "summary": "Get a specific page by slug",
-                "operationId": "7262787159206028c19b9811dc724c2d",
+                "operationId": "f850df196c93aebf835a66834b396c4c",
                 "parameters": [
                     {
                         "name": "slug",
@@ -195,7 +235,7 @@
                     "Public Projects"
                 ],
                 "summary": "Get list of published projects",
-                "operationId": "d53ba2c92b6a0c16794bcf614877d246",
+                "operationId": "97ca0b3caa0a58cc4f8523422ae65d17",
                 "parameters": [
                     {
                         "name": "type",
@@ -247,7 +287,7 @@
                     "Public Projects"
                 ],
                 "summary": "Get a specific project by slug",
-                "operationId": "6374369dbec3ccf4c2976bc067796666",
+                "operationId": "c7db36b07abb938eccc4685bf2dcb8e0",
                 "parameters": [
                     {
                         "name": "slug",
@@ -275,7 +315,7 @@
                     "Public Settings"
                 ],
                 "summary": "Get public website settings",
-                "operationId": "6ead7f9ffc3797738efd81acd8d6650d",
+                "operationId": "ca25dd2263de5365db50425c660fcc2f",
                 "responses": {
                     "200": {
                         "description": "Successful operation"
@@ -286,16 +326,20 @@
     },
     "tags": [
         {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
             "name": "Public Blog",
             "description": "Public Blog"
         },
         {
-            "name": "Public Landing Pages",
-            "description": "Public Landing Pages"
-        },
-        {
             "name": "Public Leads",
             "description": "Public Leads"
+        },
+        {
+            "name": "Public Landing Pages",
+            "description": "Public Landing Pages"
         },
         {
             "name": "Public Pages",

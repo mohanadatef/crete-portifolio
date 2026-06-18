@@ -21,6 +21,7 @@ export class ProjectsComponent implements OnInit {
   
   filters = {
     type: '',
+    location: '',
     min_price: null,
     max_price: null,
     bedrooms: null
@@ -34,13 +35,16 @@ export class ProjectsComponent implements OnInit {
     this.status = 'loading';
     let params: any = {};
     if (this.filters.type) params.type = this.filters.type;
+    if (this.filters.location) params.location = this.filters.location;
     if (this.filters.min_price) params.min_price = this.filters.min_price;
     if (this.filters.max_price) params.max_price = this.filters.max_price;
     if (this.filters.bedrooms) params.bedrooms = this.filters.bedrooms;
 
     this.http.get<any>('http://backend.test/api/v1/public/projects', { params }).subscribe({
       next: (res) => {
-        this.projects = res.data || res || [];
+        const paginatedData = res.data || {};
+        const projectsArray = paginatedData.data || res || [];
+        this.projects = Array.isArray(projectsArray) ? projectsArray : [];
         this.status = 'success';
       },
       error: () => this.status = 'error'

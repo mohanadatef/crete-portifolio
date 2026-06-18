@@ -1,0 +1,49 @@
+name: Laravel Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, dom, fileinfo, pdo_mysql
+
+    - name: Copy .env
+      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+    - name: Install Dependencies
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+    - name: Generate key
+      run: php artisan key:generate
+
+    - name: Create Database
+      run: |
+        mkdir -p database
+        touch database/database.sqlite
+      
+    - name: Update Env DB connection
+      run: |
+        sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/' .env
+        sed -i 's/DB_DATABASE=crete_portfolio/#DB_DATABASE=crete_portfolio/' .env
+
+    - name: Run Migrations
+      run: php artisan migrate -q --no-ansi --no-interaction
+
+    - name: Execute tests via PHPUnit
+      run: php artisan test

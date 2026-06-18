@@ -15,6 +15,7 @@ import { BlogComponent } from './public/blog/blog.component';
 import { ContactComponent } from './public/contact/contact.component';
 
 import { authGuard } from './guards/auth.guard';
+import { permissionGuard } from './guards/permission.guard';
 
 export const routes: Routes = [
     {
@@ -37,13 +38,60 @@ export const routes: Routes = [
         canActivate: [authGuard],
         children: [
             { path: 'dashboard', component: DashboardComponent },
-            { path: 'projects', component: ProjectsComponent },
-            { path: 'pages', component: PagesComponent },
-            { path: 'settings', component: SettingsComponent },
-            { path: 'landing-pages', component: LandingPagesComponent },
-            { path: 'leads', component: LeadsComponent },
-            { path: 'blog/categories', component: CategoriesComponent },
-            { path: 'blog/posts', component: PostsComponent },
+            { 
+                path: 'users', 
+                loadComponent: () => import('./admin/users/users.component').then(m => m.UsersComponent),
+                canActivate: [permissionGuard],
+                data: { permission: 'manage-users' }
+            },
+            { 
+                path: 'roles', 
+                loadComponent: () => import('./admin/roles/roles.component').then(m => m.RolesComponent),
+                canActivate: [permissionGuard],
+                data: { permission: 'manage-roles' }
+            },
+            { 
+                path: 'projects', 
+                component: ProjectsComponent,
+                canActivate: [permissionGuard],
+                data: { permission: 'manage-projects' }
+            },
+            { 
+                path: 'pages', 
+                component: PagesComponent,
+                canActivate: [permissionGuard],
+                data: { permission: 'manage-pages' }
+            },
+            { 
+                path: 'settings', 
+                component: SettingsComponent,
+                canActivate: [permissionGuard],
+                data: { permission: 'manage-settings' }
+            },
+            { 
+                path: 'landing-pages', 
+                component: LandingPagesComponent,
+                canActivate: [permissionGuard],
+                data: { permission: 'manage-pages' }
+            },
+            { 
+                path: 'leads', 
+                component: LeadsComponent,
+                canActivate: [permissionGuard],
+                data: { permission: 'manage-leads' }
+            },
+            { 
+                path: 'blog/categories', 
+                component: CategoriesComponent,
+                canActivate: [permissionGuard],
+                data: { permission: 'manage-blog' }
+            },
+            { 
+                path: 'blog/posts', 
+                component: PostsComponent,
+                canActivate: [permissionGuard],
+                data: { permission: 'manage-blog' }
+            },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     }

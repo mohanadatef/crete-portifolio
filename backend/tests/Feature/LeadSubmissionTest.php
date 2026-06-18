@@ -5,9 +5,9 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use App\Models\Lead;
+use App\Modules\Lead\Models\Lead;
 use Illuminate\Support\Facades\Http;
-use App\Models\User;
+use App\Modules\User\Models\User;
 
 class LeadSubmissionTest extends TestCase
 {
@@ -47,7 +47,11 @@ class LeadSubmissionTest extends TestCase
 
     public function test_unconfirmed_delete_returns_422()
     {
-        $admin = User::factory()->create();
+        $admin = User::create([
+            'name' => 'Admin Test',
+            'email' => 'admintest' . rand(1, 1000) . '@admin.com',
+            'password' => bcrypt('password')
+        ]);
         $lead = Lead::create([
             'name' => 'Jane Doe',
             'email' => 'jane@example.com',

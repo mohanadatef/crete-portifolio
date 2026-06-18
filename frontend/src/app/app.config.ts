@@ -1,11 +1,12 @@
 import { ApplicationConfig, provideZoneChangeDetection, Injectable } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { HttpClient, provideHttpClient, withFetch } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
+import { authInterceptor } from './interceptors/auth.interceptor';
 
 @Injectable({ providedIn: 'root' })
 export class CustomTranslateLoader implements TranslateLoader {
@@ -19,7 +20,10 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }), 
     provideRouter(routes),
-    provideHttpClient(withFetch()),
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([authInterceptor])
+    ),
     provideTranslateService({
       defaultLanguage: 'en',
       loader: {

@@ -2,6 +2,11 @@
   <div class="bg-white max-w-md w-full rounded-2xl shadow-xl p-8">
     
     <div class="text-center mb-8">
+      <div class="flex justify-center mb-4">
+        <h2 dir="ltr" class="text-3xl font-extrabold flex items-center justify-center text-crete-blue">
+            CRE<span class="text-crete-gold mx-0.5">T</span>E
+        </h2>
+      </div>
       <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
       <p class="text-gray-500">Log in to manage your real estate platform</p>
     </div>
@@ -30,11 +35,21 @@
         >
       </div>
 
+      @if (errorMessage) {
+        <div class="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+          {{ errorMessage }}
+        </div>
+      }
+
       <button 
         type="submit" 
-        [disabled]="loginForm.invalid"
+        [disabled]="loginForm.invalid || isLoading"
         class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-        Sign In
+        @if (isLoading) {
+          Signing In...
+        } @else {
+          Sign In
+        }
       </button>
 
     </form>

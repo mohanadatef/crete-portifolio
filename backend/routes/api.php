@@ -13,14 +13,16 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PageController;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\SettingController;
-use App\Http\Controllers\LandingPageController;
-use App\Http\Controllers\LeadController;
-use App\Http\Controllers\BlogCategoryController;
-use App\Http\Controllers\BlogPostController;
+use App\Modules\Auth\Controllers\AuthController;
+use App\Modules\Page\Controllers\PageController;
+use App\Modules\Project\Controllers\ProjectController;
+use App\Modules\Setting\Controllers\SettingController;
+use App\Modules\Page\Controllers\LandingPageController;
+use App\Modules\Lead\Controllers\LeadController;
+use App\Modules\Blog\Controllers\BlogCategoryController;
+use App\Modules\Blog\Controllers\BlogPostController;
+use App\Modules\User\Controllers\UserController;
+use App\Modules\User\Controllers\RoleController;
 
 Route::prefix('v1')->group(function () {
     // Public APIs
@@ -41,18 +43,25 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/logout', [AuthController::class, 'logout']);
         
-        Route::post('/admin/media', [\App\Http\Controllers\MediaController::class, 'store']);
+        Route::post('/admin/media', [\App\Modules\Media\Controllers\MediaController::class, 'store']);
         Route::get('/admin/dashboard', function () {
             return response()->json([
-                'projects_count' => \App\Models\Project::count(),
-                'pages_count' => \App\Models\Page::count(),
-                'landing_pages_count' => \App\Models\LandingPage::count(),
-                'blog_posts_count' => \App\Models\BlogPost::count(),
-                'leads_count' => \App\Models\Lead::count(),
+                'projects_count' => \App\Modules\Project\Models\Project::count(),
+                'pages_count' => \App\Modules\Page\Models\Page::count(),
+                'landing_pages_count' => \App\Modules\Page\Models\LandingPage::count(),
+                'blog_posts_count' => \App\Modules\Blog\Models\BlogPost::count(),
+                'leads_count' => \App\Modules\Lead\Models\Lead::count(),
             ]);
         });
 
         Route::apiResource('/admin/pages', PageController::class);
+        // User Management
+        Route::apiResource('/admin/users', UserController::class);
+        
+        // Role Management
+        Route::get('/admin/roles/permissions', [RoleController::class, 'permissions']);
+        Route::apiResource('/admin/roles', RoleController::class);
+
         Route::apiResource('/admin/projects', ProjectController::class);
         Route::post('/admin/settings/bulk', [SettingController::class, 'updateBulk']);
         Route::apiResource('/admin/settings', SettingController::class);

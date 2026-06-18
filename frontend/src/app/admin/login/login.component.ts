@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -11,19 +12,32 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent {
   loginForm: FormGroup;
+  private authService = inject(AuthService);
+  isLoading = false;
+  errorMessage = '';
 
   constructor(private fb: FormBuilder, private router: Router) {
     this.loginForm = this.fb.group({
-      email: ['admin@example.com', [Validators.required, Validators.email]],
-      password: ['password123', Validators.required]
+      email: ['admin@admin.com', [Validators.required, Validators.email]],
+      password: ['password', Validators.required]
     });
   }
 
   onSubmit() {
     if (this.loginForm.valid) {
-      // Temporary logic: just redirect to dashboard
-      // TODO: Connect to Laravel API later
-      this.router.navigate(['/admin/dashboard']);
+      this.isLoading = true;
+      this.errorMessage = '';
+      
+      this.authService.login(this.loginForm.value).subscribe({
+        next: (response) => {
+          this.isLoading = false;
+          this.router.navigate(['/admin/dashboard']);
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.errorMessage = err.error?.message || 'Login failed. Please check your credentials.';
+        }
+      });
     }
   }
 }

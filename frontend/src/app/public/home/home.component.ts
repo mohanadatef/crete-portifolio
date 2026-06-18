@@ -20,8 +20,11 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     this.http.get<any>('http://backend.test/api/v1/public/projects').subscribe({
       next: (response) => {
-        const projectsArray = response.data || response || [];
-        this.projects = projectsArray.slice(0, 3); // Show top 3 on home
+        // Handle paginated response structure from Laravel Resource collection
+        const paginatedData = response.data || {};
+        const projectsArray = paginatedData.data || response || [];
+        
+        this.projects = Array.isArray(projectsArray) ? projectsArray.slice(0, 3) : [];
         this.status = 'success';
       },
       error: () => this.status = 'error'

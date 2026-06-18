@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Lead;
+use App\Modules\Lead\Models\Lead;
 use Carbon\Carbon;
 
 class CleanOldLeads extends Command

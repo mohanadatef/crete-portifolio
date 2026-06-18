@@ -49,8 +49,10 @@ export class ProjectsComponent implements OnInit {
         headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('token') : null)}` },
         params: params
     }).subscribe({
-      next: (data) => {
-        this.projects = data.data || data; // Handle pagination wrapper if needed
+      next: (response) => {
+        const paginatedData = response.data || {};
+        const projectsArray = paginatedData.data || response || [];
+        this.projects = Array.isArray(projectsArray) ? projectsArray : [];
         this.status = 'success';
       },
       error: () => this.status = 'error'

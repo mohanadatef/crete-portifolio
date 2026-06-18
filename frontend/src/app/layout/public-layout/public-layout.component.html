@@ -7,6 +7,8 @@
             CRETE<span class="text-crete-gold">.</span>
           </a>
         </div>
+        
+        <!-- Desktop Nav -->
         <nav class="hidden md:flex space-x-10 rtl:space-x-reverse items-center">
           <a routerLink="/" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.HOME' | translate }}</a>
           <a routerLink="/projects" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.PROJECTS' | translate }}</a>
@@ -17,12 +19,37 @@
             {{ translate.currentLang() === 'en' ? 'العربية' : 'English' }}
           </button>
         </nav>
-        <div class="flex items-center">
+        
+        <div class="hidden md:flex items-center">
           <a routerLink="/contact" class="bg-crete-gold text-white px-5 py-2.5 rounded-md text-sm font-bold hover:bg-yellow-600 transition shadow-sm">
             {{ 'NAV.GET_STARTED' | translate }}
           </a>
         </div>
+
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden flex items-center">
+          <button (click)="toggleLanguage()" class="mr-4 rtl:ml-4 rtl:mr-0 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-bold transition-colors">
+            {{ translate.currentLang() === 'en' ? 'العربية' : 'EN' }}
+          </button>
+          <button (click)="isMobileMenuOpen = !isMobileMenuOpen" class="text-gray-600 hover:text-crete-blue focus:outline-none">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path *ngIf="!isMobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              <path *ngIf="isMobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
+    </div>
+
+    <!-- Mobile Nav -->
+    <div *ngIf="isMobileMenuOpen" class="md:hidden bg-white border-t border-gray-100 px-4 pt-2 pb-4 space-y-1 shadow-lg absolute w-full">
+      <a routerLink="/" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.HOME' | translate }}</a>
+      <a routerLink="/projects" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.PROJECTS' | translate }}</a>
+      <a routerLink="/blog" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.BLOG' | translate }}</a>
+      <a routerLink="/contact" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.CONTACT' | translate }}</a>
+      <a routerLink="/contact" (click)="isMobileMenuOpen = false" class="block mt-4 px-3 py-2 rounded-md text-base font-bold text-white bg-crete-gold hover:bg-yellow-600 text-center">
+        {{ 'NAV.GET_STARTED' | translate }}
+      </a>
     </div>
   </header>
 
@@ -36,7 +63,7 @@
         <span dir="ltr" class="text-3xl font-extrabold tracking-wider flex items-center">
           CRE<span class="text-crete-gold mx-0.5">T</span>E
         </span>
-        <span class="text-[10px] tracking-[0.3em] uppercase text-gray-300">Developments</span>
+        <span dir="ltr" class="text-[10px] tracking-[0.3em] uppercase text-gray-300">Developments</span>
       </div>
       <p class="text-sm text-gray-400">&copy; 2026 CRETE Developments. All rights reserved.</p>
     </div>
