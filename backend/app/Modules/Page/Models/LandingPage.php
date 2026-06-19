@@ -6,14 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
 use App\Modules\Project\Models\Project;
 use App\Modules\Lead\Models\Lead;
 
-class LandingPage extends Model implements HasMedia
+class LandingPage extends Model
 {
-    use HasFactory, LogsActivity, InteractsWithMedia;
+    use HasFactory, LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
