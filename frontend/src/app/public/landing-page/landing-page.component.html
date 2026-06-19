@@ -1,0 +1,140 @@
+<div class="min-h-screen bg-gray-50 flex flex-col font-sans">
+  <!-- Loading State -->
+  <div *ngIf="status() === 'loading'" class="flex-1 flex justify-center items-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Error / Not Found State -->
+  <div *ngIf="status() === 'error' || status() === 'not-found'" class="flex-1 flex justify-center items-center p-6">
+    <div class="bg-white p-8 rounded-2xl shadow-sm text-center max-w-md w-full border border-gray-100">
+      <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+        <i class="fi" [ngClass]="status() === 'not-found' ? 'fi-rr-search-alt' : 'fi-rr-exclamation'"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">
+        {{ status() === 'not-found' ? 'Page Not Found' : 'Something went wrong' }}
+      </h2>
+      <p class="text-gray-500 mb-6">
+        {{ status() === 'not-found' ? 'The page you are looking for does not exist or has been removed.' : 'We encountered an error while loading this page. Please try again later.' }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main *ngIf="status() === 'success' && pageData()" class="flex-1">
+    
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <!-- Dynamic Layout Rows -->
+      <div *ngFor="let row of layoutRows(); let i = index" class="flex flex-col md:flex-row gap-8 mb-12 items-stretch">
+        
+        <!-- Columns -->
+        <div *ngFor="let col of row.columns" class="flex-1 w-full" [ngSwitch]="col.type">
+          
+          <!-- Text Content -->
+          <div *ngSwitchCase="'text'" class="prose max-w-none prose-primary" [innerHTML]="sanitizeHtml(col.content)"></div>
+          
+          <!-- Image -->
+          <div *ngSwitchCase="'image'" class="h-full rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-white flex items-center justify-center min-h-[300px]">
+            <img *ngIf="col.url" [src]="col.url" [alt]="pageData().title_en" class="w-full h-full object-cover">
+            <div *ngIf="!col.url" class="text-gray-400 flex flex-col items-center">
+              <i class="fi fi-rr-picture text-4xl mb-2 opacity-50"></i>
+              <span class="text-sm">Image Placeholder</span>
+            </div>
+          </div>
+          
+          <!-- Video -->
+          <div *ngSwitchCase="'video'" class="h-full rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-black flex items-center justify-center min-h-[300px] aspect-video">
+            <video *ngIf="col.url && !col.url.includes('youtube') && !col.url.includes('vimeo')" [src]="col.url" controls class="w-full h-full"></video>
+            
+            <!-- Simple embed support for Youtube (assuming full embed URL is provided for simplicity, or normally we'd parse it) -->
+            <iframe *ngIf="col.url && (col.url.includes('youtube') || col.url.includes('vimeo'))" 
+                    [src]="sanitizeHtml(col.url)" 
+                    class="w-full h-full border-0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+            </iframe>
+            
+            <div *ngIf="!col.url" class="text-gray-600 flex flex-col items-center">
+              <i class="fi fi-rr-play-alt text-4xl mb-2 opacity-50"></i>
+              <span class="text-sm">Video Placeholder</span>
+            </div>
+          </div>
+
+          <!-- Form -->
+          <div *ngSwitchCase="'form'" class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 h-full">
+            <div class="text-center mb-8">
+              <h3 class="text-2xl font-bold text-gray-900 mb-2">Register Your Interest</h3>
+              <p class="text-gray-500 text-sm">Please fill out the form below and we will contact you shortly.</p>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="submitStatus() === 'error'" class="bg-red-50 text-red-600 p-4 rounded-lg mb-6 text-sm flex items-start gap-3">
+              <i class="fi fi-rr-exclamation mt-0.5"></i>
+              <p>There was an error submitting your request. Please check your information and try again.</p>
+            </div>
+
+            <form *ngIf="dynamicForm" [formGroup]="dynamicForm" (ngSubmit)="submitForm()" class="space-y-5">
+              
+              <div *ngFor="let field of formFields()" class="space-y-1">
+                <label [for]="field.name" class="block text-sm font-medium text-gray-700">
+                  {{ field.label_en }} <span *ngIf="field.label_ar" class="text-gray-400 text-xs">/ {{ field.label_ar }}</span>
+                  <span *ngIf="field.required" class="text-red-500">*</span>
+                </label>
+                
+                <!-- Text / Email / Phone Input -->
+                <input *ngIf="['text', 'email', 'phone'].includes(field.type)" 
+                       [type]="field.type === 'email' ? 'email' : (field.type === 'phone' ? 'tel' : 'text')" 
+                       [id]="field.name" 
+                       [formControlName]="field.name" 
+                       class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm bg-gray-50 focus:bg-white"
+                       [placeholder]="'Enter ' + field.label_en">
+                
+                <!-- Textarea -->
+                <textarea *ngIf="field.type === 'textarea'" 
+                          [id]="field.name" 
+                          [formControlName]="field.name" 
+                          rows="4"
+                          class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm bg-gray-50 focus:bg-white"
+                          [placeholder]="'Enter ' + field.label_en"></textarea>
+                
+                <!-- Select -->
+                <div *ngIf="field.type === 'select'" class="relative">
+                  <select [id]="field.name" 
+                          [formControlName]="field.name" 
+                          class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm bg-gray-50 focus:bg-white appearance-none">
+                    <option value="">Select an option</option>
+                    <option *ngFor="let opt of getOptions(field.options)" [value]="opt">{{ opt }}</option>
+                  </select>
+                  <i class="fi fi-rr-angle-small-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                </div>
+
+                <!-- Radio -->
+                <div *ngIf="field.type === 'radio'" class="flex flex-col gap-2 pt-2">
+                  <label *ngFor="let opt of getOptions(field.options)" class="flex items-center gap-3 p-3 border border-gray-100 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <input type="radio" [formControlName]="field.name" [value]="opt" class="w-4 h-4 text-primary focus:ring-primary border-gray-300">
+                    <span class="text-sm text-gray-700">{{ opt }}</span>
+                  </label>
+                </div>
+
+                <!-- Validation Errors -->
+                <div *ngIf="dynamicForm.get(field.name)?.invalid && (dynamicForm.get(field.name)?.dirty || dynamicForm.get(field.name)?.touched)" class="text-red-500 text-xs mt-1">
+                  <span *ngIf="dynamicForm.get(field.name)?.errors?.['required']">This field is required.</span>
+                  <span *ngIf="dynamicForm.get(field.name)?.errors?.['email']">Please enter a valid email address.</span>
+                </div>
+              </div>
+
+              <div class="pt-4">
+                <button type="submit" 
+                        [disabled]="submitStatus() === 'loading'"
+                        class="w-full bg-primary text-white font-medium py-3.5 px-6 rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-70">
+                  <span *ngIf="submitStatus() !== 'loading'">Submit Application</span>
+                  <div *ngIf="submitStatus() === 'loading'" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                </button>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

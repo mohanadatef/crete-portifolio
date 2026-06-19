@@ -29,6 +29,14 @@ export const routes: Routes = [
         ]
     },
     {
+        path: 'landing/:slug',
+        loadComponent: () => import('./public/landing-page/landing-page.component').then(m => m.PublicLandingPageComponent)
+    },
+    {
+        path: 'landing/:slug/thank-you',
+        loadComponent: () => import('./public/landing-page/thank-you.component').then(m => m.ThankYouComponent)
+    },
+    {
         path: 'admin/login',
         component: LoginComponent
     },
