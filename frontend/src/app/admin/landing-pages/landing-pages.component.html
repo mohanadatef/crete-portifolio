@@ -185,11 +185,14 @@
                    <option value="form">Contact Form</option>
                 </select>
                 
-                <div *ngIf="col.type === 'text'">
-                   <textarea [(ngModel)]="col.content" rows="4" class="w-full text-sm border-gray-200 rounded px-2 py-1" placeholder="Enter HTML or Text..."></textarea>
+                <div *ngIf="col.type === 'text'" class="bg-white rounded">
+                   <quill-editor [(ngModel)]="col.content" [styles]="{height: '200px'}" placeholder="Enter Rich Text Content..."></quill-editor>
                 </div>
-                <div *ngIf="col.type === 'image' || col.type === 'video'">
-                   <input type="text" [(ngModel)]="col.url" class="w-full text-sm border-gray-200 rounded px-2 py-1" placeholder="Enter URL...">
+                <div *ngIf="col.type === 'image' || col.type === 'video'" class="flex gap-2">
+                   <input type="text" [(ngModel)]="col.url" class="flex-1 text-sm border-gray-200 rounded px-2 py-1" placeholder="Enter URL or upload file...">
+                   <button (click)="triggerUpload(col)" class="px-3 py-1 bg-gray-100 border border-gray-200 rounded hover:bg-gray-200 transition-colors" title="Upload File">
+                     <i class="fi fi-rr-upload text-gray-600"></i>
+                   </button>
                 </div>
                 <div *ngIf="col.type === 'form'" class="p-4 bg-primary/5 rounded border border-primary/20 text-center text-primary text-sm font-medium">
                    <i class="fi fi-rr-clipboard-list-check text-2xl block mb-2"></i>
@@ -274,6 +277,9 @@
     </div>
   </div>
 </div>
+
+<!-- File Upload Input (Hidden) -->
+<input type="file" #fileInput class="hidden" (change)="handleFileUpload($event)" accept="image/*,video/*">
 
 <!-- Toasts -->
 <div class="fixed bottom-4 right-4 z-50 flex flex-col gap-2">

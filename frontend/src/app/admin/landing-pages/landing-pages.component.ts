@@ -1,11 +1,13 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule, FormArray } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { LandingPageService } from '../../core/services/landing-page.service';
 import { ProjectService } from '../../core/services/project.service';
+import { MediaService } from '../../core/services/media.service';
 import { LandingPage, Project } from '../../core/models/models';
+import { QuillModule } from 'ngx-quill';
 
 interface LayoutBlock {
   type: 'text' | 'image' | 'video' | 'form';
@@ -29,13 +31,17 @@ interface FormField {
 @Component({
   selector: 'app-landing-pages',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, QuillModule],
   templateUrl: './landing-pages.component.html'
 })
 export class LandingPagesComponent implements OnInit {
   private dataService = inject(LandingPageService);
   private projectService = inject(ProjectService);
+  private mediaService = inject(MediaService);
   private fb = inject(FormBuilder);
+  
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  currentUploadTarget: { col: LayoutBlock } | null = null;
 
   landingPages = signal<LandingPage[]>([]);
   projects = signal<Project[]>([]);
@@ -256,6 +262,33 @@ export class LandingPagesComponent implements OnInit {
         error: (err) => {
           const msg = err.error?.message || 'Error saving data';
           this.showToast(msg, 'error');
+        }
+      });
+    }
+  }
+
+  triggerUpload(col: LayoutBlock) {
+    this.currentUploadTarget = { col };
+    this.fileInput.nativeElement.click();
+  }
+
+  handleFileUpload(event: any) {
+    const file = event.target.files[0];
+    if (file && this.currentUploadTarget) {
+      this.status.set('loading');
+      this.mediaService.upload(file).subscribe({
+        next: (res: any) => {
+          if (this.currentUploadTarget) {
+             this.currentUploadTarget.col.url = res.url || res.data?.url;
+          }
+          this.status.set('success');
+          this.showToast('File uploaded successfully', 'success');
+          this.fileInput.nativeElement.value = '';
+        },
+        error: () => {
+          this.status.set('success');
+          this.showToast('Error uploading file', 'error');
+          this.fileInput.nativeElement.value = '';
         }
       });
     }
