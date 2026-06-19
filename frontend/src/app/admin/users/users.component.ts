@@ -20,11 +20,16 @@ export class UsersComponent implements OnInit {
 
   users = signal<User[]>([]);
   availableRoles = signal<Role[]>([]);
+  selectedRoles = signal<string[]>([]);
+
   status = signal<'loading' | 'success' | 'error'>('loading');
+  
   showModal = signal(false);
+  showPasswordModal = signal(false);
   deleteId = signal<number | null>(null);
   
   dataForm: FormGroup;
+  passwordForm: FormGroup;
 
   filters = {
     search: '',
@@ -60,8 +65,15 @@ export class UsersComponent implements OnInit {
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: [''],
+      password_confirmation: [''],
       roles: [[]],
-      is_active: [true],
+      is_active: [true], // Default true for new users
+    });
+
+    this.passwordForm = this.fb.group({
+      id: [null, Validators.required],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      password_confirmation: ['', Validators.required]
     });
 
     this.searchSubject.pipe(
@@ -110,7 +122,6 @@ export class UsersComponent implements OnInit {
   }
 
   loadRoles() {
-    // Load without pagination
     this.roleService.getAll({ per_page: 1000 }).subscribe({
       next: (res) => {
         const roles = res.data?.data || res.data || [];
@@ -139,23 +150,46 @@ export class UsersComponent implements OnInit {
     });
   }
 
+  hasRole(roleName: string): boolean {
+    return this.selectedRoles().includes(roleName);
+  }
+
+  toggleRole(roleName: string, event: Event) {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    let current = [...this.selectedRoles()];
+    if (isChecked && !current.includes(roleName)) {
+      current.push(roleName);
+    } else if (!isChecked && current.includes(roleName)) {
+      current = current.filter(r => r !== roleName);
+    }
+    this.selectedRoles.set(current);
+    this.dataForm.patchValue({ roles: current });
+  }
+
   openModal(item?: User) {
-    // Clear server errors
     Object.keys(this.dataForm.controls).forEach(key => {
       this.dataForm.get(key)?.setErrors(null);
     });
 
     if (item) {
+      const userRoles = item.roles ? item.roles.map(r => typeof r === 'string' ? r : r.name) : [];
+      this.selectedRoles.set(userRoles);
+      
       this.dataForm.patchValue({
-        ...item,
-        is_active: item.is_active !== undefined ? !!item.is_active : true,
-        password: '', // empty password on edit
-        roles: item.roles ? item.roles.map(r => typeof r === 'string' ? r : r.name) : []
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        roles: userRoles,
+        password: '',
+        password_confirmation: ''
       });
     } else {
+      this.selectedRoles.set([]);
       this.dataForm.reset({
         is_active: true,
-        roles: []
+        roles: [],
+        password: '',
+        password_confirmation: ''
       });
     }
     this.showModal.set(true);
@@ -163,6 +197,23 @@ export class UsersComponent implements OnInit {
 
   closeModal() {
     this.showModal.set(false);
+  }
+
+  openPasswordModal(item: User) {
+    Object.keys(this.passwordForm.controls).forEach(key => {
+      this.passwordForm.get(key)?.setErrors(null);
+    });
+
+    this.passwordForm.reset({
+      id: item.id,
+      password: '',
+      password_confirmation: ''
+    });
+    this.showPasswordModal.set(true);
+  }
+
+  closePasswordModal() {
+    this.showPasswordModal.set(false);
   }
 
   confirmDelete(id: number) {
@@ -191,16 +242,31 @@ export class UsersComponent implements OnInit {
     }
   }
 
-  handleServerValidationErrors(err: any) {
+  toggleStatus(item: User) {
+    const newStatus = !item.is_active;
+    // We send only the status update
+    this.dataService.update(item.id, { is_active: newStatus }).subscribe({
+      next: () => {
+        item.is_active = newStatus;
+        this.showToast(`User status updated successfully`, 'success');
+      },
+      error: (err) => {
+        const errMsg = err.error?.message || 'Error updating status';
+        this.showToast(errMsg, 'error');
+        // revert the toggle in UI visually if needed, but we didn't change item.is_active yet
+      }
+    });
+  }
+
+  handleServerValidationErrors(err: any, form: FormGroup) {
     if (err.error && err.error.errors) {
       const serverErrors = err.error.errors;
       Object.keys(serverErrors).forEach(field => {
-        const control = this.dataForm.get(field);
+        const control = form.get(field);
         if (control) {
           control.setErrors({ serverError: serverErrors[field][0] });
           control.markAsTouched();
         } else {
-          // Fallback if field isn't in form
           this.showToast(serverErrors[field][0], 'error');
         }
       });
@@ -211,6 +277,24 @@ export class UsersComponent implements OnInit {
   }
 
   saveData() {
+    // If it's a new user, password is required
+    const isEdit = !!this.dataForm.get('id')?.value;
+    
+    if (!isEdit) {
+      const p = this.dataForm.get('password')?.value;
+      const pc = this.dataForm.get('password_confirmation')?.value;
+      if (!p) {
+        this.dataForm.get('password')?.setErrors({ required: true });
+        this.dataForm.markAllAsTouched();
+        return;
+      }
+      if (p !== pc) {
+        this.dataForm.get('password_confirmation')?.setErrors({ notSame: true });
+        this.dataForm.markAllAsTouched();
+        return;
+      }
+    }
+
     if (this.dataForm.invalid) {
       this.dataForm.markAllAsTouched();
       return;
@@ -225,28 +309,61 @@ export class UsersComponent implements OnInit {
         data[key] = [];
       }
     });
-    
-    // Explicitly pass boolean is_active
-    data.is_active = formValues.is_active ? true : false;
-    
-    if (data.id) {
+
+    if (isEdit) {
+        // remove password fields entirely from update payload if empty
+        delete data.password;
+        delete data.password_confirmation;
+        // Don't modify is_active from this form in edit mode
+        delete data.is_active;
+
         this.dataService.update(data.id, data).subscribe({
           next: () => {
             this.closeModal();
             this.loadData();
             this.showToast('User updated successfully', 'success');
           },
-          error: (err) => this.handleServerValidationErrors(err)
+          error: (err) => this.handleServerValidationErrors(err, this.dataForm)
         });
     } else {
+        data.is_active = true; // default true for new user
         this.dataService.create(data).subscribe({
           next: () => {
             this.closeModal();
             this.loadData();
             this.showToast('User created successfully', 'success');
           },
-          error: (err) => this.handleServerValidationErrors(err)
+          error: (err) => this.handleServerValidationErrors(err, this.dataForm)
         });
     }
+  }
+
+  savePassword() {
+    const p = this.passwordForm.get('password')?.value;
+    const pc = this.passwordForm.get('password_confirmation')?.value;
+    if (p !== pc) {
+      this.passwordForm.get('password_confirmation')?.setErrors({ notSame: true });
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
+
+    if (this.passwordForm.invalid) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
+
+    const id = this.passwordForm.get('id')?.value;
+    const data = {
+      password: p,
+      password_confirmation: pc
+    };
+
+    this.dataService.update(id, data).subscribe({
+      next: () => {
+        this.closePasswordModal();
+        this.showToast('Password updated successfully', 'success');
+      },
+      error: (err) => this.handleServerValidationErrors(err, this.passwordForm)
+    });
   }
 }

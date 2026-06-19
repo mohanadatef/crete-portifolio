@@ -49,7 +49,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
+            'password' => 'required|min:6|confirmed',
             'roles' => 'nullable|array',
             'roles.*' => 'string|exists:roles,name',
             'is_active' => 'boolean',
@@ -70,7 +70,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'email' => 'sometimes|required|email|unique:users,email,' . $id,
-            'password' => 'nullable|min:6',
+            'password' => 'nullable|min:6|confirmed',
             'roles' => 'nullable|array',
             'roles.*' => 'string|exists:roles,name',
             'is_active' => 'boolean',
