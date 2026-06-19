@@ -48,7 +48,7 @@
       <thead>
         <tr>
           <th>Name / Info</th>
-          <th>Roles</th>
+          <th>Role</th>
           <th>Status</th>
           <th class="text-right">Actions</th>
         </tr>
@@ -79,7 +79,7 @@
               <span *ngFor="let role of item.roles" class="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-700 border border-purple-200">
                 {{ role.name || role }}
               </span>
-              <span *ngIf="!item.roles?.length" class="text-gray-400 text-xs italic">No roles</span>
+              <span *ngIf="!item.roles?.length" class="text-gray-400 text-xs italic">No role</span>
             </div>
           </td>
           <td class="p-4">
@@ -165,11 +165,11 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Roles</label>
-          <select multiple formControlName="roles" class="input-premium h-32 bg-white text-gray-700" [ngClass]="{'border-red-500': dataForm.get('roles')?.invalid && dataForm.get('roles')?.errors?.['serverError']}">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+          <select formControlName="roles" class="input-premium w-full bg-white text-gray-700" [ngClass]="{'border-red-500': dataForm.get('roles')?.invalid && dataForm.get('roles')?.errors?.['serverError']}">
+            <option value="">Select a role</option>
             <option *ngFor="let role of availableRoles()" [value]="role.name">{{ role.name }}</option>
           </select>
-          <p class="text-xs text-gray-500 mt-1">Hold Ctrl (or Cmd) to select multiple roles.</p>
           <div *ngIf="dataForm.get('roles')?.errors?.['serverError']" class="text-red-500 text-xs mt-1">{{ dataForm.get('roles')?.errors?.['serverError'] }}</div>
         </div>
 

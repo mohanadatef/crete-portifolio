@@ -69,7 +69,7 @@ export class UsersComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       password: [''],
       password_confirmation: [''],
-      roles: [[]],
+      roles: [''], // Single string
       is_active: [true], // Default true for new users
     });
 
@@ -164,20 +164,22 @@ export class UsersComponent implements OnInit {
     });
 
     if (item) {
-      const userRoles = item.roles ? item.roles.map(r => typeof r === 'string' ? r : r.name) : [];
+      const userRole = item.roles && item.roles.length > 0 
+          ? (typeof item.roles[0] === 'string' ? item.roles[0] : item.roles[0].name) 
+          : '';
       
       this.dataForm.patchValue({
         id: item.id,
         name: item.name,
         email: item.email,
-        roles: userRoles,
+        roles: userRole,
         password: '',
         password_confirmation: ''
       });
     } else {
       this.dataForm.reset({
         is_active: true,
-        roles: [],
+        roles: '',
         password: '',
         password_confirmation: ''
       });
@@ -295,7 +297,11 @@ export class UsersComponent implements OnInit {
     const data: any = {};
     Object.keys(formValues).forEach(key => {
       if (formValues[key] !== null && formValues[key] !== undefined && formValues[key] !== '') {
-        data[key] = formValues[key];
+        if (key === 'roles') {
+           data[key] = [formValues[key]];
+        } else {
+           data[key] = formValues[key];
+        }
       } else if (key === 'roles') {
         data[key] = [];
       }
