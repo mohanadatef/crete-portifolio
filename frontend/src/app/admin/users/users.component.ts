@@ -5,6 +5,7 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { UserService } from '../../core/services/user.service';
 import { RoleService } from '../../core/services/role.service';
+import { AuthService } from '../../services/auth.service';
 import { User, Role } from '../../core/models/models';
 
 @Component({
@@ -16,11 +17,11 @@ import { User, Role } from '../../core/models/models';
 export class UsersComponent implements OnInit {
   private dataService = inject(UserService);
   private roleService = inject(RoleService);
+  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
   users = signal<User[]>([]);
   availableRoles = signal<Role[]>([]);
-  selectedRoles = signal<string[]>([]);
 
   status = signal<'loading' | 'success' | 'error'>('loading');
   
@@ -28,6 +29,8 @@ export class UsersComponent implements OnInit {
   showPasswordModal = signal(false);
   deleteId = signal<number | null>(null);
   
+  currentUserId = signal<number | null>(null);
+
   dataForm: FormGroup;
   passwordForm: FormGroup;
 
@@ -87,6 +90,11 @@ export class UsersComponent implements OnInit {
   }
 
   ngOnInit() {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.currentUserId.set(user.id);
+    }
+    
     this.loadRoles();
     this.loadData();
   }
@@ -150,22 +158,6 @@ export class UsersComponent implements OnInit {
     });
   }
 
-  hasRole(roleName: string): boolean {
-    return this.selectedRoles().includes(roleName);
-  }
-
-  toggleRole(roleName: string, event: Event) {
-    const isChecked = (event.target as HTMLInputElement).checked;
-    let current = [...this.selectedRoles()];
-    if (isChecked && !current.includes(roleName)) {
-      current.push(roleName);
-    } else if (!isChecked && current.includes(roleName)) {
-      current = current.filter(r => r !== roleName);
-    }
-    this.selectedRoles.set(current);
-    this.dataForm.patchValue({ roles: current });
-  }
-
   openModal(item?: User) {
     Object.keys(this.dataForm.controls).forEach(key => {
       this.dataForm.get(key)?.setErrors(null);
@@ -173,7 +165,6 @@ export class UsersComponent implements OnInit {
 
     if (item) {
       const userRoles = item.roles ? item.roles.map(r => typeof r === 'string' ? r : r.name) : [];
-      this.selectedRoles.set(userRoles);
       
       this.dataForm.patchValue({
         id: item.id,
@@ -184,7 +175,6 @@ export class UsersComponent implements OnInit {
         password_confirmation: ''
       });
     } else {
-      this.selectedRoles.set([]);
       this.dataForm.reset({
         is_active: true,
         roles: [],
@@ -243,8 +233,11 @@ export class UsersComponent implements OnInit {
   }
 
   toggleStatus(item: User) {
+    if (item.id === this.currentUserId()) {
+       this.showToast('You cannot change your own status', 'error');
+       return;
+    }
     const newStatus = !item.is_active;
-    // We send only the status update
     this.dataService.update(item.id, { is_active: newStatus }).subscribe({
       next: () => {
         item.is_active = newStatus;
@@ -253,7 +246,6 @@ export class UsersComponent implements OnInit {
       error: (err) => {
         const errMsg = err.error?.message || 'Error updating status';
         this.showToast(errMsg, 'error');
-        // revert the toggle in UI visually if needed, but we didn't change item.is_active yet
       }
     });
   }
@@ -277,7 +269,6 @@ export class UsersComponent implements OnInit {
   }
 
   saveData() {
-    // If it's a new user, password is required
     const isEdit = !!this.dataForm.get('id')?.value;
     
     if (!isEdit) {
@@ -311,10 +302,8 @@ export class UsersComponent implements OnInit {
     });
 
     if (isEdit) {
-        // remove password fields entirely from update payload if empty
         delete data.password;
         delete data.password_confirmation;
-        // Don't modify is_active from this form in edit mode
         delete data.is_active;
 
         this.dataService.update(data.id, data).subscribe({
@@ -326,7 +315,7 @@ export class UsersComponent implements OnInit {
           error: (err) => this.handleServerValidationErrors(err, this.dataForm)
         });
     } else {
-        data.is_active = true; // default true for new user
+        data.is_active = true; 
         this.dataService.create(data).subscribe({
           next: () => {
             this.closeModal();

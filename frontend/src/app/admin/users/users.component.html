@@ -83,10 +83,11 @@
             </div>
           </td>
           <td class="p-4">
-            <label class="relative inline-flex items-center cursor-pointer">
+            <label *ngIf="item.id !== currentUserId()" class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" [checked]="item.is_active" (change)="toggleStatus(item)" class="sr-only peer">
               <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
             </label>
+            <span *ngIf="item.id === currentUserId()" class="px-2.5 py-1 text-xs rounded-full bg-green-100 text-green-700">Active (You)</span>
           </td>
           <td class="p-4 flex gap-3 justify-end items-center">
              <button (click)="openPasswordModal(item)" class="text-gray-500 hover:text-gray-800" title="Change Password">
@@ -95,7 +96,7 @@
              <button (click)="openModal(item)" class="text-blue-600 hover:text-blue-800" title="Edit User">
                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
              </button>
-             <button *ngIf="item.id" (click)="confirmDelete(item.id)" class="text-red-600 hover:text-red-800" title="Delete User">
+             <button *ngIf="item.id && item.id !== currentUserId()" (click)="confirmDelete(item.id)" class="text-red-600 hover:text-red-800" title="Delete User">
                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
              </button>
           </td>
@@ -163,14 +164,12 @@
           </div>
         </div>
 
-        <div class="mt-6 border-t border-gray-100 pt-6">
-          <label class="block text-sm font-medium text-gray-700 mb-4">Roles</label>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 pb-4">
-            <div *ngFor="let role of availableRoles()" class="flex items-center gap-2 p-2 rounded hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-colors">
-              <input type="checkbox" [id]="'role_' + role.name" [checked]="hasRole(role.name)" (change)="toggleRole(role.name, $event)" class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500 w-4 h-4">
-              <label [for]="'role_' + role.name" class="text-sm text-gray-600 cursor-pointer w-full">{{ role.name }}</label>
-            </div>
-          </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Roles</label>
+          <select multiple formControlName="roles" class="input-premium h-32 bg-white text-gray-700" [ngClass]="{'border-red-500': dataForm.get('roles')?.invalid && dataForm.get('roles')?.errors?.['serverError']}">
+            <option *ngFor="let role of availableRoles()" [value]="role.name">{{ role.name }}</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Hold Ctrl (or Cmd) to select multiple roles.</p>
           <div *ngIf="dataForm.get('roles')?.errors?.['serverError']" class="text-red-500 text-xs mt-1">{{ dataForm.get('roles')?.errors?.['serverError'] }}</div>
         </div>
 
