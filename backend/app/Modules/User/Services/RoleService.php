@@ -65,6 +65,10 @@ class RoleService
             throw new \Exception("You cannot delete the Super Admin role.");
         }
 
+        if ($role->users()->count() > 0) {
+            throw new \Exception("Cannot delete this role because it has users assigned to it.");
+        }
+
         return $role->delete();
     }
 }

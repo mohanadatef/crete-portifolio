@@ -241,8 +241,9 @@ export class RolesComponent implements OnInit {
           this.deleteId.set(null);
           this.showToast('Item deleted successfully', 'success');
         },
-        error: () => {
-          this.showToast('Error deleting item', 'error');
+        error: (err) => {
+          const errMsg = err.error?.message || 'Error deleting item';
+          this.showToast(errMsg, 'error');
           this.deleteId.set(null);
         }
       });
