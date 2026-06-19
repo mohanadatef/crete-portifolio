@@ -6,12 +6,21 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Modules\User\DTOs\RoleDTO;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class RoleService
 {
-    public function getAllRoles(): Collection
+    public function getAllRoles(array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return Role::with('permissions')->get();
+        $query = Role::with('permissions')->withCount('users');
+        
+        if (!empty($filters['search'])) {
+            $query->where('name', 'like', '%' . $filters['search'] . '%');
+        }
+
+        $perPage = $filters['per_page'] ?? 10;
+        
+        return $query->paginate($perPage);
     }
 
     public function getAllPermissions(): Collection

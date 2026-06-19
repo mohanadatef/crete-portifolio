@@ -20,7 +20,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'PROJECTS.TYPE' | translate }}</label>
           <select [(ngModel)]="filters.project_type_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-crete-gold focus:border-crete-gold">
             <option value="">{{ 'PROJECTS.ALL_TYPES' | translate }}</option>
-            <option *ngFor="let t of projectTypes" [value]="t.id">{{ translate.currentLang === 'ar' ? t.name_ar : t.name_en }}</option>
+            <option *ngFor="let t of projectTypes" [value]="t.id">{{ translate.currentLang() === 'ar' ? t.name_ar : t.name_en }}</option>
           </select>
         </div>
         <div>
@@ -75,7 +75,7 @@
             {{ project.status === 1 ? ('PROJECTS.AVAILABLE' | translate) : ('PROJECTS.SOLD_OUT' | translate) }}
           </div>
           <div class="absolute bottom-4 left-4 bg-black bg-opacity-50 px-3 py-1 rounded text-white text-sm">
-            {{ translate.currentLang === 'ar' ? project.project_type?.name_ar : project.project_type?.name_en || 'N/A' }}
+            {{ translate.currentLang() === 'ar' ? project.project_type?.name_ar : project.project_type?.name_en || 'N/A' }}
           </div>
         </div>
         <div class="p-6">

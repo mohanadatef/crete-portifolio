@@ -42,61 +42,61 @@ export const routes: Routes = [
                 path: 'users', 
                 loadComponent: () => import('./admin/users/users.component').then(m => m.UsersComponent),
                 canActivate: [permissionGuard],
-                data: { permission: 'manage-users' }
+                data: { permission: 'view-users' }
             },
             { 
                 path: 'roles', 
                 loadComponent: () => import('./admin/roles/roles.component').then(m => m.RolesComponent),
                 canActivate: [permissionGuard],
-                data: { permission: 'manage-roles' }
+                data: { permission: 'view-roles' }
             },
             { 
                 path: 'projects', 
                 component: ProjectsComponent,
                 canActivate: [permissionGuard],
-                data: { permission: 'manage-projects' }
+                data: { permission: 'view-projects' }
             },
             { 
                 path: 'project-types', 
                 loadComponent: () => import('./admin/project-types/project-types.component').then(m => m.ProjectTypesComponent),
                 canActivate: [permissionGuard],
-                data: { permission: 'manage-project-types' }
+                data: { permission: 'view-project-types' }
             },
             { 
                 path: 'pages', 
                 component: PagesComponent,
                 canActivate: [permissionGuard],
-                data: { permission: 'manage-pages' }
+                data: { permission: 'view-pages' }
             },
             { 
                 path: 'settings', 
                 component: SettingsComponent,
                 canActivate: [permissionGuard],
-                data: { permission: 'manage-settings' }
+                data: { permission: 'view-settings' }
             },
             { 
                 path: 'landing-pages', 
                 component: LandingPagesComponent,
                 canActivate: [permissionGuard],
-                data: { permission: 'manage-pages' }
+                data: { permission: 'view-landing-pages' }
             },
             { 
                 path: 'leads', 
                 component: LeadsComponent,
                 canActivate: [permissionGuard],
-                data: { permission: 'manage-leads' }
+                data: { permission: 'view-leads' }
             },
             { 
                 path: 'blog/categories', 
                 component: CategoriesComponent,
                 canActivate: [permissionGuard],
-                data: { permission: 'manage-blog' }
+                data: { permission: 'view-blog-categories' }
             },
             { 
                 path: 'blog/posts', 
                 component: PostsComponent,
                 canActivate: [permissionGuard],
-                data: { permission: 'manage-blog' }
+                data: { permission: 'view-blog-posts' }
             },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]

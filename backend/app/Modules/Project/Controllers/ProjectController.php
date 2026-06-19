@@ -5,6 +5,7 @@ namespace App\Modules\Project\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
+
 use Illuminate\Http\JsonResponse;
 use App\Modules\Project\DTOs\ProjectDTO;
 use App\Modules\Project\DTOs\ProjectFilterDTO;
@@ -21,6 +22,10 @@ class ProjectController extends Controller
 {
     public function __construct(private readonly ProjectService $projectService)
     {
+        $this->middleware('permission:view-projects')->only(['index', 'show']);
+        $this->middleware('permission:create-projects')->only(['store']);
+        $this->middleware('permission:edit-projects')->only(['update']);
+        $this->middleware('permission:delete-projects')->only(['destroy']);
     }
 
     public function index(Request $request): JsonResponse

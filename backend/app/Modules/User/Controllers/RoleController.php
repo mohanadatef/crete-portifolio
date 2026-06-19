@@ -5,6 +5,7 @@ namespace App\Modules\User\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
+
 use App\Modules\User\Services\RoleService;
 use App\Modules\User\DTOs\RoleDTO;
 use App\Modules\User\Resources\RoleResource;
@@ -14,14 +15,18 @@ class RoleController extends Controller
 {
     public function __construct(private readonly RoleService $roleService)
     {
+        $this->middleware('permission:view-roles')->only(['index', 'show']);
+        $this->middleware('permission:create-roles')->only(['store']);
+        $this->middleware('permission:edit-roles')->only(['update']);
+        $this->middleware('permission:delete-roles')->only(['destroy']);
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $roles = $this->roleService->getAllRoles();
+        $roles = $this->roleService->getAllRoles($request->all());
 
         return $this->successResponse(
-            RoleResource::collection($roles),
+            RoleResource::collection($roles)->response()->getData(true),
             'Roles retrieved successfully'
         );
     }

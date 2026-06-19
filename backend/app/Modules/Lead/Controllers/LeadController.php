@@ -5,6 +5,7 @@ namespace App\Modules\Lead\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
+
 use Illuminate\Http\JsonResponse;
 use App\Modules\Lead\DTOs\LeadDTO;
 use App\Modules\Lead\Services\LeadService;
@@ -18,6 +19,10 @@ class LeadController extends Controller
 {
     public function __construct(private readonly LeadService $leadService)
     {
+        $this->middleware('permission:view-leads')->only(['index', 'show']);
+        $this->middleware('permission:create-leads')->only(['store']);
+        $this->middleware('permission:edit-leads')->only(['update']);
+        $this->middleware('permission:delete-leads')->only(['destroy']);
     }
 
     public function index(): JsonResponse

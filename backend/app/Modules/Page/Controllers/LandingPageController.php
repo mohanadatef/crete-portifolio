@@ -5,6 +5,7 @@ namespace App\Modules\Page\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
+
 use Illuminate\Http\JsonResponse;
 use App\Modules\Page\DTOs\LandingPageDTO;
 use App\Modules\Page\Services\PageService;
@@ -18,6 +19,10 @@ class LandingPageController extends Controller
 {
     public function __construct(private readonly PageService $pageService)
     {
+        $this->middleware('permission:view-landing-pages')->only(['index', 'show']);
+        $this->middleware('permission:create-landing-pages')->only(['store']);
+        $this->middleware('permission:edit-landing-pages')->only(['update']);
+        $this->middleware('permission:delete-landing-pages')->only(['destroy']);
     }
 
     public function index(): JsonResponse

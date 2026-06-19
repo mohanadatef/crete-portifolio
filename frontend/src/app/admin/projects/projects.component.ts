@@ -1,41 +1,53 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, inject, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { ProjectService } from '../../core/services/project.service';
+import { ProjectTypeService } from '../../core/services/project-type.service';
+import { Project, ProjectType } from '../../core/models/models';
 
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.scss'
 })
 export class ProjectsComponent implements OnInit {
-  private http = inject(HttpClient);
-  projects: any[] = [];
-  projectTypes: any[] = [];
-  status: 'loading' | 'success' | 'error' = 'loading';
-  showModal = false;
+  private projectService = inject(ProjectService);
+  private projectTypeService = inject(ProjectTypeService);
+  private fb = inject(FormBuilder);
+  projects = signal<Project[]>([]);
+  projectTypes = signal<ProjectType[]>([]);
+  status = signal<'loading' | 'success' | 'error'>('loading');
+  showModal = signal(false);
   
-  formData: any = {
-    title_ar: '',
-    title_en: '',
-    slug: '',
-    description_ar: '',
-    description_en: '',
-    location: '',
-    project_type_id: '',
-    status: true,
-    featured: false
-  };
-  
+  projectForm: FormGroup;
   selectedFiles: File[] = [];
 
-  filters: any = {
+  filters = {
     search: '',
     project_type_id: '',
     status: ''
   };
+
+  constructor() {
+    this.projectForm = this.fb.group({
+      title_ar: ['', Validators.required],
+      title_en: ['', Validators.required],
+      slug: ['', Validators.required],
+      description_ar: [''],
+      description_en: [''],
+      location: [''],
+      project_type_id: ['', Validators.required],
+      status: [true],
+      featured: [false],
+      price: [null],
+      area: [null],
+      bedrooms: [null],
+      developer: [''],
+      delivery_date: [null]
+    });
+  }
 
   ngOnInit() {
     this.loadProjectTypes();
@@ -43,83 +55,97 @@ export class ProjectsComponent implements OnInit {
   }
 
   loadProjectTypes() {
-    this.http.get<any>('http://backend.test/api/v1/admin/project-types/active', {
-      headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
-    }).subscribe({
+    this.projectTypeService.getAll().subscribe({
       next: (res) => {
-        this.projectTypes = res.data || [];
+        this.projectTypes.set(res.data.data || []);
       },
       error: (err) => console.error('Error loading project types', err)
     });
   }
 
   loadProjects() {
-    let params: any = {};
-    if (this.filters.search) params.search = this.filters.search;
-    if (this.filters.project_type_id) params.project_type_id = this.filters.project_type_id;
-    if (this.filters.status !== '') params.status = this.filters.status;
-
-    this.http.get<any>('http://backend.test/api/v1/admin/projects', {
-        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` },
-        params: params
-    }).subscribe({
+    this.status.set('loading');
+    this.projectService.getAll(this.filters).subscribe({
       next: (response) => {
-        const paginatedData = response.data || {};
-        const projectsArray = paginatedData.data || response || [];
-        this.projects = Array.isArray(projectsArray) ? projectsArray : [];
-        this.status = 'success';
+        const paginatedData = response.data;
+        this.projects.set(paginatedData.data || []);
+        this.status.set('success');
       },
-      error: () => this.status = 'error'
+      error: () => this.status.set('error')
     });
+  }
+
+  onFilterChange(event: any, field: string) {
+    (this.filters as any)[field] = event.target.value;
+    this.loadProjects();
   }
 
   onFileSelect(event: any) {
     this.selectedFiles = Array.from(event.target.files);
   }
 
-  openModal() {
-    this.formData = {
-      title_ar: '',
-      title_en: '',
-      slug: '',
-      description_ar: '',
-      description_en: '',
-      location: '',
-      project_type_id: '',
-      status: true,
-      featured: false
-    };
+  openModal(project?: Project) {
+    if (project) {
+      this.projectForm.patchValue({
+        ...project,
+        status: !!project.status,
+        featured: !!project.featured
+      });
+    } else {
+      this.projectForm.reset({
+        status: true,
+        featured: false
+      });
+    }
     this.selectedFiles = [];
-    this.showModal = true;
+    this.showModal.set(true);
   }
 
   closeModal() {
-    this.showModal = false;
+    this.showModal.set(false);
   }
 
   saveProject() {
+    if (this.projectForm.invalid) {
+      this.projectForm.markAllAsTouched();
+      return;
+    }
+
     const data = new FormData();
-    Object.keys(this.formData).forEach(key => {
-      let value = this.formData[key];
-      if (key === 'status' || key === 'featured') {
-        value = value ? '1' : '0';
+    const formValues = this.projectForm.value;
+
+    Object.keys(formValues).forEach(key => {
+      let value = formValues[key];
+      if (value !== null && value !== undefined) {
+        if (key === 'status' || key === 'featured') {
+          value = value ? '1' : '0';
+        }
+        data.append(key, value);
       }
-      data.append(key, value);
     });
 
-    // Append multiple files
     this.selectedFiles.forEach(file => {
       data.append('images[]', file, file.name);
     });
 
-    this.http.post('http://backend.test/api/v1/admin/projects', data, {
-        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
-    }).subscribe({
+    this.projectService.create(data as any).subscribe({
       next: () => {
-        this.showModal = false;
+        this.closeModal();
         this.loadProjects();
       },
-      error: (err) => alert('Error saving project')
+      error: (err) => {
+        console.error(err);
+        alert('Error saving project. Please check the inputs.');
+      }
     });
+  }
+
+  deleteProject(id: number) {
+    if (confirm('Are you sure you want to delete this project?')) {
+      this.projectService.delete(id).subscribe({
+        next: () => this.loadProjects(),
+        error: () => alert('Error deleting project')
+      });
+    }
   }
 }

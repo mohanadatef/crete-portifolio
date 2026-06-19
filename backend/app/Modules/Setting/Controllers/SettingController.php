@@ -5,6 +5,7 @@ namespace App\Modules\Setting\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
+
 use Illuminate\Http\JsonResponse;
 use App\Modules\Setting\DTOs\SettingDTO;
 use App\Modules\Setting\Services\SettingService;
@@ -18,6 +19,8 @@ class SettingController extends Controller
 {
     public function __construct(private readonly SettingService $settingService)
     {
+        $this->middleware('permission:view-settings')->only(['index', 'show']);
+        $this->middleware('permission:edit-settings')->only(['store', 'update', 'updateBulk']);
     }
 
     public function index(): JsonResponse

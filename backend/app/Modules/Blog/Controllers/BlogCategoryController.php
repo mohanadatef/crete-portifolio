@@ -5,6 +5,7 @@ namespace App\Modules\Blog\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
+
 use Illuminate\Http\JsonResponse;
 use App\Modules\Blog\DTOs\BlogCategoryDTO;
 use App\Services\BlogService;
@@ -18,6 +19,10 @@ class BlogCategoryController extends Controller
 {
     public function __construct(private readonly BlogService $blogService)
     {
+        $this->middleware('permission:view-blog-categories')->only(['index', 'show']);
+        $this->middleware('permission:create-blog-categories')->only(['store']);
+        $this->middleware('permission:edit-blog-categories')->only(['update']);
+        $this->middleware('permission:delete-blog-categories')->only(['destroy']);
     }
 
     public function index(): JsonResponse

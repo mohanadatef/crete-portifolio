@@ -5,6 +5,7 @@ namespace App\Modules\Blog\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
+
 use Illuminate\Http\JsonResponse;
 use App\Modules\Blog\DTOs\BlogPostDTO;
 use App\Services\BlogService;
@@ -18,6 +19,10 @@ class BlogPostController extends Controller
 {
     public function __construct(private readonly BlogService $blogService)
     {
+        $this->middleware('permission:view-blog-posts')->only(['index', 'show']);
+        $this->middleware('permission:create-blog-posts')->only(['store']);
+        $this->middleware('permission:edit-blog-posts')->only(['update']);
+        $this->middleware('permission:delete-blog-posts')->only(['destroy']);
     }
 
     public function index(): JsonResponse

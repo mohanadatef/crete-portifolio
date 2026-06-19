@@ -50,12 +50,12 @@ class ProjectService
 
     public function getProjectBySlug(string $slug): Project
     {
-        return Project::where('slug', $slug)->where('status', 1)->firstOrFail();
+        return Project::with(['projectImages', 'projectType'])->where('slug', $slug)->where('status', 1)->firstOrFail();
     }
 
     public function getProjectById(int $id): Project
     {
-        return Project::findOrFail($id);
+        return Project::with(['projectImages', 'projectType'])->findOrFail($id);
     }
 
     public function createProject(array $data): Project

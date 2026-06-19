@@ -5,6 +5,7 @@ namespace App\Modules\User\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
+
 use App\Modules\User\Services\UserService;
 use App\Modules\User\DTOs\UserDTO;
 use App\Modules\User\Resources\UserResource;
@@ -16,6 +17,10 @@ class UserController extends Controller
 {
     public function __construct(private readonly UserService $userService)
     {
+        $this->middleware('permission:view-users')->only(['index', 'show']);
+        $this->middleware('permission:create-users')->only(['store']);
+        $this->middleware('permission:edit-users')->only(['update']);
+        $this->middleware('permission:delete-users')->only(['destroy']);
     }
 
     public function index(Request $request): JsonResponse

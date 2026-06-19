@@ -1,161 +1,232 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RoleService, Role, Permission } from '../../services/role.service';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HasPermissionDirective } from '../../directives/has-permission.directive';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { RoleService } from '../../core/services/role.service';
+import { Role } from '../../core/models/models';
 
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HasPermissionDirective],
-  template: `
-    <div class="space-y-6">
-      <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold">Roles & Permissions</h1>
-        <button (click)="openForm()" class="bg-crete-gold hover:bg-yellow-600 text-white px-4 py-2 rounded">Add Role</button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div *ngFor="let role of roles" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative">
-          <h2 class="text-xl font-bold mb-4 flex items-center justify-between">
-            {{ role.name }}
-            <div class="space-x-2" *ngIf="role.name !== 'admin'">
-              <button (click)="editRole(role)" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
-              <button (click)="deleteRole(role.id)" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
-            </div>
-            <span *ngIf="role.name === 'admin'" class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">System Role</span>
-          </h2>
-          
-          <div class="space-y-2">
-            <span *ngFor="let perm of role.permissions" class="inline-block bg-green-50 text-green-700 text-xs px-2 py-1 rounded border border-green-100 mr-2 mb-2">
-              {{ perm }}
-            </span>
-            <span *ngIf="!role.permissions?.length" class="text-gray-400 text-sm italic">No permissions assigned</span>
-            <span *ngIf="role.name === 'admin'" class="inline-block bg-green-50 text-green-700 text-xs px-2 py-1 rounded border border-green-100 mr-2 mb-2">
-              * All Permissions
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Role Form Modal -->
-      <div *ngIf="showForm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-xl w-[600px] max-h-[90vh] overflow-y-auto">
-          <h2 class="text-xl font-bold mb-4">{{ selectedRole ? 'Edit Role' : 'Add Role' }}</h2>
-          <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
-            <div class="mb-6">
-              <label class="block text-sm font-medium mb-1">Role Name</label>
-              <input type="text" formControlName="name" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500" />
-            </div>
-            
-            <div class="mb-6">
-              <label class="block text-sm font-medium mb-3">Permissions</label>
-              <div class="grid grid-cols-2 gap-3">
-                <label *ngFor="let perm of allPermissions" class="flex items-center space-x-2 cursor-pointer p-2 hover:bg-gray-50 rounded border">
-                  <input type="checkbox" [value]="perm" (change)="onPermissionChange($event, perm)" [checked]="isPermissionSelected(perm)" class="rounded text-blue-600" />
-                  <span class="text-sm">{{ perm }}</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="flex justify-end space-x-2 pt-4 border-t">
-              <button type="button" (click)="closeForm()" class="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded">Cancel</button>
-              <button type="submit" [disabled]="roleForm.invalid" class="px-4 py-2 bg-crete-gold text-white rounded hover:bg-yellow-600 disabled:opacity-50">Save Role</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  `
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  templateUrl: './roles.component.html'
 })
 export class RolesComponent implements OnInit {
-  roles: Role[] = [];
-  allPermissions: string[] = [];
-  showForm = false;
-  selectedRole: Role | null = null;
-  roleForm: FormGroup;
-  selectedPermissions: Set<string> = new Set();
+  private dataService = inject(RoleService);
+  private fb = inject(FormBuilder);
 
-  constructor(
-    private roleService: RoleService,
-    private fb: FormBuilder
-  ) {
-    this.roleForm = this.fb.group({
+  roles = signal<Role[]>([]);
+  allPermissions = signal<string[]>([]);
+  selectedPermissions = signal<string[]>([]);
+  
+  status = signal<'loading' | 'success' | 'error'>('loading');
+  showModal = signal(false);
+  
+  dataForm: FormGroup;
+
+  filters = {
+    search: '',
+    status: '',
+    page: 1,
+    per_page: 10
+  };
+
+  pagination = signal({
+    current_page: 1,
+    last_page: 1,
+    per_page: 10,
+    total: 0
+  });
+
+  searchSubject = new Subject<string>();
+  
+  toasts = signal<{id: number, message: string, type: 'success' | 'error'}[]>([]);
+  toastIdCounter = 0;
+
+  showToast(message: string, type: 'success' | 'error' = 'success') {
+    const id = ++this.toastIdCounter;
+    this.toasts.update(t => [...t, { id, message, type }]);
+    setTimeout(() => {
+      this.toasts.update(t => t.filter(toast => toast.id !== id));
+    }, 4000);
+  }
+
+  constructor() {
+    this.dataForm = this.fb.group({
+      id: [null],
       name: ['', Validators.required],
+    });
+
+    this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe((searchValue) => {
+      this.filters.search = searchValue;
+      this.filters.page = 1;
+      this.loadData();
     });
   }
 
-  ngOnInit(): void {
-    this.loadRoles();
+  onSearch(event: any) {
+    this.searchSubject.next(event.target.value);
+  }
+
+  ngOnInit() {
+    this.loadData();
     this.loadPermissions();
   }
 
-  loadRoles() {
-    this.roleService.getRoles().subscribe((res: any) => {
-      this.roles = res.data;
+  loadData() {
+    this.status.set('loading');
+    this.dataService.getAll(this.filters).subscribe({
+      next: (response) => {
+        const paginatedData: any = response.data;
+        this.roles.set(paginatedData.data || []);
+        
+        if (paginatedData.meta) {
+          this.pagination.set({
+            current_page: paginatedData.meta.current_page,
+            last_page: paginatedData.meta.last_page,
+            per_page: paginatedData.meta.per_page,
+            total: paginatedData.meta.total
+          });
+        }
+        
+        this.status.set('success');
+      },
+      error: () => this.status.set('error')
     });
+  }
+
+  changePage(page: number) {
+    if (page >= 1 && page <= this.pagination().last_page) {
+      this.filters.page = page;
+      this.loadData();
+    }
+  }
+
+  changePerPage(event: any) {
+    this.filters.per_page = parseInt(event.target.value, 10);
+    this.filters.page = 1;
+    this.loadData();
   }
 
   loadPermissions() {
-    this.roleService.getPermissions().subscribe((res: any) => {
-      this.allPermissions = res.data;
+    this.dataService.getPermissions().subscribe({
+      next: (res) => {
+        this.allPermissions.set(res.data || []);
+      }
     });
   }
 
-  openForm() {
-    this.selectedRole = null;
-    this.selectedPermissions.clear();
-    this.roleForm.reset();
-    this.showForm = true;
-  }
-
-  editRole(role: Role) {
-    if (role.name === 'admin') return;
-    this.selectedRole = role;
-    this.selectedPermissions = new Set(role.permissions || []);
-    this.roleForm.patchValue({ name: role.name });
-    this.showForm = true;
-  }
-
-  closeForm() {
-    this.showForm = false;
-  }
-
-  onPermissionChange(event: any, permission: string) {
-    if (event.target.checked) {
-      this.selectedPermissions.add(permission);
-    } else {
-      this.selectedPermissions.delete(permission);
-    }
-  }
-
-  isPermissionSelected(permission: string): boolean {
-    return this.selectedPermissions.has(permission);
-  }
-
-  deleteRole(id: number) {
-    if (confirm('Are you sure you want to delete this role?')) {
-      this.roleService.deleteRole(id).subscribe(() => this.loadRoles());
-    }
-  }
-
-  onSubmit() {
-    if (this.roleForm.invalid) return;
-
-    const val = {
-      name: this.roleForm.value.name,
-      permissions: Array.from(this.selectedPermissions)
-    };
-
-    if (this.selectedRole) {
-      this.roleService.updateRole(this.selectedRole.id, val).subscribe(() => {
-        this.loadRoles();
-        this.closeForm();
+  openModal(item?: Role) {
+    if (item) {
+      this.dataForm.patchValue({
+        id: item.id,
+        name: item.name
       });
+      // Extract permission names (backend returns array of strings, not objects)
+      const perms = item.permissions ? (item.permissions as any as string[]) : [];
+      this.selectedPermissions.set([...perms]);
     } else {
-      this.roleService.createRole(val).subscribe(() => {
-        this.loadRoles();
-        this.closeForm();
+      this.dataForm.reset();
+      this.selectedPermissions.set([]);
+    }
+    this.showModal.set(true);
+  }
+
+  closeModal() {
+    this.showModal.set(false);
+  }
+
+  togglePermission(perm: string, event: any) {
+    const isChecked = event.target.checked;
+    let current = [...this.selectedPermissions()];
+    if (isChecked) {
+      if (!current.includes(perm)) current.push(perm);
+    } else {
+      current = current.filter(p => p !== perm);
+    }
+    this.selectedPermissions.set(current);
+  }
+
+  hasPermission(perm: string): boolean {
+    return this.selectedPermissions().includes(perm);
+  }
+
+  saveData() {
+    if (this.dataForm.invalid) {
+      this.dataForm.markAllAsTouched();
+      return;
+    }
+
+    const formValues = this.dataForm.value;
+    const data: any = {};
+    Object.keys(formValues).forEach(key => {
+      if (formValues[key] !== null && formValues[key] !== undefined && formValues[key] !== '') {
+        data[key] = formValues[key];
+      }
+    });
+    
+    // Attach permissions array to payload
+    data.permissions = this.selectedPermissions();
+
+    
+    if (data.id) {
+        this.dataService.update(data.id, data).subscribe({
+          next: () => {
+            this.closeModal();
+            this.loadData();
+            this.showToast('Role updated successfully', 'success');
+          },
+          error: (err) => {
+            console.error(err);
+            if (err.status === 422 && err.error && err.error.errors) {
+              const validationErrors = err.error.errors;
+              Object.keys(validationErrors).forEach(key => {
+                const control = this.dataForm.get(key);
+                if (control) {
+                  control.setErrors({ serverError: validationErrors[key][0] });
+                }
+              });
+              this.showToast('Validation error, please check the inputs', 'error');
+            } else {
+              this.showToast('An unexpected error occurred.', 'error');
+            }
+          }
+        });
+    } else {
+        this.dataService.create(data).subscribe({
+          next: () => {
+            this.closeModal();
+            this.loadData();
+            this.showToast('Role created successfully', 'success');
+          },
+          error: (err) => {
+            console.error(err);
+            if (err.status === 422 && err.error && err.error.errors) {
+              const validationErrors = err.error.errors;
+              Object.keys(validationErrors).forEach(key => {
+                const control = this.dataForm.get(key);
+                if (control) {
+                  control.setErrors({ serverError: validationErrors[key][0] });
+                }
+              });
+              this.showToast('Validation error, please check the inputs', 'error');
+            } else {
+              this.showToast('An unexpected error occurred.', 'error');
+            }
+          }
+        });
+    }
+  }
+
+  deleteData(id: number) {
+    if (confirm('Are you sure you want to delete this item?')) {
+      this.dataService.delete(id).subscribe({
+        next: () => this.loadData(),
+        error: () => alert('Error deleting item')
       });
     }
   }

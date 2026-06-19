@@ -10,12 +10,17 @@ use App\Modules\ProjectType\Resources\ProjectTypeResource;
 use App\Modules\ProjectType\Services\ProjectTypeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+
 use App\Modules\ProjectType\Models\ProjectType;
 
 class ProjectTypeController extends Controller
 {
     public function __construct(private readonly ProjectTypeService $projectTypeService)
     {
+        $this->middleware('permission:view-project-types')->only(['index', 'show']);
+        $this->middleware('permission:create-project-types')->only(['store']);
+        $this->middleware('permission:edit-project-types')->only(['update']);
+        $this->middleware('permission:delete-project-types')->only(['destroy']);
     }
 
     public function index(Request $request): JsonResponse
