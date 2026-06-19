@@ -29,6 +29,11 @@ class UserService
             });
         }
 
+        if ($filter->status !== null && $filter->status !== '') {
+            $isActive = filter_var($filter->status, FILTER_VALIDATE_BOOLEAN);
+            $query->where('is_active', $isActive);
+        }
+
         return $query->paginate($filter->perPage, ['*'], 'page', $filter->page);
     }
 
@@ -52,6 +57,10 @@ class UserService
     {
         $user = $this->getUserById($id);
         
+        if ($user->id === auth()->id() && !$dto->is_active && $user->is_active) {
+            throw new Exception("You cannot deactivate your own account.");
+        }
+
         $user->update($dto->toArray());
 
         if (isset($dto->roles)) {

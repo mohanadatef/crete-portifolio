@@ -7,6 +7,7 @@ class UserFilterDTO
     public function __construct(
         public readonly ?string $search = null,
         public readonly ?string $role = null,
+        public readonly ?string $status = null,
         public readonly int $perPage = 15,
         public readonly int $page = 1
     ) {
@@ -17,6 +18,7 @@ class UserFilterDTO
         return new self(
             search: $request->input('search'),
             role: $request->input('role'),
+            status: $request->input('status'),
             perPage: (int) $request->input('per_page', 15),
             page: (int) $request->input('page', 1)
         );

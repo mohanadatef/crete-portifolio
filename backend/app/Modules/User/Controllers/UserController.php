@@ -77,12 +77,17 @@ class UserController extends Controller
         ]);
 
         $dto = UserDTO::fromRequest($request);
-        $user = $this->userService->updateUser($id, $dto);
-
-        return $this->successResponse(
-            new UserResource($user),
-            'User updated successfully'
-        );
+        
+        try {
+            $user = $this->userService->updateUser($id, $dto);
+    
+            return $this->successResponse(
+                new UserResource($user),
+                'User updated successfully'
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 400);
+        }
     }
 
     public function destroy(int $id): JsonResponse
