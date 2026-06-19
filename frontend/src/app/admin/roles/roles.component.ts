@@ -222,11 +222,29 @@ export class RolesComponent implements OnInit {
     }
   }
 
-  deleteData(id: number) {
-    if (confirm('Are you sure you want to delete this item?')) {
+  deleteId = signal<number | null>(null);
+
+  confirmDelete(id: number) {
+    this.deleteId.set(id);
+  }
+
+  cancelDelete() {
+    this.deleteId.set(null);
+  }
+
+  executeDelete() {
+    const id = this.deleteId();
+    if (id) {
       this.dataService.delete(id).subscribe({
-        next: () => this.loadData(),
-        error: () => alert('Error deleting item')
+        next: () => {
+          this.loadData();
+          this.deleteId.set(null);
+          this.showToast('Item deleted successfully', 'success');
+        },
+        error: () => {
+          this.showToast('Error deleting item', 'error');
+          this.deleteId.set(null);
+        }
       });
     }
   }
