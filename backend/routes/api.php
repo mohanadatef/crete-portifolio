@@ -34,6 +34,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/public/leads', [LeadController::class, 'store'])->middleware('throttle:5,1'); // Public form submission
 
     Route::get('/public/landing-pages/{slug}', [LandingPageController::class, 'showPublic']);
+    Route::post('/public/landing-pages/{slug}/submit', [LandingPageController::class, 'submitForm'])->middleware('throttle:5,1');
 
     Route::get('/public/blog/categories', [BlogCategoryController::class, 'indexPublic']);
     Route::get('/public/blog/posts', [BlogPostController::class, 'indexPublic']);

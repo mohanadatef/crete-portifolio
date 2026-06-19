@@ -45,19 +45,38 @@ class PageService
 
     // --- Landing Pages ---
 
-    public function getLandingPagesPaginator(int $perPage = 15): LengthAwarePaginator
+    public function getLandingPagesPaginator(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
-        return LandingPage::latest()->paginate($perPage);
+        $query = LandingPage::query()->with('project');
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('title_en', 'like', "%{$search}%")
+                  ->orWhere('title_ar', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%");
+            });
+        }
+
+        if (isset($filters['status']) && $filters['status'] !== '') {
+            $query->where('status', filter_var($filters['status'], FILTER_VALIDATE_BOOLEAN));
+        }
+
+        if (!empty($filters['project_id'])) {
+            $query->where('project_id', $filters['project_id']);
+        }
+
+        return $query->latest()->paginate($perPage);
     }
 
     public function getLandingPageBySlug(string $slug): LandingPage
     {
-        return LandingPage::where('slug', $slug)->where('status', 1)->firstOrFail();
+        return LandingPage::with('project')->where('slug', $slug)->where('status', 1)->firstOrFail();
     }
 
     public function getLandingPageById(int $id): LandingPage
     {
-        return LandingPage::findOrFail($id);
+        return LandingPage::with('project')->findOrFail($id);
     }
 
     public function createLandingPage(array $data): LandingPage
@@ -74,6 +93,12 @@ class PageService
 
     public function deleteLandingPage(int $id): bool
     {
-        return LandingPage::destroy($id) > 0;
+        $page = $this->getLandingPageById($id);
+        
+        if ($page->leads()->count() > 0) {
+            throw new \Exception('Cannot delete a landing page that has leads.');
+        }
+
+        return $page->delete();
     }
 }

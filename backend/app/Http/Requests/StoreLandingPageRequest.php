@@ -29,7 +29,10 @@ class StoreLandingPageRequest extends FormRequest
             'title_en' => 'required|string',
             'content_ar' => 'nullable|string',
             'content_en' => 'nullable|string',
-            'status' => 'boolean'
+            'status' => 'boolean',
+            'project_id' => 'nullable|exists:projects,id',
+            'layout' => 'nullable|array',
+            'form_schema' => 'nullable|array'
         ];
     }
 }

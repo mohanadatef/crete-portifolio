@@ -1,8 +1,30 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule, FormArray } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { LandingPageService } from '../../core/services/landing-page.service';
-import { LandingPage } from '../../core/models/models';
+import { ProjectService } from '../../core/services/project.service';
+import { LandingPage, Project } from '../../core/models/models';
+
+interface LayoutBlock {
+  type: 'text' | 'image' | 'video' | 'form';
+  content?: string;
+  url?: string;
+}
+
+interface LayoutRow {
+  columns: LayoutBlock[];
+}
+
+interface FormField {
+  name: string;
+  label_en: string;
+  label_ar: string;
+  type: 'text' | 'email' | 'phone' | 'textarea' | 'select' | 'radio';
+  required: boolean;
+  options?: string;
+}
 
 @Component({
   selector: 'app-landing-pages',
@@ -12,18 +34,49 @@ import { LandingPage } from '../../core/models/models';
 })
 export class LandingPagesComponent implements OnInit {
   private dataService = inject(LandingPageService);
+  private projectService = inject(ProjectService);
   private fb = inject(FormBuilder);
 
   landingPages = signal<LandingPage[]>([]);
+  projects = signal<Project[]>([]);
   status = signal<'loading' | 'success' | 'error'>('loading');
   showModal = signal(false);
+  activeTab = signal<'general' | 'layout' | 'form'>('general');
+  
+  // Layout Builder State
+  layoutRows = signal<LayoutRow[]>([]);
+  
+  // Form Builder State
+  formFields = signal<FormField[]>([]);
   
   dataForm: FormGroup;
 
   filters = {
     search: '',
-    status: ''
+    status: '',
+    page: 1,
+    per_page: 10
   };
+
+  pagination = signal({
+    current_page: 1,
+    last_page: 1,
+    per_page: 10,
+    total: 0
+  });
+
+  searchSubject = new Subject<string>();
+
+  toasts = signal<{id: number, message: string, type: 'success' | 'error'}[]>([]);
+  toastIdCounter = 0;
+
+  showToast(message: string, type: 'success' | 'error' = 'success') {
+    const id = ++this.toastIdCounter;
+    this.toasts.update(t => [...t, { id, message, type }]);
+    setTimeout(() => {
+      this.toasts.update(t => t.filter(toast => toast.id !== id));
+    }, 4000);
+  }
 
   constructor() {
     this.dataForm = this.fb.group({
@@ -31,15 +84,52 @@ export class LandingPagesComponent implements OnInit {
       title_ar: ['', Validators.required],
       title_en: ['', Validators.required],
       slug: ['', Validators.required],
-      content_ar: ['', Validators.required],
-      content_en: ['', Validators.required],
+      content_ar: [''],
+      content_en: [''],
+      project_id: [null],
       status: [true],
+    });
 
+    this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe((searchValue) => {
+      this.filters.search = searchValue;
+      this.filters.page = 1;
+      this.loadData();
     });
   }
 
   ngOnInit() {
     this.loadData();
+    this.loadProjects();
+  }
+
+  loadProjects() {
+    this.projectService.getAll({ per_page: 1000 }).subscribe({
+      next: (res) => {
+        const p = res.data?.data || res.data || [];
+        this.projects.set(p);
+      }
+    });
+  }
+
+  onSearch(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value);
+  }
+
+  onPerPageChange(event: Event) {
+    this.filters.per_page = Number((event.target as HTMLSelectElement).value);
+    this.filters.page = 1;
+    this.loadData();
+  }
+
+  changePage(page: number) {
+    if (page >= 1 && page <= this.pagination().last_page) {
+      this.filters.page = page;
+      this.loadData();
+    }
   }
 
   loadData() {
@@ -47,7 +137,15 @@ export class LandingPagesComponent implements OnInit {
     this.dataService.getAll(this.filters).subscribe({
       next: (response) => {
         const paginatedData = response.data;
-        this.landingPages.set(paginatedData.data || []);
+        this.landingPages.set(paginatedData.data || paginatedData || []);
+        if (paginatedData.current_page) {
+          this.pagination.set({
+            current_page: paginatedData.current_page,
+            last_page: paginatedData.last_page,
+            per_page: paginatedData.per_page,
+            total: paginatedData.total
+          });
+        }
         this.status.set('success');
       },
       error: () => this.status.set('error')
@@ -55,15 +153,22 @@ export class LandingPagesComponent implements OnInit {
   }
 
   openModal(item?: LandingPage) {
+    this.activeTab.set('general');
+    
     if (item) {
       this.dataForm.patchValue({
         ...item,
         status: !!item.status
       });
+      this.layoutRows.set(item.layout ? JSON.parse(JSON.stringify(item.layout)) : []);
+      this.formFields.set(item.form_schema ? JSON.parse(JSON.stringify(item.form_schema)) : []);
     } else {
       this.dataForm.reset({
-        status: true
+        status: true,
+        project_id: ''
       });
+      this.layoutRows.set([]);
+      this.formFields.set([]);
     }
     this.showModal.set(true);
   }
@@ -72,9 +177,47 @@ export class LandingPagesComponent implements OnInit {
     this.showModal.set(false);
   }
 
+  // Layout Builder Methods
+  addRow(columnsCount: number) {
+    const cols: LayoutBlock[] = [];
+    for(let i=0; i<columnsCount; i++) {
+       cols.push({ type: 'text', content: '' });
+    }
+    this.layoutRows.update(rows => [...rows, { columns: cols }]);
+  }
+
+  removeRow(index: number) {
+    this.layoutRows.update(rows => {
+      const newRows = [...rows];
+      newRows.splice(index, 1);
+      return newRows;
+    });
+  }
+
+  // Form Builder Methods
+  addField() {
+    this.formFields.update(f => [...f, {
+       name: 'field_' + Math.floor(Math.random()*1000),
+       label_en: 'New Field',
+       label_ar: 'حقل جديد',
+       type: 'text',
+       required: false,
+       options: ''
+    }]);
+  }
+
+  removeField(index: number) {
+    this.formFields.update(f => {
+       const newF = [...f];
+       newF.splice(index, 1);
+       return newF;
+    });
+  }
+
   saveData() {
     if (this.dataForm.invalid) {
       this.dataForm.markAllAsTouched();
+      this.showToast('Please check the general info form for errors.', 'error');
       return;
     }
 
@@ -85,30 +228,50 @@ export class LandingPagesComponent implements OnInit {
         data[key] = formValues[key];
       }
     });
-    
-    // For simplicity, always create or update based on if slug is present in edit, but let's assume create for now 
-    // since we don't track ID in the form. Let's add id to form or track it.
-    // Actually, backend usually requires PUT for update. We need to track ID.
-    const isEditing = !!data.id; // wait, id is not in form. 
 
-    // Better implementation:
-    this.dataService.create(data).subscribe({
-      next: () => {
-        this.closeModal();
-        this.loadData();
-      },
-      error: (err) => {
-        console.error(err);
-        alert('Error saving data.');
-      }
-    });
+    data.layout = this.layoutRows();
+    data.form_schema = this.formFields();
+    
+    const isEditing = !!data.id;
+
+    if (isEditing) {
+      this.dataService.update(data.id, data).subscribe({
+        next: () => {
+          this.closeModal();
+          this.loadData();
+          this.showToast('Landing Page updated successfully', 'success');
+        },
+        error: (err) => {
+          const msg = err.error?.message || 'Error saving data';
+          this.showToast(msg, 'error');
+        }
+      });
+    } else {
+      this.dataService.create(data).subscribe({
+        next: () => {
+          this.closeModal();
+          this.loadData();
+          this.showToast('Landing Page created successfully', 'success');
+        },
+        error: (err) => {
+          const msg = err.error?.message || 'Error saving data';
+          this.showToast(msg, 'error');
+        }
+      });
+    }
   }
 
   deleteData(id: number) {
-    if (confirm('Are you sure you want to delete this item?')) {
+    if (confirm('Are you sure you want to delete this landing page?')) {
       this.dataService.delete(id).subscribe({
-        next: () => this.loadData(),
-        error: () => alert('Error deleting item')
+        next: () => {
+          this.loadData();
+          this.showToast('Landing Page deleted successfully', 'success');
+        },
+        error: (err) => {
+          const msg = err.error?.message || 'Error deleting item';
+          this.showToast(msg, 'error');
+        }
       });
     }
   }

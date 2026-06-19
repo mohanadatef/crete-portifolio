@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use App\Modules\Page\Models\LandingPage;
 
 class Lead extends Model
 {
@@ -18,6 +19,7 @@ class Lead extends Model
             ->logAll()
             ->logOnlyDirty();
     }
+    
     protected $fillable = [
         'name',
         'email',
@@ -28,6 +30,17 @@ class Lead extends Model
         'utm_source',
         'utm_medium',
         'utm_campaign',
-        'utm_content'
+        'utm_content',
+        'landing_page_id',
+        'form_data'
     ];
+
+    protected $casts = [
+        'form_data' => 'array'
+    ];
+
+    public function landingPage()
+    {
+        return $this->belongsTo(LandingPage::class);
+    }
 }

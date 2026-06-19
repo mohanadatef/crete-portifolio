@@ -25,10 +25,13 @@ class LandingPageController extends Controller
         $this->middleware('permission:delete-landing-pages')->only(['destroy']);
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $pages = $this->pageService->getLandingPagesPaginator(15);
+            $filters = $request->only(['search', 'status', 'project_id']);
+            $perPage = $request->input('per_page', 10);
+            
+            $pages = $this->pageService->getLandingPagesPaginator($filters, $perPage);
             return $this->successResponse(
                 LandingPageResource::collection($pages)->response()->getData(true),
                 'Landing Pages retrieved successfully'
@@ -57,6 +60,65 @@ class LandingPageController extends Controller
             return $this->successResponse(new LandingPageResource($page), 'Landing Page retrieved successfully');
         } catch (Exception $e) {
             return $this->errorResponse('Landing Page not found', 404);
+        }
+    }
+
+    #[OA\Post(
+        path: "/public/landing-pages/{slug}/submit",
+        summary: "Submit a dynamic form for a landing page",
+        tags: ["Public Landing Pages"],
+        parameters: [
+            new OA\Parameter(name: "slug", in: "path", required: true, description: "Landing page slug", schema: new OA\Schema(type: "string"))
+        ],
+        responses: [
+            new OA\Response(response: 201, description: "Lead created successfully"),
+            new OA\Response(response: 404, description: "Landing Page not found"),
+            new OA\Response(response: 422, description: "Validation Error")
+        ]
+    )]
+    public function submitForm(Request $request, string $slug): JsonResponse
+    {
+        try {
+            $page = $this->pageService->getLandingPageBySlug($slug);
+            
+            // Build dynamic validation rules based on form_schema
+            $schema = $page->form_schema ?? [];
+            $rules = [];
+            foreach ($schema as $field) {
+                $fieldRules = [];
+                if (!empty($field['required'])) {
+                    $fieldRules[] = 'required';
+                } else {
+                    $fieldRules[] = 'nullable';
+                }
+                
+                if ($field['type'] === 'email') {
+                    $fieldRules[] = 'email';
+                }
+                
+                $rules[$field['name']] = implode('|', $fieldRules);
+            }
+            
+            $validatedData = $request->validate($rules);
+            
+            // Map standard fields if they exist, otherwise keep them in form_data
+            $leadData = [
+                'landing_page_id' => $page->id,
+                'name' => $validatedData['name'] ?? null,
+                'email' => $validatedData['email'] ?? null,
+                'phone' => $validatedData['phone'] ?? null,
+                'form_data' => $validatedData, // store everything in form_data just in case
+                'project_id' => $page->project_id, // inherit project from landing page
+            ];
+            
+            $lead = \App\Modules\Lead\Models\Lead::create($leadData);
+            
+            return $this->successResponse($lead, 'Form submitted successfully', 201);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => 'Validation error', 'errors' => $e->errors()], 422);
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 

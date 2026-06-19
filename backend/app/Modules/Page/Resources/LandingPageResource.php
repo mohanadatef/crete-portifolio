@@ -25,6 +25,10 @@ class LandingPageResource extends JsonResource
             'status' => (bool)$this->status,
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
+            'project_id' => $this->project_id,
+            'project' => $this->whenLoaded('project'),
+            'layout' => $this->layout,
+            'form_schema' => $this->form_schema,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

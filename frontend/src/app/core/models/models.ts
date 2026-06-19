@@ -121,6 +121,10 @@ export interface LandingPage {
   content_ar?: string;
   content_en?: string;
   status: boolean;
+  project_id?: number;
+  project?: Project;
+  layout?: any[];
+  form_schema?: any[];
 }
 
 export interface Setting {

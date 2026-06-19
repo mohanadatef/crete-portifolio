@@ -1,90 +1,286 @@
-<div class="glass-panel overflow-hidden">
-  <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white/50">
+<div class="glass-panel overflow-hidden flex flex-col h-full">
+  <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white/50 shrink-0">
     <div>
-      <h2 class="text-xl font-bold text-gray-800">LandingPages Management</h2>
-      <p class="text-sm text-gray-500 mt-1">Manage LandingPages (Add, Edit, Delete)</p>
+      <h2 class="text-xl font-bold text-gray-800">Landing Pages</h2>
+      <p class="text-sm text-gray-500 mt-1">Manage marketing landing pages</p>
     </div>
-    <button (click)="openModal()" class="btn-primary flex items-center gap-2">
-      Add LandingPage
-    </button>
+    <div class="flex gap-3">
+      <div class="relative">
+        <input type="text" placeholder="Search..." (input)="onSearch($event)" 
+               class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-shadow w-64">
+        <i class="fi fi-rr-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+      </div>
+      <button (click)="openModal()" class="btn-primary">
+        <i class="fi fi-rr-plus"></i> Add New
+      </button>
+    </div>
   </div>
 
-  <div class="p-4 bg-white/30 border-b border-gray-100 flex gap-4">
-    <input type="text" [(ngModel)]="filters.search" placeholder="Search..." class="input-premium w-1/3">
-    <button (click)="loadData()" class="btn-secondary">Apply Filters</button>
-  </div>
+  <div class="flex-1 overflow-auto p-6">
+    <div *ngIf="status() === 'loading'" class="flex justify-center items-center h-32">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
 
-  <div class="overflow-x-auto">
-    <table class="w-full text-left border-collapse">
-      <thead>
-        <tr>
-          <th>Title / Name</th>
-          <th>Status</th>
-          <th class="text-right">Actions</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100">
-        <tr *ngFor="let item of landingPages()">
-          <td class="p-4 font-medium text-gray-800">
-             {{ item.title_en }} ({{ item.title_ar }})
-          </td>
-          <td class="p-4">
-            <span *ngIf="item.status" class="px-2.5 py-1 text-xs rounded-full bg-green-100 text-green-700">Active</span>
-            <span *ngIf="!item.status" class="px-2.5 py-1 text-xs rounded-full bg-gray-100 text-gray-700">Draft</span>
-          </td>
-          <td class="p-4 flex gap-2 justify-end">
-             <button (click)="openModal(item)" class="text-blue-600 hover:text-blue-800">Edit</button>
-             <button (click)="deleteData(item.id)" class="text-red-600 hover:text-red-800">Delete</button>
-          </td>
-        </tr>
-        <tr *ngIf="landingPages().length === 0">
-           <td colspan="3" class="p-8 text-center text-gray-500">No data found.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div *ngIf="status() === 'error'" class="text-red-500 text-center py-8">
+      Error loading landing pages. Please try again.
+    </div>
+
+    <div *ngIf="status() === 'success'" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-50/50 text-gray-500 text-xs uppercase tracking-wider">
+            <th class="p-4 font-medium">Title (EN)</th>
+            <th class="p-4 font-medium">Title (AR)</th>
+            <th class="p-4 font-medium">Slug</th>
+            <th class="p-4 font-medium">Project</th>
+            <th class="p-4 font-medium">Status</th>
+            <th class="p-4 font-medium text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="text-sm divide-y divide-gray-100">
+          <tr *ngFor="let item of landingPages()" class="hover:bg-gray-50/50 transition-colors">
+            <td class="p-4 text-gray-800 font-medium">{{item.title_en}}</td>
+            <td class="p-4 text-gray-600">{{item.title_ar}}</td>
+            <td class="p-4 text-gray-500">{{item.slug}}</td>
+            <td class="p-4 text-gray-500">{{item.project?.title_en || '-'}}</td>
+            <td class="p-4">
+              <span [class]="item.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" class="px-2 py-1 rounded-full text-xs font-medium">
+                {{item.status ? 'Active' : 'Inactive'}}
+              </span>
+            </td>
+            <td class="p-4 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button (click)="openModal(item)" class="p-2 text-gray-400 hover:text-primary transition-colors rounded-lg hover:bg-primary/5" title="Edit">
+                  <i class="fi fi-rr-edit"></i>
+                </button>
+                <button (click)="deleteData(item.id)" class="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50" title="Delete">
+                  <i class="fi fi-rr-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="landingPages().length === 0">
+            <td colspan="6" class="p-8 text-center text-gray-500">
+              No landing pages found. Click "Add New" to create one.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/30" *ngIf="pagination().total > 0">
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">Showing</span>
+          <select class="border border-gray-200 rounded px-2 py-1 text-sm focus:outline-none" (change)="onPerPageChange($event)" [value]="pagination().per_page">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+          <span class="text-sm text-gray-500">per page</span>
+        </div>
+        
+        <div class="flex items-center gap-1">
+          <button (click)="changePage(1)" [disabled]="pagination().current_page === 1" class="p-1.5 rounded border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-50">
+            <i class="fi fi-rr-angle-double-left"></i>
+          </button>
+          <button (click)="changePage(pagination().current_page - 1)" [disabled]="pagination().current_page === 1" class="p-1.5 rounded border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-50">
+            <i class="fi fi-rr-angle-left"></i>
+          </button>
+          <span class="text-sm text-gray-600 px-3">Page {{pagination().current_page}} of {{pagination().last_page}}</span>
+          <button (click)="changePage(pagination().current_page + 1)" [disabled]="pagination().current_page === pagination().last_page" class="p-1.5 rounded border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-50">
+            <i class="fi fi-rr-angle-right"></i>
+          </button>
+          <button (click)="changePage(pagination().last_page)" [disabled]="pagination().current_page === pagination().last_page" class="p-1.5 rounded border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-50">
+            <i class="fi fi-rr-angle-double-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- Modal -->
-<div *ngIf="showModal()" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm">
-  <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-      <h3 class="text-lg font-bold text-gray-800">Add/Edit LandingPage</h3>
-      <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">&times;</button>
+<div *ngIf="showModal()" class="fixed inset-0 z-50 flex justify-center items-center p-4 sm:p-6" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" (click)="closeModal()"></div>
+  
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-5xl max-h-full flex flex-col relative transform transition-all">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h3 class="text-xl font-bold text-gray-900" id="modal-title">
+        {{ dataForm.get('id')?.value ? 'Edit Landing Page' : 'Add New Landing Page' }}
+      </h3>
+      <button (click)="closeModal()" class="text-gray-400 hover:text-gray-500 transition-colors">
+        <i class="fi fi-rr-cross text-lg"></i>
+      </button>
     </div>
-    <div class="p-6">
-      <form [formGroup]="dataForm" (ngSubmit)="saveData()" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Title Ar</label>
-          <input type="text" formControlName="title_ar" class="input-premium">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Title En</label>
-          <input type="text" formControlName="title_en" class="input-premium">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-          <input type="text" formControlName="slug" class="input-premium">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Content Ar</label>
-          <input type="text" formControlName="content_ar" class="input-premium">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Content En</label>
-          <input type="text" formControlName="content_en" class="input-premium">
-        </div>
-        <div>
-          <label class="flex items-center gap-2">
-            <input type="checkbox" formControlName="status"> Active
-          </label>
+
+    <!-- Tabs -->
+    <div class="flex border-b border-gray-100 px-6 pt-2 gap-6 bg-gray-50/50">
+      <button (click)="activeTab.set('general')" [class.border-primary]="activeTab() === 'general'" [class.text-primary]="activeTab() === 'general'" class="pb-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">General Info</button>
+      <button (click)="activeTab.set('layout')" [class.border-primary]="activeTab() === 'layout'" [class.text-primary]="activeTab() === 'layout'" class="pb-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">Page Builder</button>
+      <button (click)="activeTab.set('form')" [class.border-primary]="activeTab() === 'form'" [class.text-primary]="activeTab() === 'form'" class="pb-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">Form Builder</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 overflow-y-auto flex-1 bg-gray-50/30">
+      
+      <!-- General Tab -->
+      <form *ngIf="activeTab() === 'general'" [formGroup]="dataForm" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Title (EN) <span class="text-red-500">*</span></label>
+            <input type="text" formControlName="title_en" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+          </div>
+          <div class="space-y-2" dir="rtl">
+            <label class="block text-sm font-medium text-gray-700">Title (AR) <span class="text-red-500">*</span></label>
+            <input type="text" formControlName="title_ar" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Slug (URL) <span class="text-red-500">*</span></label>
+            <input type="text" formControlName="slug" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-gray-600 bg-gray-50 font-mono text-sm">
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Related Project</label>
+            <select formControlName="project_id" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+              <option [value]="null">No Project</option>
+              <option *ngFor="let p of projects()" [value]="p.id">{{ p.title_en }} - {{ p.title_ar }}</option>
+            </select>
+          </div>
         </div>
 
-        <div class="pt-4 flex justify-end gap-3">
-          <button type="button" (click)="closeModal()" class="btn-secondary">Cancel</button>
-          <button type="submit" class="btn-primary">Save Changes</button>
+        <div class="space-y-2">
+          <label class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+            <input type="checkbox" formControlName="status" class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary">
+            <div>
+              <span class="block text-sm font-medium text-gray-900">Active</span>
+              <span class="block text-xs text-gray-500">Make this landing page visible to the public</span>
+            </div>
+          </label>
         </div>
       </form>
+
+      <!-- Layout Builder Tab -->
+      <div *ngIf="activeTab() === 'layout'" class="space-y-6">
+        <div class="flex gap-2">
+          <button (click)="addRow(1)" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors border border-gray-200 flex items-center gap-2">
+             <i class="fi fi-rr-square"></i> Add 1 Column Row
+          </button>
+          <button (click)="addRow(2)" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors border border-gray-200 flex items-center gap-2">
+             <i class="fi fi-rr-layout-fluid"></i> Add 2 Column Row
+          </button>
+        </div>
+
+        <div *ngFor="let row of layoutRows(); let i = index" class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm relative group">
+          <div class="absolute -top-3 -right-3 hidden group-hover:flex">
+             <button (click)="removeRow(i)" class="bg-red-100 text-red-600 rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-sm">
+                <i class="fi fi-rr-trash text-xs"></i>
+             </button>
+          </div>
+          <div class="flex gap-4">
+             <div *ngFor="let col of row.columns; let j = index" class="flex-1 space-y-3 p-3 bg-gray-50 rounded border border-gray-100 border-dashed">
+                <select [(ngModel)]="col.type" class="w-full text-sm border-gray-200 rounded px-2 py-1">
+                   <option value="text">Text Content</option>
+                   <option value="image">Image URL</option>
+                   <option value="video">Video URL (YouTube/Vimeo)</option>
+                   <option value="form">Contact Form</option>
+                </select>
+                
+                <div *ngIf="col.type === 'text'">
+                   <textarea [(ngModel)]="col.content" rows="4" class="w-full text-sm border-gray-200 rounded px-2 py-1" placeholder="Enter HTML or Text..."></textarea>
+                </div>
+                <div *ngIf="col.type === 'image' || col.type === 'video'">
+                   <input type="text" [(ngModel)]="col.url" class="w-full text-sm border-gray-200 rounded px-2 py-1" placeholder="Enter URL...">
+                </div>
+                <div *ngIf="col.type === 'form'" class="p-4 bg-primary/5 rounded border border-primary/20 text-center text-primary text-sm font-medium">
+                   <i class="fi fi-rr-clipboard-list-check text-2xl block mb-2"></i>
+                   The Form built in the Form Builder tab will appear here.
+                </div>
+             </div>
+          </div>
+        </div>
+        
+        <div *ngIf="layoutRows().length === 0" class="text-center py-12 text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+           <i class="fi fi-rr-apps text-4xl mb-3 block opacity-50"></i>
+           <p>Start building your landing page layout by adding a row above.</p>
+        </div>
+      </div>
+
+      <!-- Form Builder Tab -->
+      <div *ngIf="activeTab() === 'form'" class="space-y-6">
+        <button (click)="addField()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors border border-gray-200 flex items-center gap-2">
+           <i class="fi fi-rr-add"></i> Add Form Field
+        </button>
+
+        <div class="space-y-3">
+           <div *ngFor="let field of formFields(); let i = index" class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm flex items-start gap-4">
+              <div class="mt-2 text-gray-400 font-medium">#{{i+1}}</div>
+              <div class="grid grid-cols-1 md:grid-cols-5 gap-3 flex-1">
+                 <div>
+                    <label class="text-xs text-gray-500 block mb-1">Internal Name</label>
+                    <input type="text" [(ngModel)]="field.name" class="w-full text-sm border-gray-200 rounded px-2 py-1">
+                 </div>
+                 <div>
+                    <label class="text-xs text-gray-500 block mb-1">Label (EN)</label>
+                    <input type="text" [(ngModel)]="field.label_en" class="w-full text-sm border-gray-200 rounded px-2 py-1">
+                 </div>
+                 <div>
+                    <label class="text-xs text-gray-500 block mb-1">Label (AR)</label>
+                    <input type="text" [(ngModel)]="field.label_ar" class="w-full text-sm border-gray-200 rounded px-2 py-1" dir="rtl">
+                 </div>
+                 <div>
+                    <label class="text-xs text-gray-500 block mb-1">Field Type</label>
+                    <select [(ngModel)]="field.type" class="w-full text-sm border-gray-200 rounded px-2 py-1">
+                       <option value="text">Text</option>
+                       <option value="email">Email</option>
+                       <option value="phone">Phone</option>
+                       <option value="textarea">Textarea</option>
+                       <option value="select">Select (Dropdown)</option>
+                       <option value="radio">Radio Buttons</option>
+                    </select>
+                 </div>
+                 <div class="flex flex-col justify-end">
+                    <label class="flex items-center gap-2 text-sm text-gray-700 py-1">
+                       <input type="checkbox" [(ngModel)]="field.required" class="rounded text-primary focus:ring-primary border-gray-300">
+                       Required Field
+                    </label>
+                 </div>
+                 <div class="md:col-span-5" *ngIf="field.type === 'select' || field.type === 'radio'">
+                    <label class="text-xs text-gray-500 block mb-1">Options (Comma separated)</label>
+                    <input type="text" [(ngModel)]="field.options" class="w-full text-sm border-gray-200 rounded px-2 py-1" placeholder="Option 1, Option 2, Option 3">
+                 </div>
+              </div>
+              <button (click)="removeField(i)" class="text-gray-400 hover:text-red-500 mt-6 p-2 rounded hover:bg-red-50 transition-colors">
+                 <i class="fi fi-rr-trash"></i>
+              </button>
+           </div>
+        </div>
+
+        <div *ngIf="formFields().length === 0" class="text-center py-12 text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+           <i class="fi fi-rr-form text-4xl mb-3 block opacity-50"></i>
+           <p>No fields added yet. Add some fields to collect leads.</p>
+        </div>
+      </div>
+
     </div>
+
+    <!-- Modal Footer -->
+    <div class="p-6 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0 rounded-b-2xl">
+      <button type="button" (click)="closeModal()" class="px-6 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+        Cancel
+      </button>
+      <button type="button" (click)="saveData()" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm shadow-primary/20">
+        {{ dataForm.get('id')?.value ? 'Save Changes' : 'Create Landing Page' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div class="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+  <div *ngFor="let toast of toasts()" 
+       class="px-4 py-3 rounded-lg shadow-lg border flex items-center gap-3 min-w-[300px] animate-fade-in-up"
+       [ngClass]="{'bg-green-50 border-green-200 text-green-800': toast.type === 'success', 'bg-red-50 border-red-200 text-red-800': toast.type === 'error'}">
+    <i class="fi" [ngClass]="{'fi-rr-check-circle text-green-500': toast.type === 'success', 'fi-rr-exclamation text-red-500': toast.type === 'error'}"></i>
+    <p class="text-sm font-medium">{{ toast.message }}</p>
   </div>
 </div>
