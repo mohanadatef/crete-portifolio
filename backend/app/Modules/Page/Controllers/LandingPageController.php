@@ -104,9 +104,9 @@ class LandingPageController extends Controller
             // Map standard fields if they exist, otherwise keep them in form_data
             $leadData = [
                 'landing_page_id' => $page->id,
-                'name' => $validatedData['name'] ?? null,
-                'email' => $validatedData['email'] ?? null,
-                'phone' => $validatedData['phone'] ?? null,
+                'name' => $validatedData['name'] ?? $request->input('name', 'N/A'),
+                'email' => $validatedData['email'] ?? $request->input('email', null),
+                'phone' => $validatedData['phone'] ?? $request->input('phone', 'N/A'),
                 'form_data' => $validatedData, // store everything in form_data just in case
                 'project_id' => $page->project_id, // inherit project from landing page
             ];

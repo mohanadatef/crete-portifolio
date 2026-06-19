@@ -19,13 +19,13 @@ class MediaController extends Controller
     {
         try {
             $request->validate([
-                'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:4096',
+                'file' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,mov,avi|max:20480',
             ]);
 
-            $media = $this->mediaService->storeMedia($request->file('image'));
+            $media = $this->mediaService->storeMedia($request->file('file'));
 
             return $this->successResponse([
-                'url' => asset("storage/{$media->path}"),
+                'url' => url($media->path),
                 'path' => $media->path
             ], 'Media uploaded successfully', 201);
         } catch (Exception $e) {

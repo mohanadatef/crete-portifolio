@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
@@ -40,6 +40,7 @@ export class PublicLandingPageComponent implements OnInit {
 
   status = signal<'loading' | 'success' | 'error' | 'not-found'>('loading');
   submitStatus = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
+  errorMessage = signal<string>('');
   pageData = signal<any>(null);
   
   layoutRows = computed(() => {
@@ -65,6 +66,14 @@ export class PublicLandingPageComponent implements OnInit {
   dynamicForm!: FormGroup;
   slug: string = '';
 
+  constructor() {
+    effect(() => {
+      if (this.pageData()) {
+        this.buildForm();
+      }
+    });
+  }
+
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       this.slug = params.get('slug') || '';
@@ -82,7 +91,6 @@ export class PublicLandingPageComponent implements OnInit {
       next: (res: any) => {
         if (res && res.data) {
           this.pageData.set(res.data);
-          this.buildForm();
           this.status.set('success');
         } else {
           this.status.set('not-found');
@@ -133,19 +141,24 @@ export class PublicLandingPageComponent implements OnInit {
     }
 
     this.submitStatus.set('loading');
+    this.errorMessage.set('');
     
-    const formData = {
-      project_id: this.pageData()?.project_id,
-      dynamic_data: this.dynamicForm.value
-    };
+    const formData = this.dynamicForm.value;
 
     this.http.post(`${environment.apiUrl}/public/landing-pages/${this.slug}/submit`, formData).subscribe({
       next: () => {
         this.submitStatus.set('success');
         this.router.navigate(['/landing', this.slug, 'thank-you']);
       },
-      error: () => {
+      error: (err) => {
+        console.error(err);
         this.submitStatus.set('error');
+        if (err.error?.errors) {
+          const firstError = Object.values(err.error.errors)[0] as string[];
+          this.errorMessage.set(firstError[0]);
+        } else {
+          this.errorMessage.set(err.error?.message || 'We couldn\'t process your request. Please review your information and try again.');
+        }
       }
     });
   }

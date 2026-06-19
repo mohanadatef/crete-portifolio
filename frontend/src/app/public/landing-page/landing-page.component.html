@@ -20,9 +20,37 @@
   </div>
 
   <!-- Main Content -->
-  <main *ngIf="status() === 'success' && pageData()" class="flex-1">
+  <main *ngIf="status() === 'success' && pageData()" class="flex-1 bg-slate-50">
     
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Premium Hero Section -->
+    <div class="relative bg-gradient-to-br from-slate-900 via-primary to-indigo-900 text-white pt-32 pb-40 overflow-hidden shadow-2xl">
+      <!-- Abstract Background Elements -->
+      <div class="absolute inset-0 z-0">
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-10 right-20 w-[500px] h-[500px] bg-primary/20 rounded-full blur-3xl"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20"></div>
+      </div>
+      
+      <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <!-- Project Tag -->
+        <span *ngIf="pageData()?.project" class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/10 backdrop-blur-md text-sm font-semibold mb-8 uppercase tracking-widest text-white border border-white/20 shadow-xl hover:bg-white/20 transition-colors cursor-default">
+          <i class="fi fi-rr-building"></i>
+          {{ pageData()?.project?.title_en }}
+        </span>
+        
+        <h1 class="text-5xl md:text-7xl font-black tracking-tight mb-6 drop-shadow-lg leading-tight">
+          {{ pageData()?.title_en }}
+        </h1>
+        
+        <p *ngIf="pageData()?.title_ar" class="text-2xl md:text-3xl font-light text-white/90 drop-shadow-md" dir="rtl">
+          {{ pageData()?.title_ar }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Content Container pulled up over the hero -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-20 pb-32">
+      
       <!-- Dynamic Layout Rows -->
       <div *ngFor="let row of layoutRows(); let i = index" class="flex flex-col md:flex-row gap-8 mb-12 items-stretch">
         
@@ -30,22 +58,22 @@
         <div *ngFor="let col of row.columns" class="flex-1 w-full" [ngSwitch]="col.type">
           
           <!-- Text Content -->
-          <div *ngSwitchCase="'text'" class="prose max-w-none prose-primary" [innerHTML]="sanitizeHtml(col.content)"></div>
+          <div *ngSwitchCase="'text'" class="bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white prose max-w-none prose-lg prose-headings:text-slate-800 prose-p:text-slate-600 prose-a:text-primary hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300" [innerHTML]="sanitizeHtml(col.content)"></div>
           
           <!-- Image -->
-          <div *ngSwitchCase="'image'" class="h-full rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-white flex items-center justify-center min-h-[300px]">
-            <img *ngIf="col.url" [src]="col.url" [alt]="pageData().title_en" class="w-full h-full object-cover">
-            <div *ngIf="!col.url" class="text-gray-400 flex flex-col items-center">
-              <i class="fi fi-rr-picture text-4xl mb-2 opacity-50"></i>
-              <span class="text-sm">Image Placeholder</span>
+          <div *ngSwitchCase="'image'" class="h-full rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-white flex items-center justify-center min-h-[400px] relative group">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none"></div>
+            <img *ngIf="col.url" [src]="col.url" [alt]="pageData().title_en" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out">
+            <div *ngIf="!col.url" class="text-slate-400 flex flex-col items-center">
+              <i class="fi fi-rr-picture text-5xl mb-3 opacity-30"></i>
+              <span class="text-sm font-medium uppercase tracking-wider">Image Placeholder</span>
             </div>
           </div>
           
           <!-- Video -->
-          <div *ngSwitchCase="'video'" class="h-full rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-black flex items-center justify-center min-h-[300px] aspect-video">
-            <video *ngIf="col.url && !col.url.includes('youtube') && !col.url.includes('vimeo')" [src]="col.url" controls class="w-full h-full"></video>
+          <div *ngSwitchCase="'video'" class="h-full rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-900 flex items-center justify-center min-h-[400px] aspect-video relative group">
+            <video *ngIf="col.url && !col.url.includes('youtube') && !col.url.includes('vimeo')" [src]="col.url" controls class="w-full h-full object-cover"></video>
             
-            <!-- Simple embed support for Youtube (assuming full embed URL is provided for simplicity, or normally we'd parse it) -->
             <iframe *ngIf="col.url && (col.url.includes('youtube') || col.url.includes('vimeo'))" 
                     [src]="sanitizeHtml(col.url)" 
                     class="w-full h-full border-0" 
@@ -53,31 +81,35 @@
                     allowfullscreen>
             </iframe>
             
-            <div *ngIf="!col.url" class="text-gray-600 flex flex-col items-center">
-              <i class="fi fi-rr-play-alt text-4xl mb-2 opacity-50"></i>
-              <span class="text-sm">Video Placeholder</span>
+            <div *ngIf="!col.url" class="text-slate-600 flex flex-col items-center">
+              <i class="fi fi-rr-play-alt text-5xl mb-3 opacity-30"></i>
+              <span class="text-sm font-medium uppercase tracking-wider">Video Placeholder</span>
             </div>
           </div>
 
           <!-- Form -->
-          <div *ngSwitchCase="'form'" class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 h-full">
-            <div class="text-center mb-8">
-              <h3 class="text-2xl font-bold text-gray-900 mb-2">Register Your Interest</h3>
-              <p class="text-gray-500 text-sm">Please fill out the form below and we will contact you shortly.</p>
+          <div *ngSwitchCase="'form'" class="bg-white/90 backdrop-blur-2xl rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.1)] border border-white p-8 md:p-12 h-full relative overflow-hidden group">
+            <!-- Decorative top line -->
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-indigo-500 to-purple-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out"></div>
+            
+            <div class="text-center mb-10">
+              <h3 class="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Register Your Interest</h3>
+              <p class="text-slate-500 text-base">Leave your details below and our luxury property consultants will contact you shortly.</p>
             </div>
 
             <!-- Error Message -->
-            <div *ngIf="submitStatus() === 'error'" class="bg-red-50 text-red-600 p-4 rounded-lg mb-6 text-sm flex items-start gap-3">
-              <i class="fi fi-rr-exclamation mt-0.5"></i>
-              <p>There was an error submitting your request. Please check your information and try again.</p>
+            <div *ngIf="submitStatus() === 'error'" class="bg-red-50 text-red-600 p-4 rounded-xl mb-8 text-sm flex items-start gap-3 border border-red-100">
+              <i class="fi fi-rr-exclamation mt-0.5 text-lg"></i>
+              <p>{{ errorMessage() || 'We couldn\\'t process your request. Please review your information and try again.' }}</p>
             </div>
 
-            <form *ngIf="dynamicForm" [formGroup]="dynamicForm" (ngSubmit)="submitForm()" class="space-y-5">
+            <form *ngIf="dynamicForm" [formGroup]="dynamicForm" (ngSubmit)="submitForm()" class="space-y-6">
               
-              <div *ngFor="let field of formFields()" class="space-y-1">
-                <label [for]="field.name" class="block text-sm font-medium text-gray-700">
-                  {{ field.label_en }} <span *ngIf="field.label_ar" class="text-gray-400 text-xs">/ {{ field.label_ar }}</span>
-                  <span *ngIf="field.required" class="text-red-500">*</span>
+              <div *ngFor="let field of formFields()" class="space-y-2 relative">
+                <label [for]="field.name" class="block text-sm font-semibold text-slate-700 ml-1">
+                  {{ field.label_en }} 
+                  <span *ngIf="field.label_ar" class="text-slate-400 font-normal ml-1">/ {{ field.label_ar }}</span>
+                  <span *ngIf="field.required" class="text-red-500 ml-1">*</span>
                 </label>
                 
                 <!-- Text / Email / Phone Input -->
@@ -85,7 +117,7 @@
                        [type]="field.type === 'email' ? 'email' : (field.type === 'phone' ? 'tel' : 'text')" 
                        [id]="field.name" 
                        [formControlName]="field.name" 
-                       class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm bg-gray-50 focus:bg-white"
+                       class="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-base bg-slate-50 focus:bg-white shadow-sm"
                        [placeholder]="'Enter ' + field.label_en">
                 
                 <!-- Textarea -->
@@ -93,41 +125,43 @@
                           [id]="field.name" 
                           [formControlName]="field.name" 
                           rows="4"
-                          class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm bg-gray-50 focus:bg-white"
+                          class="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-base bg-slate-50 focus:bg-white shadow-sm resize-none"
                           [placeholder]="'Enter ' + field.label_en"></textarea>
                 
                 <!-- Select -->
                 <div *ngIf="field.type === 'select'" class="relative">
                   <select [id]="field.name" 
                           [formControlName]="field.name" 
-                          class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm bg-gray-50 focus:bg-white appearance-none">
+                          class="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-base bg-slate-50 focus:bg-white shadow-sm appearance-none font-medium text-slate-700">
                     <option value="">Select an option</option>
                     <option *ngFor="let opt of getOptions(field.options)" [value]="opt">{{ opt }}</option>
                   </select>
-                  <i class="fi fi-rr-angle-small-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                  <i class="fi fi-rr-angle-small-down absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xl"></i>
                 </div>
 
                 <!-- Radio -->
-                <div *ngIf="field.type === 'radio'" class="flex flex-col gap-2 pt-2">
-                  <label *ngFor="let opt of getOptions(field.options)" class="flex items-center gap-3 p-3 border border-gray-100 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <input type="radio" [formControlName]="field.name" [value]="opt" class="w-4 h-4 text-primary focus:ring-primary border-gray-300">
-                    <span class="text-sm text-gray-700">{{ opt }}</span>
+                <div *ngIf="field.type === 'radio'" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <label *ngFor="let opt of getOptions(field.options)" class="flex items-center gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-primary/5 hover:border-primary/30 transition-all bg-white shadow-sm">
+                    <input type="radio" [formControlName]="field.name" [value]="opt" class="w-5 h-5 text-primary focus:ring-primary border-slate-300">
+                    <span class="text-sm font-medium text-slate-700">{{ opt }}</span>
                   </label>
                 </div>
 
                 <!-- Validation Errors -->
-                <div *ngIf="dynamicForm.get(field.name)?.invalid && (dynamicForm.get(field.name)?.dirty || dynamicForm.get(field.name)?.touched)" class="text-red-500 text-xs mt-1">
+                <div *ngIf="dynamicForm.get(field.name)?.invalid && (dynamicForm.get(field.name)?.dirty || dynamicForm.get(field.name)?.touched)" class="text-red-500 text-xs font-medium mt-1 ml-1 flex items-center gap-1">
+                  <i class="fi fi-rr-info"></i>
                   <span *ngIf="dynamicForm.get(field.name)?.errors?.['required']">This field is required.</span>
                   <span *ngIf="dynamicForm.get(field.name)?.errors?.['email']">Please enter a valid email address.</span>
                 </div>
               </div>
 
-              <div class="pt-4">
+              <div class="pt-6 mt-6 border-t border-slate-100">
                 <button type="submit" 
                         [disabled]="submitStatus() === 'loading'"
-                        class="w-full bg-primary text-white font-medium py-3.5 px-6 rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-70">
-                  <span *ngIf="submitStatus() !== 'loading'">Submit Application</span>
-                  <div *ngIf="submitStatus() === 'loading'" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        class="w-full bg-slate-900 text-white font-bold py-4 px-8 rounded-xl hover:bg-primary transition-all shadow-[0_10px_20px_rgb(0,0,0,0.15)] hover:shadow-[0_10px_25px_rgb(var(--color-primary),0.3)] hover:-translate-y-1 flex items-center justify-center gap-3 disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:shadow-none duration-300">
+                  <span *ngIf="submitStatus() !== 'loading'" class="tracking-wide">Submit Application</span>
+                  <i *ngIf="submitStatus() !== 'loading'" class="fi fi-rr-arrow-right mt-1"></i>
+                  <div *ngIf="submitStatus() === 'loading'" class="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                 </button>
               </div>
             </form>
