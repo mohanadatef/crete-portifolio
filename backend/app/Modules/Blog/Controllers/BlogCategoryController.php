@@ -55,7 +55,7 @@ class BlogCategoryController extends Controller
         try {
             $categories = $this->blogService->getActiveCategories();
             return $this->successResponse(
-                BlogCategoryResource::collection($categories),
+                BlogCategoryResource::collection($categories)->resolve(),
                 'Categories retrieved successfully'
             );
         } catch (Exception $e) {
