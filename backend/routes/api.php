@@ -37,8 +37,13 @@ Route::prefix('v1')->group(function () {
     Route::post('/public/landing-pages/{slug}/submit', [LandingPageController::class, 'submitForm'])->middleware('throttle:5,1');
 
     Route::get('/public/blog/categories', [BlogCategoryController::class, 'indexPublic']);
+    Route::get('/public/blog-categories', [BlogCategoryController::class, 'indexPublic']);
+
     Route::get('/public/blog/posts', [BlogPostController::class, 'indexPublic']);
+    Route::get('/public/blog-posts', [BlogPostController::class, 'indexPublic']);
+
     Route::get('/public/blog/posts/{slug}', [BlogPostController::class, 'showPublic']);
+    Route::get('/public/blog-posts/{slug}', [BlogPostController::class, 'showPublic']);
 
     Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
