@@ -116,6 +116,9 @@ export interface BlogPost {
   status: boolean;
   blog_category_id?: number;
   blog_category?: BlogCategory;
+  category?: BlogCategory;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Page {

@@ -53,5 +53,17 @@
     "CONSENT_DESC": "We collect this data to contact you regarding your inquiry.",
     "SUCCESS": "Thank you! Your message has been sent successfully. We will contact you soon.",
     "ERROR": "An error occurred. Please try again later."
+  },
+  "BLOG": {
+    "TITLE": "Our Blog",
+    "SUBTITLE": "Read the latest news and insights from our team.",
+    "READ_MORE": "Read full story",
+    "BACK_TO_BLOG": "Back to Blog",
+    "LOADING": "Loading...",
+    "ERROR": "Error loading blog post",
+    "NOT_FOUND": "No blog posts found",
+    "CHECK_BACK": "Check back later for new updates.",
+    "CATEGORY": "Category",
+    "PUBLISHED_ON": "Published on"
   }
 }

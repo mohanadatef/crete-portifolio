@@ -25,6 +25,7 @@ export const routes: Routes = [
             { path: '', component: HomeComponent },
             { path: 'projects', loadComponent: () => import('./public/projects/projects.component').then(m => m.ProjectsComponent) },
             { path: 'blog', component: BlogComponent },
+            { path: 'blog/:slug', loadComponent: () => import('./public/blog/post-details/post-details.component').then(m => m.BlogPostDetailsComponent) },
             { path: 'about', loadComponent: () => import('./public/about/about.component').then(m => m.AboutComponent) },
             { path: 'contact', component: ContactComponent },
             {

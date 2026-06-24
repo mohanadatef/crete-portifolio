@@ -1,0 +1,87 @@
+<div class="py-12 bg-gray-50 min-h-screen">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Navigation Back Button & Breadcrumbs -->
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+      <nav class="flex text-sm text-gray-500" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3 rtl:space-x-reverse">
+          <li class="inline-flex items-center">
+            <a routerLink="/" class="hover:text-crete-gold transition-colors">{{ 'NAV.HOME' | translate }}</a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <span class="mx-2 text-gray-400">/</span>
+              <a routerLink="/blog" class="hover:text-crete-gold transition-colors">{{ 'NAV.BLOG' | translate }}</a>
+            </div>
+          </li>
+          <li aria-current="page" *ngIf="post()">
+            <div class="flex items-center max-w-[200px] md:max-w-xs">
+              <span class="mx-2 text-gray-400">/</span>
+              <span class="text-gray-900 font-medium truncate">
+                {{ translate.currentLang() === 'ar' ? (post()?.title_ar || post()?.title_en) : (post()?.title_en || post()?.title_ar) }}
+              </span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+
+      <a routerLink="/blog" class="inline-flex items-center text-sm font-semibold text-crete-blue hover:text-crete-gold transition-colors gap-1">
+        <span class="inline-block transition-transform duration-300 rtl:rotate-180 hover:-translate-x-1">&larr;</span>
+        {{ 'BLOG.BACK_TO_BLOG' | translate }}
+      </a>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="status() === 'loading'" class="flex justify-center items-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-crete-gold"></div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="status() === 'error'" class="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
+      <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+      </svg>
+      <h3 class="text-xl font-medium text-red-600 mt-4">{{ 'BLOG.ERROR' | translate }}</h3>
+      <p class="text-gray-500 mt-2">{{ 'CONTACT.ERROR' | translate }}</p>
+      <button routerLink="/blog" class="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-crete-blue hover:bg-crete-gold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-crete-blue">
+        {{ 'BLOG.BACK_TO_BLOG' | translate }}
+      </button>
+    </div>
+
+    <!-- Blog Post Content -->
+    <article *ngIf="status() === 'success' && post()" class="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
+      
+      <!-- Cover Image -->
+      <div class="h-64 sm:h-[400px] w-full relative overflow-hidden bg-gray-200">
+        <img [src]="getImageUrl(post()?.image)" class="w-full h-full object-cover" [alt]="translate.currentLang() === 'ar' ? (post()?.title_ar || post()?.title_en) : (post()?.title_en || post()?.title_ar)">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div class="absolute bottom-6 left-6 right-6 text-white z-10">
+          <span class="bg-crete-gold text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">
+            {{ translate.currentLang() === 'ar' ? (post()?.category?.name_ar || post()?.category?.name_en || 'عام') : (post()?.category?.name_en || post()?.category?.name_ar || 'General') }}
+          </span>
+          <p class="text-sm opacity-90 mt-1">
+            {{ 'BLOG.PUBLISHED_ON' | translate }} {{ post()?.created_at | date:'longDate' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Main Body -->
+      <div class="p-6 sm:p-10">
+        
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-6">
+          {{ translate.currentLang() === 'ar' ? (post()?.title_ar || post()?.title_en) : (post()?.title_en || post()?.title_ar) }}
+        </h1>
+
+        <div class="w-full h-[1px] bg-gray-200 my-8"></div>
+
+        <!-- Quill HTML Content Wrapper -->
+        <div class="blog-rich-content text-gray-800 leading-relaxed text-lg" 
+             [innerHTML]="translate.currentLang() === 'ar' ? (post()?.content_ar || post()?.content_en) : (post()?.content_en || post()?.content_ar)">
+        </div>
+
+      </div>
+
+    </article>
+
+  </div>
+</div>

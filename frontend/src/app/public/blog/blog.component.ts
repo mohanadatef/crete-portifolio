@@ -3,16 +3,20 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { BlogPostService } from '../../core/services/blog-post.service';
 import { BlogPost } from '../../core/models/models';
+import { TranslateService, TranslatePipe } from '@ngx-translate/core';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-blog',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslatePipe],
   templateUrl: './blog.component.html',
   styleUrl: './blog.component.scss'
 })
 export class BlogComponent implements OnInit {
   private postService = inject(BlogPostService);
+  public translate = inject(TranslateService);
+  backendUrl = environment.backendUrl;
   
   posts = signal<BlogPost[]>([]);
   status = signal<'loading' | 'success' | 'error'>('loading');
@@ -27,5 +31,20 @@ export class BlogComponent implements OnInit {
       },
       error: () => this.status.set('error')
     });
+  }
+
+  getImageUrl(imagePath: string | null | undefined): string {
+    if (!imagePath) {
+      return 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+    }
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    return this.backendUrl + (imagePath.startsWith('/') ? '' : '/') + imagePath;
+  }
+
+  stripHtml(html: string | undefined): string {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '').trim();
   }
 }
