@@ -27,7 +27,8 @@ class ProjectTypeController extends Controller
     {
         $projectTypes = $this->projectTypeService->getProjectTypes(
             $request->input('per_page', 10),
-            $request->input('search')
+            $request->input('search'),
+            $request->input('status')
         );
 
         return response()->json([
@@ -79,11 +80,17 @@ class ProjectTypeController extends Controller
 
     public function destroy(ProjectType $projectType): JsonResponse
     {
-        $this->projectTypeService->deleteProjectType($projectType);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Project Type deleted successfully'
-        ]);
+        try {
+            $this->projectTypeService->deleteProjectType($projectType);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Project Type deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 }

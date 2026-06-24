@@ -36,6 +36,10 @@ class DatabaseSeeder extends Seeder
         // Settings only need view and edit
         $permissions[] = 'view-settings';
         $permissions[] = 'edit-settings';
+        
+        // Leads detailed access permissions
+        $permissions[] = 'view-all-leads';
+        $permissions[] = 'view-unassigned-leads';
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'sanctum']);
@@ -62,7 +66,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'admin@admin.com'],
             [
                 'name' => 'Admin User',
-                'password' => bcrypt('password'),
+                'password' => 'password',
                 'is_active' => 1
             ]
         );
@@ -140,6 +144,103 @@ class DatabaseSeeder extends Seeder
                 'phone' => '+0987654321',
                 'message' => 'تفاصيل عن المشروع التجاري الجديد من فضلكم.',
                 'source' => 'new-project-launch'
+            ]
+        );
+
+        // Seed Project Types
+        $activeType = \App\Modules\ProjectType\Models\ProjectType::updateOrCreate(
+            ['slug' => 'residential'],
+            ['name_en' => 'Residential', 'name_ar' => 'سكني', 'is_active' => true]
+        );
+
+        $inactiveType = \App\Modules\ProjectType\Models\ProjectType::updateOrCreate(
+            ['slug' => 'commercial-inactive'],
+            ['name_en' => 'Commercial (Inactive)', 'name_ar' => 'تجاري غير نشط', 'is_active' => false]
+        );
+
+        // Seed Projects
+        $project1 = \App\Modules\Project\Models\Project::updateOrCreate(
+            ['slug' => 'skyline-heights'],
+            [
+                'title_en' => 'Skyline Heights',
+                'title_ar' => 'سكاي لاين هايتس',
+                'description_en' => '<p>Modern residential complex in New Cairo.</p>',
+                'description_ar' => '<p>مجمع سكني حديد في القاهرة الجديدة.</p>',
+                'location' => 'New Cairo, Egypt',
+                'status' => true,
+                'featured' => true,
+                'price' => 5000000.00,
+                'area' => 250.00,
+                'bedrooms' => 3,
+                'developer' => 'Emaar',
+                'project_type_id' => $activeType->id,
+                'views_count' => 124
+            ]
+        );
+
+        $project2 = \App\Modules\Project\Models\Project::updateOrCreate(
+            ['slug' => 'grand-mall'],
+            [
+                'title_en' => 'Grand Mall',
+                'title_ar' => 'جراند مول',
+                'description_en' => '<p>Premier commercial spaces.</p>',
+                'description_ar' => '<p>مساحات تجارية ممتازة.</p>',
+                'location' => 'Sheikh Zayed, Egypt',
+                'status' => true,
+                'featured' => false,
+                'price' => 8000000.00,
+                'area' => 450.00,
+                'bedrooms' => null,
+                'developer' => 'Sodic',
+                'project_type_id' => $activeType->id,
+                'views_count' => 45
+            ]
+        );
+
+        // Seed Project Images
+        \App\Modules\Project\Models\ProjectImage::updateOrCreate(
+            ['project_id' => $project1->id, 'image_path' => '/storage/projects/skyline_1.jpg'],
+            ['is_primary' => true]
+        );
+
+        \App\Modules\Project\Models\ProjectImage::updateOrCreate(
+            ['project_id' => $project1->id, 'image_path' => '/storage/projects/skyline_2.jpg'],
+            ['is_primary' => false]
+        );
+
+        \App\Modules\Project\Models\ProjectImage::updateOrCreate(
+            ['project_id' => $project2->id, 'image_path' => '/storage/projects/mall_1.jpg'],
+            ['is_primary' => true]
+        );
+
+        // Seed Project Units
+        \App\Modules\Project\Models\ProjectUnit::updateOrCreate(
+            ['project_id' => $project1->id, 'title_en' => 'Penthouse A'],
+            [
+                'title_ar' => 'بنتهاوس أ',
+                'area' => 180.00,
+                'price' => 3500000.00,
+                'bedrooms' => 3,
+                'bathrooms' => 2,
+                'description_en' => '<p>Spacious penthouse with terrace.</p>',
+                'description_ar' => '<p>بنتهاوس واسع مع تراس.</p>',
+                'image_paths' => ['/storage/projects/units/unit1_1.jpg'],
+                'sort_order' => 0
+            ]
+        );
+
+        \App\Modules\Project\Models\ProjectUnit::updateOrCreate(
+            ['project_id' => $project1->id, 'title_en' => 'Apartment B'],
+            [
+                'title_ar' => 'شقة ب',
+                'area' => 120.00,
+                'price' => 2200000.00,
+                'bedrooms' => 2,
+                'bathrooms' => 1,
+                'description_en' => '<p>Cozy two-bedroom apartment.</p>',
+                'description_ar' => '<p>شقة مريحة بغرفتي نوم.</p>',
+                'image_paths' => [],
+                'sort_order' => 1
             ]
         );
     }

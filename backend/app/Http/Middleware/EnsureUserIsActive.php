@@ -16,7 +16,10 @@ class EnsureUserIsActive
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->user() && !$request->user()->is_active) {
-            $request->user()->currentAccessToken()->delete();
+            $token = $request->user()->currentAccessToken();
+            if ($token && method_exists($token, 'delete')) {
+                $token->delete();
+            }
             return response()->json([
                 'success' => false,
                 'message' => 'Your account is inactive.',

@@ -18,13 +18,13 @@ readonly class ProjectFilterDTO
     public static function fromRequest(\Illuminate\Http\Request $request): self
     {
         return new self(
-            project_type_id: $request->input('project_type_id') !== null ? (int) $request->input('project_type_id') : null,
-            location: $request->input('location'),
-            status: $request->has('status') ? (int) $request->input('status') : null,
-            search: $request->input('search'),
-            minPrice: $request->has('min_price') ? (float) $request->input('min_price') : null,
-            maxPrice: $request->has('max_price') ? (float) $request->input('max_price') : null,
-            bedrooms: $request->has('bedrooms') ? (int) $request->input('bedrooms') : null
+            project_type_id: $request->filled('project_type_id') ? (int) $request->input('project_type_id') : null,
+            location: $request->filled('location') ? $request->input('location') : null,
+            status: $request->filled('status') ? (int) $request->input('status') : null,
+            search: $request->filled('search') ? $request->input('search') : null,
+            minPrice: $request->filled('min_price') ? (float) $request->input('min_price') : null,
+            maxPrice: $request->filled('max_price') ? (float) $request->input('max_price') : null,
+            bedrooms: $request->filled('bedrooms') ? (int) $request->input('bedrooms') : null
         );
     }
 }

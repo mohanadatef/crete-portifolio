@@ -2,10 +2,10 @@
 
 namespace App\Modules\ProjectType\Requests;
 
-use App\Http\Requests\BaseRequest;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateProjectTypeRequest extends BaseRequest
+class UpdateProjectTypeRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -19,8 +19,7 @@ class UpdateProjectTypeRequest extends BaseRequest
             'name_ar' => 'sometimes|required|string|max:255',
             'name_en' => 'sometimes|required|string|max:255',
             'slug' => [
-                'sometimes',
-                'required',
+                'nullable',
                 'string',
                 'max:255',
                 Rule::unique('project_types', 'slug')->ignore($id),

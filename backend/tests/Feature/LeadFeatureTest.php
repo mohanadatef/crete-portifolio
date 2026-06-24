@@ -33,10 +33,12 @@ class LeadFeatureTest extends TestCase
 
     public function test_lead_deletion_without_confirm_returns_422()
     {
+        $this->withoutMiddleware(\Spatie\Permission\Middleware\PermissionMiddleware::class);
         $user = User::create([
             'name' => 'Admin Test',
             'email' => 'admintest' . rand(1, 1000) . '@admin.com',
-            'password' => bcrypt('password')
+            'password' => bcrypt('password'),
+            'is_active' => true
         ]);
         $lead = Lead::create([
             'name' => 'Lead Test',

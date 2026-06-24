@@ -11,9 +11,23 @@ class BlogService
 {
     // --- Categories ---
 
-    public function getCategoriesPaginator(int $perPage = 15): LengthAwarePaginator
+    public function getCategoriesPaginator(int $perPage = 10, ?string $search = null, ?string $status = null): LengthAwarePaginator
     {
-        return BlogCategory::latest()->paginate($perPage);
+        $query = BlogCategory::query();
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name_ar', 'like', "%{$search}%")
+                  ->orWhere('name_en', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%");
+            });
+        }
+
+        if ($status !== null && $status !== '') {
+            $query->where('status', filter_var($status, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        return $query->latest()->paginate($perPage);
     }
 
     public function getAllCategories(): Collection
@@ -28,14 +42,41 @@ class BlogService
 
     public function createCategory(array $data): BlogCategory
     {
+        if (empty($data['slug']) && !empty($data['name_en'])) {
+            $data['slug'] = $this->generateUniqueCategorySlug($data['name_en']);
+        }
         return BlogCategory::create($data);
     }
 
     public function updateCategory(int $id, array $data): BlogCategory
     {
         $category = $this->getCategoryById($id);
+        if (empty($data['slug']) && !empty($data['name_en']) && $data['name_en'] !== $category->name_en) {
+            $data['slug'] = $this->generateUniqueCategorySlug($data['name_en'], $category->id);
+        }
         $category->update($data);
         return $category;
+    }
+
+    private function generateUniqueCategorySlug(string $name, ?int $ignoreId = null): string
+    {
+        $slug = \Illuminate\Support\Str::slug($name);
+        $originalSlug = $slug;
+        $count = 1;
+
+        while (true) {
+            $query = BlogCategory::where('slug', $slug);
+            if ($ignoreId) {
+                $query->where('id', '!=', $ignoreId);
+            }
+            if (!$query->exists()) {
+                break;
+            }
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
+        return $slug;
     }
 
     public function deleteCategory(int $id): bool

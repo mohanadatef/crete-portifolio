@@ -1,0 +1,183 @@
+<div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+  <!-- Back Button & Page Title -->
+  <div class="mb-8 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <a routerLink="/admin/blog/posts" class="inline-flex items-center justify-center p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </a>
+      <div>
+        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">{{ isEditMode ? 'Edit Blog Post' : 'Create Blog Post' }}</h1>
+        <p class="text-sm text-gray-500 mt-1">Write localized post content, add headers, category classification, and select cover images.</p>
+      </div>
+    </div>
+    
+    <!-- Action buttons -->
+    <div class="flex items-center gap-3">
+      <a routerLink="/admin/blog/posts" class="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium bg-white hover:bg-gray-50 transition-colors shadow-sm">
+        Cancel
+      </a>
+      <button (click)="onSubmit()" [disabled]="isSaving || isLoading" class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium transition-all shadow-md flex items-center gap-2">
+        <span *ngIf="isSaving" class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+        {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Post' : 'Create Post') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="bg-white rounded-2xl border border-gray-100 p-16 text-center shadow-sm">
+    <div class="inline-block h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <p class="text-gray-600 font-medium">Loading post details, please wait...</p>
+  </div>
+
+  <form [formGroup]="postForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading" class="space-y-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left: Title details & content editor (Col Span 2) -->
+      <div class="lg:col-span-2 space-y-8">
+        
+        <!-- Basic Title/Slug Card -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+          <div class="border-b border-gray-100 pb-4">
+            <h2 class="text-lg font-bold text-gray-800">Article Title & Details</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Specify English and Arabic headings and unique post slugs.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- Title EN -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Post Title (English) <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="title_en" placeholder="e.g. New Real Estate Updates" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+              <p class="text-red-500 text-xs mt-1" *ngIf="postForm.get('title_en')?.touched && postForm.get('title_en')?.errors?.['required']">English title is required.</p>
+            </div>
+
+            <!-- Title AR -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Post Title (Arabic) <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="title_ar" placeholder="e.g. آخر تحديثات العقارات" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow text-right" dir="rtl">
+              <p class="text-red-500 text-xs mt-1" *ngIf="postForm.get('title_ar')?.touched && postForm.get('title_ar')?.errors?.['required']">Arabic title is required.</p>
+            </div>
+
+            <!-- Slug -->
+            <div class="sm:col-span-2">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Slug (URL Path) <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="slug" placeholder="e.g. new-real-estate-updates" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+              <p class="text-red-500 text-xs mt-1" *ngIf="postForm.get('slug')?.touched && postForm.get('slug')?.errors?.['required']">Slug is required.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Rich Editors -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+          <div class="border-b border-gray-100 pb-4">
+            <h2 class="text-lg font-bold text-gray-800">Article Content</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Write detailed article contents using the formatting bar.</p>
+          </div>
+
+          <div class="space-y-6">
+            <!-- Content EN -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Content (English)</label>
+              <quill-editor formControlName="content_en" [modules]="quillModules" class="block bg-white rounded-xl border border-gray-200 overflow-hidden min-h-[250px]"></quill-editor>
+            </div>
+
+            <!-- Content AR -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Content (Arabic)</label>
+              <quill-editor formControlName="content_ar" [modules]="quillModules" class="block bg-white rounded-xl border border-gray-200 overflow-hidden min-h-[250px] text-right" dir="rtl"></quill-editor>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right: Classification, Cover image, publish toggle (Col Span 1) -->
+      <div class="space-y-8">
+        
+        <!-- Classification Card -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+          <div class="border-b border-gray-100 pb-4">
+            <h2 class="text-lg font-bold text-gray-800">Classification</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Assign article to a blog category.</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Blog Category <span class="text-red-500">*</span></label>
+            <select formControlName="blog_category_id" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow bg-white text-sm">
+              <option [value]="null">Select Category</option>
+              <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.name_en }} ({{ cat.name_ar }})</option>
+            </select>
+            <p class="text-red-500 text-xs mt-1" *ngIf="postForm.get('blog_category_id')?.touched && postForm.get('blog_category_id')?.errors?.['required']">Category is required.</p>
+          </div>
+        </div>
+
+        <!-- Cover Image Card -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+          <div class="border-b border-gray-100 pb-4">
+            <h2 class="text-lg font-bold text-gray-800">Cover Image</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Upload a cover thumbnail image for the article.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex flex-wrap gap-4 items-center">
+              <!-- Upload uploader button if no image is present -->
+              <label *ngIf="!imagePreview && !existingImage" class="w-full inline-flex flex-col items-center justify-center h-40 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 hover:bg-gray-100 hover:border-gray-400 cursor-pointer transition-all p-4 text-center">
+                <input type="file" (change)="onFileSelect($event)" accept="image/*" class="hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span class="text-xs text-gray-600 font-semibold leading-normal">Choose Post Cover Image</span>
+                <span class="text-[10px] text-gray-400 mt-0.5">JPEG, PNG, WebP up to 20MB</span>
+              </label>
+
+              <!-- Existing image preview -->
+              <div *ngIf="existingImage && !imagePreview" class="relative w-full h-40 rounded-2xl border border-gray-200 overflow-hidden shadow-sm bg-white">
+                <img [src]="existingImage" class="h-full w-full object-cover">
+                <!-- Delete Button -->
+                <button type="button" (click)="removeExistingImage()" class="absolute top-2 right-2 p-1.5 bg-red-600/90 text-white rounded-full hover:bg-red-700 transition-colors shadow">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- New image preview -->
+              <div *ngIf="imagePreview" class="relative w-full h-40 rounded-2xl border border-gray-200 overflow-hidden shadow-sm bg-white">
+                <img [src]="imagePreview" class="h-full w-full object-cover">
+                <!-- Delete Button -->
+                <button type="button" (click)="removeSelectedFile()" class="absolute top-2 right-2 p-1.5 bg-red-600/90 text-white rounded-full hover:bg-red-700 transition-colors shadow">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Publish Setting Card -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+          <div class="border-b border-gray-100 pb-4">
+            <h2 class="text-lg font-bold text-gray-800">Publish Setting</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Control post status visibility.</p>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700">Published Status</label>
+              <span class="text-[10px] text-gray-400">Active posts are visible on the website.</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" formControlName="status" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </form>
+</div>

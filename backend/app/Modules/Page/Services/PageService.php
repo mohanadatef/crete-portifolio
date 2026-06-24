@@ -87,6 +87,35 @@ class PageService
     public function updateLandingPage(int $id, array $data): LandingPage
     {
         $page = $this->getLandingPageById($id);
+
+        if (isset($data['form_schema']) && $page->leads()->count() > 0) {
+            $oldSchema = $page->form_schema ?? [];
+            $newSchema = $data['form_schema'] ?? [];
+
+            $oldFields = [];
+            foreach ($oldSchema as $field) {
+                if (isset($field['name'])) {
+                    $oldFields[$field['name']] = $field;
+                }
+            }
+
+            $newFields = [];
+            foreach ($newSchema as $field) {
+                if (isset($field['name'])) {
+                    $newFields[$field['name']] = $field;
+                }
+            }
+
+            foreach ($oldFields as $name => $oldField) {
+                if (!isset($newFields[$name])) {
+                    throw new \Exception("Cannot delete field '{$oldField['label_en']}' because this landing page already has leads.");
+                }
+                if ($newFields[$name]['type'] !== $oldField['type']) {
+                    throw new \Exception("Cannot change type of field '{$oldField['label_en']}' because this landing page already has leads.");
+                }
+            }
+        }
+
         $page->update($data);
         return $page;
     }

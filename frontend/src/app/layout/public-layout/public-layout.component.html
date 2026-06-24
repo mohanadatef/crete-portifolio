@@ -1,21 +1,29 @@
 <div class="min-h-screen bg-gray-50 flex flex-col font-sans transition-all duration-300">
-  <header class="bg-white shadow-sm sticky top-0 z-50">
+  <header *ngIf="layoutService.showHeaderFooter()" class="bg-white shadow-sm sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-20">
+        
+        <!-- Brand Logo / Title Section -->
         <div class="flex-shrink-0 flex items-center">
-          <a routerLink="/" dir="ltr" class="text-3xl font-extrabold tracking-tighter text-crete-blue inline-block">
-            CRETE<span class="text-crete-gold">.</span>
+          <a routerLink="/" dir="ltr" class="flex items-center gap-2">
+            <img *ngIf="siteLogo() as logoUrl; else textLogo" [src]="logoUrl" [alt]="siteName()" class="h-10 max-w-[180px] object-contain">
+            <ng-template #textLogo>
+              <span class="text-2xl font-extrabold tracking-tighter text-crete-blue uppercase">
+                {{ siteName() }}<span class="text-crete-gold">.</span>
+              </span>
+            </ng-template>
           </a>
         </div>
         
         <!-- Desktop Nav -->
-        <nav class="hidden md:flex space-x-10 rtl:space-x-reverse items-center">
+        <nav class="hidden md:flex space-x-8 rtl:space-x-reverse items-center">
           <a routerLink="/" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.HOME' | translate }}</a>
-          <a routerLink="/projects" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.PROJECTS' | translate }}</a>
-          <a routerLink="/blog" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.BLOG' | translate }}</a>
-          <a routerLink="/contact" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.CONTACT' | translate }}</a>
+          <a *ngIf="showProjects()" routerLink="/projects" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.PROJECTS' | translate }}</a>
+          <a *ngIf="showBlog()" routerLink="/blog" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.BLOG' | translate }}</a>
+          <a *ngIf="showAbout()" routerLink="/about" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.ABOUT' | translate }}</a>
+          <a *ngIf="showContact()" routerLink="/contact" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.CONTACT' | translate }}</a>
           
-          <button (click)="toggleLanguage()" class="ml-4 rtl:mr-4 rtl:ml-0 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-bold transition-colors">
+          <button *ngIf="availableLangs().length > 1" (click)="toggleLanguage()" class="ml-4 rtl:mr-4 rtl:ml-0 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-bold transition-colors">
             {{ translate.currentLang() === 'en' ? 'العربية' : 'English' }}
           </button>
         </nav>
@@ -28,7 +36,7 @@
 
         <!-- Mobile Menu Button -->
         <div class="md:hidden flex items-center">
-          <button (click)="toggleLanguage()" class="mr-4 rtl:ml-4 rtl:mr-0 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-bold transition-colors">
+          <button *ngIf="availableLangs().length > 1" (click)="toggleLanguage()" class="mr-4 rtl:ml-4 rtl:mr-0 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-bold transition-colors">
             {{ translate.currentLang() === 'en' ? 'العربية' : 'EN' }}
           </button>
           <button (click)="isMobileMenuOpen = !isMobileMenuOpen" class="text-gray-600 hover:text-crete-blue focus:outline-none">
@@ -41,31 +49,38 @@
       </div>
     </div>
 
-    <!-- Mobile Nav -->
-    <div *ngIf="isMobileMenuOpen" class="md:hidden bg-white border-t border-gray-100 px-4 pt-2 pb-4 space-y-1 shadow-lg absolute w-full">
+    <!-- Mobile Nav Menu Drawer -->
+    <div *ngIf="isMobileMenuOpen" class="md:hidden bg-white border-t border-gray-100 px-4 pt-2 pb-4 space-y-1 shadow-lg absolute w-full z-40">
       <a routerLink="/" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.HOME' | translate }}</a>
-      <a routerLink="/projects" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.PROJECTS' | translate }}</a>
-      <a routerLink="/blog" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.BLOG' | translate }}</a>
-      <a routerLink="/contact" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.CONTACT' | translate }}</a>
+      <a *ngIf="showProjects()" routerLink="/projects" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.PROJECTS' | translate }}</a>
+      <a *ngIf="showBlog()" routerLink="/blog" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.BLOG' | translate }}</a>
+      <a *ngIf="showAbout()" routerLink="/about" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.ABOUT' | translate }}</a>
+      <a *ngIf="showContact()" routerLink="/contact" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.CONTACT' | translate }}</a>
       <a routerLink="/contact" (click)="isMobileMenuOpen = false" class="block mt-4 px-3 py-2 rounded-md text-base font-bold text-white bg-crete-gold hover:bg-yellow-600 text-center">
         {{ 'NAV.GET_STARTED' | translate }}
       </a>
     </div>
   </header>
 
+  <!-- Route view container -->
   <main class="flex-grow bg-gray-50">
     <router-outlet></router-outlet>
   </main>
 
-  <footer class="bg-crete-blue text-white py-12">
+  <!-- Public Footer Section -->
+  <footer *ngIf="layoutService.showHeaderFooter()" class="bg-crete-blue text-white py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <div class="mb-6 flex flex-col items-center justify-center">
-        <span dir="ltr" class="text-3xl font-extrabold tracking-wider flex items-center">
-          CRE<span class="text-crete-gold mx-0.5">T</span>E
-        </span>
+        <!-- Render Logo in footer as well if set -->
+        <img *ngIf="siteLogo() as logoUrl; else footerTextLogo" [src]="logoUrl" [alt]="siteName()" class="h-10 max-w-[180px] object-contain mb-2 brightness-0 invert">
+        <ng-template #footerTextLogo>
+          <span dir="ltr" class="text-3xl font-extrabold tracking-wider flex items-center uppercase">
+            {{ siteName() }}
+          </span>
+        </ng-template>
         <span dir="ltr" class="text-[10px] tracking-[0.3em] uppercase text-gray-300">Developments</span>
       </div>
-      <p class="text-sm text-gray-400">&copy; 2026 CRETE Developments. All rights reserved.</p>
+      <p class="text-sm text-gray-400">&copy; 2026 {{ siteName() }} Developments. All rights reserved.</p>
     </div>
   </footer>
 </div>

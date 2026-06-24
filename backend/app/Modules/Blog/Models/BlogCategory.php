@@ -23,4 +23,8 @@ class BlogCategory extends Model
         'name_en',
         'status'
     ];
+
+    protected $casts = [
+        'status' => 'boolean',
+    ];
 }

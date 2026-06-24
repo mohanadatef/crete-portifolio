@@ -26,7 +26,8 @@ class Project extends Model
         'project_type_id',
         'bedrooms',
         'delivery_date',
-        'developer'
+        'developer',
+        'views_count'
     ];
 
     protected $appends = ['images'];
@@ -46,6 +47,11 @@ class Project extends Model
     public function projectImages()
     {
         return $this->hasMany(ProjectImage::class);
+    }
+
+    public function projectUnits()
+    {
+        return $this->hasMany(ProjectUnit::class)->orderBy('sort_order', 'asc');
     }
 
     public function projectType()

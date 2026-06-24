@@ -32,12 +32,34 @@ class StoreProjectUseCase
             $project = $this->projectService->createProject($dto->data);
 
             if ($dto->images && count($dto->images) > 0) {
-                $this->mediaService->processAndStoreProjectImages($project, $dto->images);
+                $this->mediaService->processAndStoreProjectImages($project, $dto->images, 'projects', $dto->primaryImageIndex);
+            }
+
+            if ($dto->units && count($dto->units) > 0) {
+                foreach ($dto->units as $index => $unitData) {
+                    $unitFiles = request()->file("unit_images_{$index}") ?: [];
+                    $paths = [];
+                    if (count($unitFiles) > 0) {
+                        $paths = $this->mediaService->processAndStoreUnitFiles($unitFiles);
+                    }
+                    $project->projectUnits()->create([
+                        'title_ar' => $unitData['title_ar'] ?? null,
+                        'title_en' => $unitData['title_en'] ?? null,
+                        'area' => $unitData['area'],
+                        'price' => $unitData['price'] ?? null,
+                        'bedrooms' => $unitData['bedrooms'] ?? null,
+                        'bathrooms' => $unitData['bathrooms'] ?? null,
+                        'description_ar' => $unitData['description_ar'] ?? null,
+                        'description_en' => $unitData['description_en'] ?? null,
+                        'image_paths' => $paths,
+                        'sort_order' => $index
+                    ]);
+                }
             }
 
             DB::commit();
 
-            return $project->load('projectImages');
+            return $project->load(['projectImages', 'projectUnits']);
         } catch (Exception $e) {
             DB::rollBack();
             throw $e;

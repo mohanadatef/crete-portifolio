@@ -25,9 +25,10 @@ class UpdateBlogCategoryRequest extends FormRequest
     {
         $id = $this->route('blog_category');
         return [
-            'slug' => 'required|string|unique:blog_categories,slug,' . $id,
+            'slug' => 'nullable|string|unique:blog_categories,slug,' . $id,
             'name_ar' => 'required|string',
-            'name_en' => 'required|string'
+            'name_en' => 'required|string',
+            'status' => 'boolean'
         ];
     }
 }

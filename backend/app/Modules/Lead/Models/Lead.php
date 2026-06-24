@@ -5,9 +5,12 @@ namespace App\Modules\Lead\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\User;
+use App\Modules\Page\Models\LandingPage;
+use App\Modules\Project\Models\Project;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use App\Modules\Page\Models\LandingPage;
 
 class Lead extends Model
 {
@@ -27,6 +30,7 @@ class Lead extends Model
         'message',
         'project_id',
         'status',
+        'assigned_to',
         'utm_source',
         'utm_medium',
         'utm_campaign',
@@ -42,5 +46,15 @@ class Lead extends Model
     public function landingPage()
     {
         return $this->belongsTo(LandingPage::class);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(\App\Modules\Project\Models\Project::class);
+    }
+
+    public function assignedTo()
+    {
+        return $this->belongsTo(\App\Modules\User\Models\User::class, 'assigned_to');
     }
 }

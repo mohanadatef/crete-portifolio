@@ -1,10 +1,12 @@
-import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, effect, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
+import { LayoutService } from '../../services/layout.service';
 
 interface LayoutBlock {
   type: 'text' | 'image' | 'video' | 'form';
@@ -31,12 +33,14 @@ interface FormField {
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './landing-page.component.html'
 })
-export class PublicLandingPageComponent implements OnInit {
+export class PublicLandingPageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private http = inject(HttpClient);
   private fb = inject(FormBuilder);
   private sanitizer = inject(DomSanitizer);
+  private layoutService = inject(LayoutService);
+  public translate = inject(TranslateService);
 
   status = signal<'loading' | 'success' | 'error' | 'not-found'>('loading');
   submitStatus = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -75,6 +79,7 @@ export class PublicLandingPageComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.layoutService.showHeaderFooter.set(false); // Hide by default while loading
     this.route.paramMap.subscribe(params => {
       this.slug = params.get('slug') || '';
       if (this.slug) {
@@ -85,12 +90,18 @@ export class PublicLandingPageComponent implements OnInit {
     });
   }
 
+  ngOnDestroy() {
+    this.layoutService.showHeaderFooter.set(true); // Reset when leaving page
+  }
+
   loadPageData() {
     this.status.set('loading');
     this.http.get(`${environment.apiUrl}/public/landing-pages/${this.slug}`).subscribe({
       next: (res: any) => {
         if (res && res.data) {
           this.pageData.set(res.data);
+          // Only show header/footer if explicitly enabled by the landing page
+          this.layoutService.showHeaderFooter.set(!!res.data.show_header_footer);
           this.status.set('success');
         } else {
           this.status.set('not-found');

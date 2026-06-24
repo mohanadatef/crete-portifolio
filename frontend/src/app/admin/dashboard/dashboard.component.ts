@@ -1,23 +1,160 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { ProjectService } from '../../core/services/project.service';
+import { LandingPageService } from '../../core/services/landing-page.service';
+import { TranslateService } from '@ngx-translate/core';
+import { Project, LandingPage } from '../../core/models/models';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
   private http = inject(HttpClient);
+  private projectService = inject(ProjectService);
+  private landingPageService = inject(LandingPageService);
+  translate = inject(TranslateService);
+
   stats: any = null;
+  projects = signal<Project[]>([]);
+  landingPages = signal<LandingPage[]>([]);
+  
+  // Filter variables
+  selectedProjectId: string = '';
+  selectedLandingPageId: string = '';
+  selectedRange: 'today' | 'yesterday' | 'week' | 'month' | 'custom' = 'week';
+  startDate: string = '';
+  endDate: string = '';
+
+  // Chart coordinates
+  chartBars: any[] = [];
+  chartGridLines: any[] = [];
+  chartMaxCount: number = 5;
+  isLoading = false;
 
   ngOnInit() {
-    this.http.get('http://backend.test/api/v1/admin/dashboard', {
-        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
-    }).subscribe(res => {
-      this.stats = res;
+    this.loadFiltersData();
+    this.fetchStats();
+  }
+
+  loadFiltersData() {
+    // Load projects list
+    this.projectService.getAll({ limit: 100 }).subscribe({
+      next: (res: any) => {
+        const data = res?.data?.data || res?.data || res;
+        if (Array.isArray(data)) {
+          this.projects.set(data);
+        }
+      }
     });
+
+    // Load landing pages list
+    this.landingPageService.getAll({ limit: 100 }).subscribe({
+      next: (res: any) => {
+        const data = res?.data?.data || res?.data || res;
+        if (Array.isArray(data)) {
+          this.landingPages.set(data);
+        }
+      }
+    });
+  }
+
+  fetchStats() {
+    this.isLoading = true;
+    
+    // Construct query parameters
+    const params: any = {
+      range: this.selectedRange
+    };
+
+    if (this.selectedProjectId) {
+      params.project_id = this.selectedProjectId;
+    }
+    if (this.selectedLandingPageId) {
+      params.landing_page_id = this.selectedLandingPageId;
+    }
+    if (this.selectedRange === 'custom') {
+      if (this.startDate) params.start_date = this.startDate;
+      if (this.endDate) params.end_date = this.endDate;
+    }
+
+    this.http.get<any>(`${environment.apiUrl}/admin/dashboard`, { params }).subscribe({
+      next: (res) => {
+        this.stats = res.data || res;
+        this.calculateChart();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load stats', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  onFilterChange() {
+    this.fetchStats();
+  }
+
+  calculateChart() {
+    if (!this.stats || !this.stats.chart_data || this.stats.chart_data.length === 0) {
+      this.chartBars = [];
+      this.chartGridLines = [];
+      return;
+    }
+
+    const data = this.stats.chart_data;
+    const counts = data.map((d: any) => d.count);
+    const maxVal = Math.max(...counts, 0);
+    this.chartMaxCount = maxVal > 0 ? maxVal : 5;
+
+    const svgWidth = 800;
+    const svgHeight = 240;
+    const paddingLeft = 50;
+    const paddingRight = 20;
+    const paddingTop = 30;
+    const chartWidth = svgWidth - paddingLeft - paddingRight;
+    const chartHeight = svgHeight - paddingTop;
+
+    const numItems = data.length;
+    const slotWidth = chartWidth / (numItems || 1);
+    const barWidthPercent = 0.55; // width ratio of bars in each slot
+
+    this.chartBars = data.map((item: any, i: number) => {
+      const height = (item.count / this.chartMaxCount) * (chartHeight - 20);
+      const x = paddingLeft + (i * slotWidth) + (slotWidth * (1 - barWidthPercent) / 2);
+      const y = svgHeight - height;
+      
+      const dateObj = new Date(item.date);
+      const formattedDate = dateObj.toLocaleDateString(this.translate.currentLang() === 'ar' ? 'ar-EG' : 'en-US', {
+        month: 'short',
+        day: 'numeric'
+      });
+
+      return {
+        x,
+        y,
+        width: slotWidth * barWidthPercent,
+        height,
+        date: item.date,
+        count: item.count,
+        formattedDate
+      };
+    });
+
+    // Generate grid lines
+    this.chartGridLines = [];
+    const steps = 4;
+    for (let i = 0; i <= steps; i++) {
+      const ratio = i / steps;
+      const value = Math.round(this.chartMaxCount * ratio);
+      const y = svgHeight - (ratio * (chartHeight - 20));
+      this.chartGridLines.push({ y, value });
+    }
   }
 }

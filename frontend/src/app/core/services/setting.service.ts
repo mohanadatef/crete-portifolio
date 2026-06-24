@@ -25,6 +25,10 @@ export class SettingService {
     return this.http.post<ApiResponse<Setting>>(this.adminUrl, data);
   }
 
+  updateBulk(data: any): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.adminUrl}/bulk`, data);
+  }
+
   update(id: number, data: any): Observable<ApiResponse<Setting>> {
     return this.http.put<ApiResponse<Setting>>(`${this.adminUrl}/${id}`, data);
   }

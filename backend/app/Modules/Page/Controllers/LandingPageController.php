@@ -101,12 +101,27 @@ class LandingPageController extends Controller
             
             $validatedData = $request->validate($rules);
             
+            // Find the dynamic field names for standard fields
+            $emailField = null;
+            $phoneField = null;
+            $nameField = 'name'; // Default
+
+            foreach ($schema as $field) {
+                if ($field['type'] === 'email') {
+                    $emailField = $field['name'];
+                } elseif ($field['type'] === 'phone') {
+                    $phoneField = $field['name'];
+                } elseif ($field['type'] === 'text' && strtolower($field['label_en'] ?? '') === 'name') {
+                    $nameField = $field['name'];
+                }
+            }
+
             // Map standard fields if they exist, otherwise keep them in form_data
             $leadData = [
                 'landing_page_id' => $page->id,
-                'name' => $validatedData['name'] ?? $request->input('name', 'N/A'),
-                'email' => $validatedData['email'] ?? $request->input('email', null),
-                'phone' => $validatedData['phone'] ?? $request->input('phone', 'N/A'),
+                'name' => $validatedData[$nameField] ?? $request->input('name', 'N/A'),
+                'email' => ($emailField && isset($validatedData[$emailField])) ? $validatedData[$emailField] : $request->input('email', null),
+                'phone' => ($phoneField && isset($validatedData[$phoneField])) ? $validatedData[$phoneField] : $request->input('phone', 'N/A'),
                 'form_data' => $validatedData, // store everything in form_data just in case
                 'project_id' => $page->project_id, // inherit project from landing page
             ];
@@ -161,6 +176,25 @@ class LandingPageController extends Controller
             return $this->successResponse(null, 'Landing Page deleted successfully');
         } catch (Exception $e) {
             return $this->errorResponse('Failed to delete landing page', 500);
+        }
+    }
+
+    public function logs(int $id): JsonResponse
+    {
+        try {
+            $page = $this->pageService->getLandingPageById($id);
+            $logs = $page->activities()->with('causer')->latest()->get()->map(function ($log) {
+                return [
+                    'id' => $log->id,
+                    'description' => $log->description,
+                    'causer_name' => $log->causer ? $log->causer->name : 'System',
+                    'properties' => $log->properties,
+                    'created_at' => $log->created_at->format('Y-m-d H:i:s'),
+                ];
+            });
+            return $this->successResponse($logs, 'Logs retrieved successfully');
+        } catch (Exception $e) {
+            return $this->errorResponse('Failed to retrieve logs', 500);
         }
     }
 }

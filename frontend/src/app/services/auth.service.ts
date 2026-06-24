@@ -1,14 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private http = inject(HttpClient);
-  // We use the local API URL, fallback to what the other services use or typical default.
-  private apiUrl = 'http://backend.test/api/v1';
+  // We use the central API URL from environment configuration.
+  private apiUrl = environment.apiUrl;
 
   login(credentials: { email: string; password: string }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/admin/login`, credentials).pipe(

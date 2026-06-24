@@ -19,4 +19,9 @@ class ProjectType extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function projects()
+    {
+        return $this->hasMany(\App\Modules\Project\Models\Project::class, 'project_type_id');
+    }
 }

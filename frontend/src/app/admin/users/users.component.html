@@ -4,7 +4,7 @@
       <h2 class="text-xl font-bold text-gray-800">Users Management</h2>
       <p class="text-sm text-gray-500 mt-1">Manage Users, Roles, and Status</p>
     </div>
-    <button (click)="openModal()" class="btn-primary flex items-center gap-2">
+    <button *appHasPermission="'create-users'" (click)="openModal()" class="btn-primary flex items-center gap-2">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
       Add User
     </button>
@@ -84,19 +84,19 @@
           </td>
           <td class="p-4">
             <label *ngIf="item.id !== currentUserId()" class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" [checked]="item.is_active" (change)="toggleStatus(item)" class="sr-only peer">
+              <input type="checkbox" [disabled]="!authService.hasPermission('edit-users')" [checked]="item.is_active" (change)="toggleStatus(item)" class="sr-only peer">
               <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
             </label>
             <span *ngIf="item.id === currentUserId()" class="px-2.5 py-1 text-xs rounded-full bg-green-100 text-green-700">Active (You)</span>
           </td>
           <td class="p-4 flex gap-3 justify-end items-center">
-             <button (click)="openPasswordModal(item)" class="text-gray-500 hover:text-gray-800" title="Change Password">
+             <button *appHasPermission="'edit-users'" (click)="openPasswordModal(item)" class="text-gray-500 hover:text-gray-800" title="Change Password">
                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
              </button>
-             <button (click)="openModal(item)" class="text-blue-600 hover:text-blue-800" title="Edit User">
+             <button *appHasPermission="'edit-users'" (click)="openModal(item)" class="text-blue-600 hover:text-blue-800" title="Edit User">
                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
              </button>
-             <button *ngIf="item.id && item.id !== currentUserId()" (click)="confirmDelete(item.id)" class="text-red-600 hover:text-red-800" title="Delete User">
+             <button *ngIf="item.id && item.id !== currentUserId() && authService.hasPermission('delete-users')" (click)="confirmDelete(item.id)" class="text-red-600 hover:text-red-800" title="Delete User">
                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
              </button>
           </td>

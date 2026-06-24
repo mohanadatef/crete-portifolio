@@ -25,10 +25,14 @@ class BlogCategoryController extends Controller
         $this->middleware('permission:delete-blog-categories')->only(['destroy']);
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $categories = $this->blogService->getCategoriesPaginator(15);
+            $categories = $this->blogService->getCategoriesPaginator(
+                $request->input('per_page', 10),
+                $request->input('search'),
+                $request->input('status')
+            );
             return $this->successResponse(
                 BlogCategoryResource::collection($categories)->response()->getData(true),
                 'Categories retrieved successfully'

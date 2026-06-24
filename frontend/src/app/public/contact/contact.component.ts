@@ -1,9 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { LeadService } from '../../services/lead.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
+import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-translate/core';
+import { PageService } from '../../core/services/page.service';
+import { Page } from '../../core/models/models';
 
 @Component({
   selector: 'app-contact',
@@ -15,7 +17,12 @@ import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 export class ContactComponent implements OnInit {
   private leadService = inject(LeadService);
   private route = inject(ActivatedRoute);
+  private pageService = inject(PageService);
+  translate = inject(TranslateService);
   
+  page = signal<Page | null>(null);
+  isLoadingPage = signal<boolean>(true);
+
   formData = {
     name: '',
     email: '',
@@ -35,6 +42,20 @@ export class ContactComponent implements OnInit {
         utm_campaign: params['utm_campaign'] || null,
         utm_content: params['utm_content'] || null,
       };
+    });
+
+    this.loadPageContent();
+  }
+
+  loadPageContent() {
+    this.pageService.getPublicBySlug('contact-us').subscribe({
+      next: (res) => {
+        this.page.set(res.data);
+        this.isLoadingPage.set(false);
+      },
+      error: () => {
+        this.isLoadingPage.set(false);
+      }
     });
   }
 

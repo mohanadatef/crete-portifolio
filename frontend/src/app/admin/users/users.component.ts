@@ -7,17 +7,18 @@ import { UserService } from '../../core/services/user.service';
 import { RoleService } from '../../core/services/role.service';
 import { AuthService } from '../../services/auth.service';
 import { User, Role } from '../../core/models/models';
+import { HasPermissionDirective } from '../../directives/has-permission.directive';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, HasPermissionDirective],
   templateUrl: './users.component.html'
 })
 export class UsersComponent implements OnInit {
   private dataService = inject(UserService);
   private roleService = inject(RoleService);
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
   users = signal<User[]>([]);

@@ -46,15 +46,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/admin/logout', [AuthController::class, 'logout']);
         
         Route::post('/admin/media', [\App\Modules\Media\Controllers\MediaController::class, 'store']);
-        Route::get('/admin/dashboard', function () {
-            return response()->json([
-                'projects_count' => \App\Modules\Project\Models\Project::count(),
-                'pages_count' => \App\Modules\Page\Models\Page::count(),
-                'landing_pages_count' => \App\Modules\Page\Models\LandingPage::count(),
-                'blog_posts_count' => \App\Modules\Blog\Models\BlogPost::count(),
-                'leads_count' => \App\Modules\Lead\Models\Lead::count(),
-            ]);
-        });
+        Route::get('/admin/dashboard', [\App\Modules\Lead\Controllers\DashboardController::class, 'index']);
 
         Route::apiResource('/admin/pages', PageController::class);
         // User Management
@@ -75,7 +67,10 @@ Route::prefix('v1')->group(function () {
         
         // Phase 3 & 4
         Route::apiResource('/admin/landing-pages', LandingPageController::class);
-        Route::apiResource('/admin/leads', LeadController::class)->except(['store', 'update']); // Admin only views and deletes
+        Route::get('/admin/landing-pages/{id}/logs', [LandingPageController::class, 'logs']);
+        Route::get('/admin/leads/export', [LeadController::class, 'export']);
+        Route::get('/admin/leads/{id}/logs', [LeadController::class, 'logs']);
+        Route::apiResource('/admin/leads', LeadController::class)->except(['store']); // Admin only views, updates, and deletes
         Route::apiResource('/admin/blog-categories', BlogCategoryController::class);
         Route::apiResource('/admin/blog-posts', BlogPostController::class);
     });

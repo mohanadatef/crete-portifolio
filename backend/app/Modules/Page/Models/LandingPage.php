@@ -28,6 +28,7 @@ class LandingPage extends Model
         'content_en',
         'status',
         'project_id',
+        'show_header_footer',
         'layout',
         'form_schema'
     ];
@@ -35,6 +36,7 @@ class LandingPage extends Model
     protected $casts = [
         'layout' => 'array',
         'form_schema' => 'array',
+        'show_header_footer' => 'boolean',
     ];
 
     public function project()

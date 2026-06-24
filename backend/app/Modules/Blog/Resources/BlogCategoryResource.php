@@ -19,6 +19,7 @@ class BlogCategoryResource extends JsonResource
             'name_ar' => $this->name_ar,
             'name_en' => $this->name_en,
             'slug' => $this->slug,
+            'status' => (bool) $this->status,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

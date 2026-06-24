@@ -17,6 +17,10 @@ export class ProjectTypeService {
     return this.http.get<ApiResponse<PaginatedData<ProjectType>>>(this.adminUrl, { params });
   }
 
+  getActive(): Observable<ApiResponse<ProjectType[]>> {
+    return this.http.get<ApiResponse<ProjectType[]>>(`${this.adminUrl}/active`);
+  }
+
   getById(id: number): Observable<ApiResponse<ProjectType>> {
     return this.http.get<ApiResponse<ProjectType>>(`${this.adminUrl}/${id}`);
   }

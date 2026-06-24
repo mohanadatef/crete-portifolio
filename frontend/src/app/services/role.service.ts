@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 
 export interface Role {
@@ -18,7 +19,7 @@ export interface Permission {
   providedIn: 'root'
 })
 export class RoleService {
-  private apiUrl = `http://backend.test/api/v1/admin/roles`;
+  private apiUrl = `${environment.apiUrl}/admin/roles`;
 
   constructor(private http: HttpClient) {}
 

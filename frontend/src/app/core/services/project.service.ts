@@ -26,6 +26,10 @@ export class ProjectService {
   }
 
   update(id: number, data: any): Observable<ApiResponse<Project>> {
+    if (data instanceof FormData) {
+      data.append('_method', 'PUT');
+      return this.http.post<ApiResponse<Project>>(`${this.adminUrl}/${id}`, data);
+    }
     return this.http.put<ApiResponse<Project>>(`${this.adminUrl}/${id}`, data);
   }
 

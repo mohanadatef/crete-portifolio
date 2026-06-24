@@ -37,6 +37,7 @@ class ProjectResource extends JsonResource
             'bedrooms' => $this->bedrooms,
             'delivery_date' => $this->delivery_date,
             'developer' => $this->developer,
+            'views_count' => (int)($this->views_count ?? 0),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'images' => $this->whenLoaded('projectImages', function () {
@@ -45,6 +46,22 @@ class ProjectResource extends JsonResource
                         'id' => $image->id,
                         'image_path' => $image->image_path,
                         'is_primary' => (bool)$image->is_primary,
+                    ];
+                });
+            }),
+            'units' => $this->whenLoaded('projectUnits', function () {
+                return $this->projectUnits->map(function ($unit) {
+                    return [
+                        'id' => $unit->id,
+                        'title_ar' => $unit->title_ar,
+                        'title_en' => $unit->title_en,
+                        'area' => (float)$unit->area,
+                        'price' => $unit->price !== null ? (float)$unit->price : null,
+                        'bedrooms' => $unit->bedrooms,
+                        'bathrooms' => $unit->bathrooms,
+                        'description_ar' => $unit->description_ar,
+                        'description_en' => $unit->description_en,
+                        'image_paths' => $unit->image_paths ?: [],
                     ];
                 });
             }),

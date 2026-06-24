@@ -1,83 +1,154 @@
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-  <!-- Header -->
-  <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-    <div>
-      <h2 class="text-xl font-bold text-gray-800">Project Types Management</h2>
-      <p class="text-sm text-gray-500 mt-1">Manage project types used in filters and forms</p>
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full">
+  <!-- Header & Filters -->
+  <div class="p-6 border-b border-gray-100 bg-white/50 shrink-0">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">Project Types Management</h2>
+        <p class="text-sm text-gray-500 mt-1">Manage project types used in filters and forms</p>
+      </div>
+      <button *appHasPermission="'create-project-types'" (click)="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
+        Add Type
+      </button>
     </div>
-    <button *appHasPermission="'create-project-types'" (click)="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-      </svg>
-      Add Type
-    </button>
+
+    <!-- Filters Row -->
+    <div class="flex flex-wrap gap-3 items-center">
+      <div class="relative flex-1 min-w-[200px]">
+        <input type="text" [(ngModel)]="filters.search" (keyup.enter)="applyFilters()" placeholder="Search by name..." 
+               class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-shadow w-full text-gray-900 bg-white">
+        <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      </div>
+      <select [(ngModel)]="filters.status" (change)="applyFilters()" class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-[140px] text-gray-900 bg-white">
+        <option value="" class="text-gray-900 bg-white">All Statuses</option>
+        <option value="true" class="text-gray-900 bg-white">Active</option>
+        <option value="false" class="text-gray-900 bg-white">Inactive</option>
+      </select>
+      <button (click)="resetFilters()" class="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium bg-white">Reset</button>
+      <button (click)="applyFilters()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium">Apply</button>
+    </div>
   </div>
 
   <!-- Table -->
-  <div class="overflow-x-auto">
+  <div class="overflow-x-auto flex-1">
     <table class="w-full text-left border-collapse">
       <thead>
         <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
           <th class="p-4 font-semibold">Name (AR)</th>
           <th class="p-4 font-semibold">Name (EN)</th>
-          <th class="p-4 font-semibold">Slug</th>
           <th class="p-4 font-semibold">Status</th>
           <th class="p-4 font-semibold text-right">Actions</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100">
+      <tbody class="divide-y divide-gray-100 text-sm">
         <tr *ngFor="let t of projectTypes" class="hover:bg-gray-50/50 transition-colors">
           <td class="p-4 font-medium text-gray-800">{{ t.name_ar }}</td>
           <td class="p-4 text-gray-600">{{ t.name_en }}</td>
-          <td class="p-4 text-gray-500 text-sm">{{ t.slug }}</td>
           <td class="p-4">
             <span *ngIf="t.is_active" class="px-2.5 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">Active</span>
             <span *ngIf="!t.is_active" class="px-2.5 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">Inactive</span>
           </td>
           <td class="p-4 text-right">
-            <button *appHasPermission="'edit-project-types'" (click)="editType(t)" class="text-blue-600 hover:text-blue-800 font-medium text-sm mr-3">Edit</button>
-            <button *appHasPermission="'delete-project-types'" (click)="deleteType(t.id)" class="text-red-600 hover:text-red-800 font-medium text-sm">Delete</button>
+            <div class="flex items-center justify-end gap-1.5">
+              <button *appHasPermission="'edit-project-types'" (click)="editType(t)" class="p-2 text-amber-600 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors rounded-lg shadow-sm" title="Edit">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+              </button>
+              <button *appHasPermission="'delete-project-types'" (click)="deleteType(t.id)" class="p-2 text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors rounded-lg shadow-sm" title="Delete">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
           </td>
         </tr>
         <tr *ngIf="projectTypes.length === 0">
-          <td colspan="5" class="p-8 text-center text-gray-500">No project types found.</td>
+          <td colspan="4" class="p-8 text-center text-gray-500">No project types found.</td>
         </tr>
       </tbody>
     </table>
   </div>
 
+  <!-- Pagination Footer -->
+  <div *ngIf="projectTypes.length > 0" class="bg-white px-4 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between sm:px-6 rounded-b-lg shrink-0">
+    <div class="flex-1 flex justify-between sm:hidden w-full mb-4 sm:mb-0">
+      <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">Previous</button>
+      <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === lastPage" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">Next</button>
+    </div>
+    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+      <div class="flex items-center gap-4">
+        <p class="text-sm text-gray-700">
+          Showing <span class="font-medium">{{ totalRecords }}</span> total results
+        </p>
+        <div class="flex items-center gap-2 text-sm text-gray-700">
+          <span>Rows per page:</span>
+          <select [ngModel]="perPage" (change)="changePerPage($event)" class="border-gray-300 rounded text-sm py-1 pl-2 pr-6 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white">
+            <option value="10" class="text-gray-900 bg-white">10</option>
+            <option value="25" class="text-gray-900 bg-white">25</option>
+            <option value="50" class="text-gray-900 bg-white">50</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+          <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+            <span class="sr-only">Previous</span>
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </button>
+          <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+            Page {{ currentPage }} of {{ lastPage }}
+          </span>
+          <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === lastPage" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+            <span class="sr-only">Next</span>
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Form -->
-  <div *ngIf="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg">
-      <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white z-10 rounded-t-xl">
-        <h3 class="text-lg font-bold">{{ isEditing ? 'Edit' : 'Add' }} Project Type</h3>
-        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
+  <div *ngIf="showModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden relative">
+      <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white z-10 rounded-t-2xl">
+        <h3 class="text-lg font-bold text-gray-900">{{ isEditing ? 'Edit' : 'Add' }} Project Type</h3>
+        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
           <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
-      <form (ngSubmit)="saveType()" class="p-6">
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Name (AR) *</label>
-          <input type="text" [(ngModel)]="formData.name_ar" name="name_ar" required class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500">
+      <form (ngSubmit)="saveType()" class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Name (AR) <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="formData.name_ar" name="name_ar" required class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-gray-900 bg-white">
         </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Name (EN) *</label>
-          <input type="text" [(ngModel)]="formData.name_en" name="name_en" required class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Name (EN) <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="formData.name_en" name="name_en" required class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-gray-900 bg-white">
         </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Slug *</label>
-          <input type="text" [(ngModel)]="formData.slug" name="slug" required class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500">
-        </div>
-        <div class="flex items-center gap-2 mt-6 mb-6">
-          <input type="checkbox" [(ngModel)]="formData.is_active" name="is_active" id="isActiveCheckbox">
+        <div class="flex items-center gap-2 py-2">
+          <input type="checkbox" [(ngModel)]="formData.is_active" name="is_active" id="isActiveCheckbox" class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
           <label for="isActiveCheckbox" class="text-sm font-medium text-gray-700">Active</label>
         </div>
         
-        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-          <button type="button" (click)="closeModal()" class="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded font-medium transition-colors">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition-colors">Save</button>
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 bg-white">
+          <button type="button" (click)="closeModal()" class="px-6 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">Cancel</button>
+          <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium shadow-sm">Save</button>
         </div>
       </form>
     </div>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div class="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+  <div *ngFor="let toast of toasts()" 
+       class="px-4 py-3 rounded-lg shadow-lg border flex items-center gap-3 min-w-[300px] animate-fade-in-up"
+       [ngClass]="{'bg-green-50 border-green-200 text-green-800': toast.type === 'success', 'bg-red-50 border-red-200 text-red-800': toast.type === 'error'}">
+    <svg *ngIf="toast.type === 'success'" class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <svg *ngIf="toast.type === 'error'" class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+    <p class="text-sm font-medium">{{ toast.message }}</p>
   </div>
 </div>

@@ -1,28 +1,266 @@
-<div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 max-w-4xl">
-  <h2 class="text-2xl font-bold mb-6 text-gray-800">General Settings (SEO & Tracking)</h2>
-
-  <div *ngIf="status === 'success'" class="bg-green-50 text-green-800 p-4 rounded-lg mb-6 border border-green-200">
-    Settings saved successfully!
-  </div>
-  <div *ngIf="status === 'error'" class="bg-red-50 text-red-800 p-4 rounded-lg mb-6 border border-red-200">
-    Failed to save settings.
-  </div>
-
-  <form (ngSubmit)="saveSettings()" class="space-y-6">
+<div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+  <!-- Page Header -->
+  <div class="mb-8 flex justify-between items-center">
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Default SEO Title</label>
-      <input type="text" name="seo_title" [(ngModel)]="settings.seo_title" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. My Awesome Real Estate">
-      <p class="text-xs text-gray-500 mt-1">This title will be used as the default title for your website pages.</p>
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">System Settings</h1>
+      <p class="text-sm text-gray-500 mt-1">Configure project general variables, branding, localization, styling colors and public visibility toggles.</p>
     </div>
-
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Google Tag Manager / Analytics Script</label>
-      <textarea rows="6" name="google_tag" [(ngModel)]="settings.google_tag" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm" placeholder="<!-- Paste your GTM script here -->"></textarea>
-      <p class="text-xs text-gray-500 mt-1">This script will be dynamically injected into the &lt;head&gt; of all public pages.</p>
-    </div>
-
-    <button type="submit" [disabled]="status === 'loading'" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition">
+    <button *appHasPermission="'edit-settings'" (click)="saveSettings()" [disabled]="status === 'loading'" class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium transition-all shadow-md flex items-center gap-2">
+      <span *ngIf="status === 'loading'" class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
       {{ status === 'loading' ? 'Saving...' : 'Save Settings' }}
     </button>
-  </form>
+  </div>
+
+  <!-- Status Notification Alerts -->
+  <div *ngIf="status === 'success'" class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl flex items-center gap-2">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+    </svg>
+    <span class="font-medium">Success! System settings updated successfully.</span>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+    
+    <!-- Left Navigation Tabs Column -->
+    <div class="md:col-span-1 space-y-2">
+      <button (click)="setTab('general')" [ngClass]="{'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600': activeTab === 'general', 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent': activeTab !== 'general'}" class="w-full text-left px-4 py-3 rounded-lg text-sm transition-all duration-150 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <span>General Configuration</span>
+      </button>
+
+      <button (click)="setTab('appearance')" [ngClass]="{'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600': activeTab === 'appearance', 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent': activeTab !== 'appearance'}" class="w-full text-left px-4 py-3 rounded-lg text-sm transition-all duration-150 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+        </svg>
+        <span>Appearance & Styling</span>
+      </button>
+
+      <button (click)="setTab('languages')" [ngClass]="{'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600': activeTab === 'languages', 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent': activeTab !== 'languages'}" class="w-full text-left px-4 py-3 rounded-lg text-sm transition-all duration-150 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 11.37 7.31 16.5 3 19" />
+        </svg>
+        <span>Languages & Translation</span>
+      </button>
+
+      <button (click)="setTab('navigation')" [ngClass]="{'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600': activeTab === 'navigation', 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent': activeTab !== 'navigation'}" class="w-full text-left px-4 py-3 rounded-lg text-sm transition-all duration-150 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <span>Navbar & Visibility</span>
+      </button>
+    </div>
+
+    <!-- Right Configuration Panels Column (Col Span 3) -->
+    <div class="md:col-span-3">
+      
+      <!-- Tab 1: General settings -->
+      <div *ngIf="activeTab === 'general'" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">General Configuration</h2>
+          <p class="text-xs text-gray-500 mt-1">Global branding settings, website titles, logo uploads and analytics tracking tags.</p>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <div class="space-y-6">
+          <!-- Site Name -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Project / Site Name</label>
+            <input type="text" [(ngModel)]="settings['site_name']" placeholder="e.g. CRETE Developments" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+            <p class="text-[10px] text-gray-400 mt-1">This site name replaces default brandings across the public client website and the admin panel.</p>
+          </div>
+
+          <!-- Site Logo File Upload -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Site Logo Brand Image</label>
+            <div class="flex items-center gap-6">
+              <!-- Upload input if no logo exists -->
+              <label *ngIf="!settings['site_logo'] && !logoPreview" class="flex flex-col items-center justify-center h-28 w-28 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 hover:bg-gray-100 hover:border-gray-400 cursor-pointer transition-all p-3 text-center">
+                <input type="file" (change)="onLogoSelect($event)" accept="image/*" class="hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span class="text-[9px] text-gray-500 font-semibold leading-tight">Choose Logo</span>
+              </label>
+
+              <!-- Upload loader -->
+              <div *ngIf="logoUploading" class="h-28 w-28 border border-gray-200 rounded-2xl flex items-center justify-center bg-gray-50">
+                <div class="h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+
+              <!-- Preview Site Logo -->
+              <div *ngIf="settings['site_logo'] || logoPreview" class="relative h-28 w-28 border border-gray-200 rounded-2xl overflow-hidden shadow-sm bg-white p-2 flex items-center justify-center">
+                <img [src]="logoPreview || settings['site_logo']" class="max-h-full max-w-full object-contain">
+                <button type="button" (click)="removeLogo()" class="absolute top-1 right-1 p-1 bg-red-600/90 text-white rounded-full hover:bg-red-700 transition-colors shadow">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div class="flex-grow">
+                <h4 class="text-sm font-semibold text-gray-700">Logo Guidelines</h4>
+                <p class="text-xs text-gray-500 mt-1">We recommend utilizing transparent PNG or SVG logo files with horizontal orientations. This fits perfectly in the top navbar header of public/admin views.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEO Title -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">SEO Title Meta-Tag</label>
+            <input type="text" [(ngModel)]="settings['seo_title']" placeholder="e.g. Crete - Premium Real Estate Developer" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+          </div>
+
+          <!-- Google Tag -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Google Analytics Tag (G-XXXXX)</label>
+            <input type="text" [(ngModel)]="settings['google_tag']" placeholder="e.g. G-123456" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Appearance settings -->
+      <div *ngIf="activeTab === 'appearance'" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Appearance & Styling</h2>
+          <p class="text-xs text-gray-500 mt-1">Customize website and dashboard color themes, button highlights and backgrounds.</p>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <div class="space-y-6">
+          <!-- Web Primary Color -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Website Primary Highlight Color (Gold Accent)</label>
+            <div class="flex items-center gap-3">
+              <input type="color" [(ngModel)]="settings['web_primary_color']" class="h-10 w-20 border rounded-lg cursor-pointer p-0 bg-transparent">
+              <input type="text" [(ngModel)]="settings['web_primary_color']" placeholder="#c89f45" class="w-40 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1.5">This represents primary colors for interactive buttons, highlights and icons on public website views.</p>
+          </div>
+
+          <!-- Web Secondary Color -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Website Secondary Base Color (Deep Navy Blue)</label>
+            <div class="flex items-center gap-3">
+              <input type="color" [(ngModel)]="settings['web_secondary_color']" class="h-10 w-20 border rounded-lg cursor-pointer p-0 bg-transparent">
+              <input type="text" [(ngModel)]="settings['web_secondary_color']" placeholder="#1e3678" class="w-40 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1.5">This sets the base layout colors for footer panels, dark cards, headers and text headers.</p>
+          </div>
+
+          <!-- Admin primary theme color -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Admin Dashboard Sidebar Color</label>
+            <div class="flex items-center gap-3">
+              <input type="color" [(ngModel)]="settings['admin_primary_color']" class="h-10 w-20 border rounded-lg cursor-pointer p-0 bg-transparent">
+              <input type="text" [(ngModel)]="settings['admin_primary_color']" placeholder="#1e3678" class="w-40 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1.5">Sets the background styling color of the admin panel sidebar navigation drawer.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Languages settings -->
+      <div *ngIf="activeTab === 'languages'" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Languages & Translation</h2>
+          <p class="text-xs text-gray-500 mt-1">Configure active languages visible to website visitors. Enabling single or dual options.</p>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <div class="space-y-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Select Active Languages</label>
+          
+          <div class="space-y-3">
+            <!-- English -->
+            <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors">
+              <input type="checkbox" [checked]="isLangSelected('en')" (change)="toggleLang('en')" class="h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
+              <div>
+                <span class="block text-sm font-bold text-gray-700">English Language</span>
+                <span class="text-[10px] text-gray-400">Enables English layout translations (LTR) and localization texts.</span>
+              </div>
+            </label>
+
+            <!-- Arabic -->
+            <label class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors">
+              <input type="checkbox" [checked]="isLangSelected('ar')" (change)="toggleLang('ar')" class="h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
+              <div>
+                <span class="block text-sm font-bold text-gray-700">العربية (Arabic Language)</span>
+                <span class="text-[10px] text-gray-400">Enables Arabic layout translations (RTL) and Arabic details.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Navigation / Visibility settings -->
+      <div *ngIf="activeTab === 'navigation'" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Navbar & Visibility Settings</h2>
+          <p class="text-xs text-gray-500 mt-1">Toggle visibility of specific pages or categories in the public client website navigation header.</p>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <div class="space-y-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Toggle Public Navbar Links</label>
+              <div class="space-y-4">
+            <!-- Projects link -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div>
+                <span class="block text-sm font-bold text-gray-700">Show Projects Page Link</span>
+                <span class="text-[10px] text-gray-400">Display the "Projects" directory tab in the main header navbar.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" [ngModel]="settings['show_projects'] === '1'" (ngModelChange)="settings['show_projects'] = $event ? '1' : '0'" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            <!-- Blog link -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div>
+                <span class="block text-sm font-bold text-gray-700">Show Blog Articles Link</span>
+                <span class="text-[10px] text-gray-400">Display the "Blog" tab in the main header navbar.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" [ngModel]="settings['show_blog'] === '1'" (ngModelChange)="settings['show_blog'] = $event ? '1' : '0'" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            <!-- Contact link -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div>
+                <span class="block text-sm font-bold text-gray-700">Show Contact Us Link</span>
+                <span class="text-[10px] text-gray-400">Display the "Contact Us" tab in the main header navbar.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" [ngModel]="settings['show_contact'] === '1'" (ngModelChange)="settings['show_contact'] = $event ? '1' : '0'" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+
+            <!-- About link -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div>
+                <span class="block text-sm font-bold text-gray-700">Show About Us Link</span>
+                <span class="text-[10px] text-gray-400">Display the "About Us" tab linking to dynamic pages in the main header navbar.</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" [ngModel]="settings['show_about'] === '1'" (ngModelChange)="settings['show_about'] = $event ? '1' : '0'" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>

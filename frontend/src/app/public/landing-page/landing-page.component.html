@@ -52,10 +52,10 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-20 pb-32">
       
       <!-- Dynamic Layout Rows -->
-      <div *ngFor="let row of layoutRows(); let i = index" class="flex flex-col md:flex-row gap-8 mb-12 items-stretch">
+      <div *ngFor="let row of layoutRows(); let i = index" class="flex flex-col md:flex-row gap-8 mb-12 items-stretch" dir="ltr">
         
         <!-- Columns -->
-        <div *ngFor="let col of row.columns" class="flex-1 w-full" [ngSwitch]="col.type">
+        <div *ngFor="let col of row.columns" class="flex-1 w-full" [ngSwitch]="col.type" [attr.dir]="translate.currentLang() === 'ar' ? 'rtl' : 'ltr'">
           
           <!-- Text Content -->
           <div *ngSwitchCase="'text'" class="bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white prose max-w-none prose-lg prose-headings:text-slate-800 prose-p:text-slate-600 prose-a:text-primary hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300" [innerHTML]="sanitizeHtml(col.content)"></div>

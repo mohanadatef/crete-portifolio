@@ -1,0 +1,26 @@
+/* Quill Rich Editor custom styling override */
+::ng-deep {
+  .ql-toolbar.ql-snow {
+    border-color: #e5e7eb !important;
+    background-color: #f9fafb;
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+    padding: 8px 12px;
+  }
+  .ql-container.ql-snow {
+    border-color: #e5e7eb !important;
+    border-bottom-left-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
+    min-height: 250px;
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+  .ql-editor {
+    min-height: 250px;
+    &.ql-blank::before {
+      font-style: normal;
+      color: #9ca3af;
+      left: 15px;
+    }
+  }
+}

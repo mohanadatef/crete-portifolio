@@ -25,8 +25,13 @@ class BlogPost extends Model
         'content_en',
         'excerpt_ar',
         'excerpt_en',
-        'cover_image',
-        'category_id',
+        'image',
+        'blog_category_id',
         'status'
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(BlogCategory::class, 'blog_category_id');
+    }
 }

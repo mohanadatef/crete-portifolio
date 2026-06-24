@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-translate/core';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-projects',
@@ -16,9 +17,16 @@ export class ProjectsComponent implements OnInit {
   private http = inject(HttpClient);
   public translate = inject(TranslateService);
   
+  backendUrl = environment.backendUrl;
   projects: any[] = [];
   projectTypes: any[] = [];
   status: 'loading' | 'success' | 'error' = 'loading';
+
+  getPrimaryImagePath(project: any): string | null {
+    if (!project.images || project.images.length === 0) return null;
+    const primary = project.images.find((img: any) => img.is_primary);
+    return primary ? primary.image_path : project.images[0].image_path;
+  }
   
   filters = {
     project_type_id: '',
@@ -34,7 +42,7 @@ export class ProjectsComponent implements OnInit {
   }
 
   loadProjectTypes() {
-    this.http.get<any>('http://backend.test/api/v1/public/project-types').subscribe({
+    this.http.get<any>(`${environment.apiUrl}/public/project-types`).subscribe({
       next: (res) => {
         this.projectTypes = res.data || [];
       },
@@ -51,7 +59,7 @@ export class ProjectsComponent implements OnInit {
     if (this.filters.max_price) params.max_price = this.filters.max_price;
     if (this.filters.bedrooms) params.bedrooms = this.filters.bedrooms;
 
-    this.http.get<any>('http://backend.test/api/v1/public/projects', { params }).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/public/projects`, { params }).subscribe({
       next: (res) => {
         const paginatedData = res.data || {};
         const projectsArray = paginatedData.data || res || [];

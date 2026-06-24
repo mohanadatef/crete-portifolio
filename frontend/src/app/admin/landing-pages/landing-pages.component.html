@@ -1,18 +1,30 @@
 <div class="glass-panel overflow-hidden flex flex-col h-full">
-  <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white/50 shrink-0">
-    <div>
-      <h2 class="text-xl font-bold text-gray-800">Landing Pages</h2>
-      <p class="text-sm text-gray-500 mt-1">Manage marketing landing pages</p>
-    </div>
-    <div class="flex gap-3">
-      <div class="relative">
-        <input type="text" placeholder="Search..." (input)="onSearch($event)" 
-               class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-shadow w-64">
-        <i class="fi fi-rr-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+  <div class="p-6 border-b border-gray-100 bg-white/50 shrink-0">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">Landing Pages</h2>
+        <p class="text-sm text-gray-500 mt-1">Manage marketing landing pages</p>
       </div>
-      <button (click)="openModal()" class="btn-primary">
+      <button *appHasPermission="'create-landing-pages'" (click)="openModal()" class="btn-primary">
         <i class="fi fi-rr-plus"></i> Add New
       </button>
+    </div>
+    <!-- Filters Row -->
+    <div class="flex flex-wrap gap-3 items-center">
+      <div class="relative flex-1 min-w-[200px]">
+        <input type="text" placeholder="Search..." (input)="onSearch($event)" 
+               class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-shadow w-full">
+        <i class="fi fi-rr-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+      </div>
+      <select [(ngModel)]="filters.project_id" (change)="onFilterChange()" class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-[180px]">
+        <option value="">All Projects</option>
+        <option *ngFor="let p of projects()" [value]="p.id">{{ p.title_ar || p.title_en }}</option>
+      </select>
+      <select [(ngModel)]="filters.status" (change)="onFilterChange()" class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-[140px]">
+        <option value="">All Statuses</option>
+        <option value="1">Active</option>
+        <option value="0">Inactive</option>
+      </select>
     </div>
   </div>
 
@@ -49,11 +61,22 @@
               </span>
             </td>
             <td class="p-4 text-right">
-              <div class="flex items-center justify-end gap-2">
-                <button (click)="openModal(item)" class="p-2 text-gray-400 hover:text-primary transition-colors rounded-lg hover:bg-primary/5" title="Edit">
+              <div class="flex items-center justify-end gap-1.5">
+                <button (click)="copyLink(item.slug)" class="p-2 transition-colors rounded-lg shadow-sm border" 
+                        [ngClass]="copiedSlug() === item.slug ? 'text-green-600 bg-green-50 border-green-200 hover:bg-green-100' : 'text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100'" 
+                        [title]="copiedSlug() === item.slug ? 'Copied!' : 'Copy Link'">
+                  <i class="fi" [ngClass]="copiedSlug() === item.slug ? 'fi-rr-check' : 'fi-rr-link'"></i>
+                </button>
+                <button (click)="previewPage(item.slug)" class="p-2 text-emerald-600 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors rounded-lg shadow-sm" title="Preview">
+                  <i class="fi fi-rr-eye"></i>
+                </button>
+                <button (click)="openLogs(item.id)" class="p-2 text-indigo-600 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 transition-colors rounded-lg shadow-sm" title="Activity Logs">
+                  <i class="fi fi-rr-time-past"></i>
+                </button>
+                 <button *appHasPermission="'edit-landing-pages'" (click)="openModal(item)" class="p-2 text-amber-600 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors rounded-lg shadow-sm" title="Edit">
                   <i class="fi fi-rr-edit"></i>
                 </button>
-                <button (click)="deleteData(item.id)" class="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50" title="Delete">
+                <button *appHasPermission="'delete-landing-pages'" (click)="deleteData(item.id)" class="p-2 text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors rounded-lg shadow-sm" title="Delete">
                   <i class="fi fi-rr-trash"></i>
                 </button>
               </div>
@@ -157,6 +180,16 @@
             </div>
           </label>
         </div>
+
+        <div class="space-y-2">
+          <label class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+            <input type="checkbox" formControlName="show_header_footer" class="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <span class="block text-sm font-medium text-gray-900">Show Website Header & Footer</span>
+              <span class="block text-xs text-gray-500">Display the main website navigation header and footer on this landing page</span>
+            </div>
+          </label>
+        </div>
       </form>
 
       <!-- Layout Builder Tab -->
@@ -210,17 +243,38 @@
 
       <!-- Form Builder Tab -->
       <div *ngIf="activeTab() === 'form'" class="space-y-6">
+        <!-- Warning Banner for forms with leads -->
+        <div *ngIf="editingHasLeads()" class="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl text-sm flex items-start gap-3">
+          <i class="fi fi-rr-exclamation mt-0.5 text-amber-500"></i>
+          <div>
+            <p class="font-semibold">This form has submitted data</p>
+            <p class="text-amber-600 text-xs mt-0.5">You cannot remove or change the type of existing fields. You can still add new fields, reorder, and edit labels.</p>
+          </div>
+        </div>
+
         <button (click)="addField()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors border border-gray-200 flex items-center gap-2">
            <i class="fi fi-rr-add"></i> Add Form Field
         </button>
 
         <div class="space-y-3">
-           <div *ngFor="let field of formFields(); let i = index" class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm flex items-start gap-4">
-              <div class="mt-2 text-gray-400 font-medium">#{{i+1}}</div>
-              <div class="grid grid-cols-1 md:grid-cols-5 gap-3 flex-1">
+           <div *ngFor="let field of formFields(); let i = index; let first = first; let last = last" class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm flex items-start gap-3">
+              <!-- Reorder Buttons -->
+              <div class="flex flex-col gap-1 mt-1">
+                <button (click)="moveFieldUp(i)" [disabled]="first" 
+                        class="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-400 transition-colors" title="Move Up">
+                  <i class="fi fi-rr-angle-up text-xs"></i>
+                </button>
+                <span class="text-xs text-gray-400 font-medium text-center">{{i+1}}</span>
+                <button (click)="moveFieldDown(i)" [disabled]="last"
+                        class="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-400 transition-colors" title="Move Down">
+                  <i class="fi fi-rr-angle-down text-xs"></i>
+                </button>
+              </div>
+
+               <div class="grid grid-cols-1 md:grid-cols-5 gap-3 flex-1">
                  <div>
                     <label class="text-xs text-gray-500 block mb-1">Internal Name</label>
-                    <input type="text" [(ngModel)]="field.name" class="w-full text-sm border-gray-200 rounded px-2 py-1">
+                    <input type="text" [(ngModel)]="field.name" class="w-full text-sm border-gray-200 rounded px-2 py-1" [disabled]="isFieldProtected(field.name)">
                  </div>
                  <div>
                     <label class="text-xs text-gray-500 block mb-1">Label (EN)</label>
@@ -232,7 +286,7 @@
                  </div>
                  <div>
                     <label class="text-xs text-gray-500 block mb-1">Field Type</label>
-                    <select [(ngModel)]="field.type" class="w-full text-sm border-gray-200 rounded px-2 py-1">
+                    <select [(ngModel)]="field.type" class="w-full text-sm border-gray-200 rounded px-2 py-1" [disabled]="isFieldProtected(field.name)">
                        <option value="text">Text</option>
                        <option value="email">Email</option>
                        <option value="phone">Phone</option>
@@ -252,7 +306,10 @@
                     <input type="text" [(ngModel)]="field.options" class="w-full text-sm border-gray-200 rounded px-2 py-1" placeholder="Option 1, Option 2, Option 3">
                  </div>
               </div>
-              <button (click)="removeField(i)" class="text-gray-400 hover:text-red-500 mt-6 p-2 rounded hover:bg-red-50 transition-colors">
+              <button (click)="removeField(i)" 
+                      [disabled]="isFieldProtected(field.name)"
+                      class="text-gray-400 hover:text-red-500 mt-6 p-2 rounded hover:bg-red-50 transition-colors disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                      [title]="isFieldProtected(field.name) ? 'Cannot remove field - form has submitted data' : 'Remove field'">
                  <i class="fi fi-rr-trash"></i>
               </button>
            </div>
@@ -271,7 +328,7 @@
       <button type="button" (click)="closeModal()" class="px-6 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
         Cancel
       </button>
-      <button type="button" (click)="saveData()" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm shadow-primary/20">
+      <button type="button" (click)="saveData()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm">
         {{ dataForm.get('id')?.value ? 'Save Changes' : 'Create Landing Page' }}
       </button>
     </div>
@@ -280,6 +337,80 @@
 
 <!-- File Upload Input (Hidden) -->
 <input type="file" #fileInput class="hidden" (change)="handleFileUpload($event)" accept="image/*,video/*">
+
+<!-- Activity Logs Modal -->
+<div *ngIf="showLogsModal()" class="fixed inset-0 z-50 flex justify-center items-center p-4 sm:p-6" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm" (click)="closeLogs()"></div>
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col relative">
+    <!-- Header -->
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+          <i class="fi fi-rr-time-past text-indigo-600"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-gray-900">Activity Logs</h3>
+          <p class="text-xs text-gray-500">Complete history of changes</p>
+        </div>
+      </div>
+      <button (click)="closeLogs()" class="text-gray-400 hover:text-gray-500 transition-colors">
+        <i class="fi fi-rr-cross text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6 overflow-y-auto flex-1">
+      <div *ngIf="logsLoading()" class="flex justify-center items-center h-32">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+      </div>
+
+      <div *ngIf="!logsLoading() && logsData().length === 0" class="text-center py-12 text-gray-400">
+        <i class="fi fi-rr-document text-4xl mb-3 block opacity-50"></i>
+        <p>No activity logs found for this landing page.</p>
+      </div>
+
+      <div *ngIf="!logsLoading() && logsData().length > 0" class="space-y-4">
+        <div *ngFor="let log of logsData()" class="flex gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100/50 transition-colors">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold"
+               [ngClass]="{
+                 'bg-green-500': log.description === 'created',
+                 'bg-blue-500': log.description === 'updated',
+                 'bg-red-500': log.description === 'deleted'
+               }">
+            <i class="fi" [ngClass]="{
+              'fi-rr-plus': log.description === 'created',
+              'fi-rr-pencil': log.description === 'updated',
+              'fi-rr-trash': log.description === 'deleted'
+            }"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-semibold text-gray-800">
+                {{ log.causer_name }}
+                <span class="font-normal text-gray-500">{{ log.description }} this landing page</span>
+              </p>
+              <span class="text-xs text-gray-400 whitespace-nowrap ml-4">{{ log.created_at }}</span>
+            </div>
+            <div *ngIf="log.properties?.attributes || log.properties?.old" class="mt-2 text-xs space-y-1">
+              <div *ngIf="log.properties?.old" class="bg-red-50 text-red-700 px-3 py-2 rounded-lg">
+                <span class="font-semibold">Old values:</span>
+                <span *ngFor="let key of objectKeys(log.properties.old)" class="ml-2">
+                  {{ key }}: {{ log.properties.old[key] }}
+                </span>
+              </div>
+              <div *ngIf="log.properties?.attributes" class="bg-green-50 text-green-700 px-3 py-2 rounded-lg">
+                <span class="font-semibold">New values:</span>
+                <span *ngFor="let key of objectKeys(log.properties.attributes)" class="ml-2">
+                  {{ key }}: {{ log.properties.attributes[key] }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Toasts -->
 <div class="fixed bottom-4 right-4 z-50 flex flex-col gap-2">

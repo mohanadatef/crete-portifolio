@@ -34,7 +34,7 @@ class UserDTO
         ];
 
         if ($this->password) {
-            $data['password'] = bcrypt($this->password);
+            $data['password'] = $this->password;
         }
 
         return $data;

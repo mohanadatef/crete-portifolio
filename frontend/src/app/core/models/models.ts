@@ -59,12 +59,27 @@ export interface Project {
   project_type_id?: number;
   project_type?: ProjectType;
   images?: ProjectImage[];
+  views_count?: number;
+  units?: ProjectUnit[];
 }
 
 export interface ProjectImage {
   id: number;
   image_path: string;
   is_primary: boolean;
+}
+
+export interface ProjectUnit {
+  id?: number;
+  title_ar?: string;
+  title_en?: string;
+  area: number;
+  price?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  description_ar?: string;
+  description_en?: string;
+  image_paths?: string[];
 }
 
 export interface Lead {
@@ -121,6 +136,7 @@ export interface LandingPage {
   content_ar?: string;
   content_en?: string;
   status: boolean;
+  show_header_footer?: boolean;
   project_id?: number;
   project?: Project;
   layout?: any[];

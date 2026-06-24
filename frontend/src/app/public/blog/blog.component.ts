@@ -19,10 +19,10 @@ export class BlogComponent implements OnInit {
 
   ngOnInit() {
     this.status.set('loading');
-    this.postService.getAll({ status: 1 }).subscribe({
+    this.postService.getPublic({ status: 1 }).subscribe({
       next: (res) => {
-        const paginatedData = res.data;
-        this.posts.set(paginatedData.data || paginatedData || []);
+        const paginatedData = res.data as any;
+        this.posts.set(Array.isArray(paginatedData) ? paginatedData : (paginatedData?.data || []));
         this.status.set('success');
       },
       error: () => this.status.set('error')

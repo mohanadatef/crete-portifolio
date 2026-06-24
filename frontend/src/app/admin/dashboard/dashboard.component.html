@@ -1,50 +1,249 @@
-<div class="mb-8">
-    <h2 class="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
-    <p class="text-gray-600">Welcome back! Here is a summary of your website.</p>
-</div>
+<div class="max-w-7xl mx-auto space-y-8">
+  
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Dashboard Overview</h1>
+      <p class="text-sm text-gray-500 mt-1">Real-time leads analysis, projects tracking, and conversion reports.</p>
+    </div>
+    
+    <!-- Reload indicator / Last sync -->
+    <div class="flex items-center gap-2 text-xs text-gray-400">
+      <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+      <span>Connected to Cret Analytics</span>
+    </div>
+  </div>
 
-<div *ngIf="!stats" class="text-center py-10">
-  <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-crete-blue mx-auto"></div>
-  <p class="text-gray-500 mt-4">Loading statistics...</p>
-</div>
+  <!-- Filters Row -->
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+      
+      <!-- Project Filter -->
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Filter by Project</label>
+        <select [(ngModel)]="selectedProjectId" (change)="onFilterChange()" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+          <option value="">All Projects (الكل)</option>
+          <option *ngFor="let p of projects()" [value]="p.id">
+            {{ translate.currentLang() === 'ar' ? p.title_ar : p.title_en }}
+          </option>
+        </select>
+      </div>
 
-<div *ngIf="stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    <!-- Stat Card 1 -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <div class="flex items-center">
-            <div class="p-3 rounded-full bg-blue-50 text-blue-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-            </div>
-            <div class="ml-4">
-                <p class="text-sm text-gray-500 font-medium">Total Projects</p>
-                <h3 class="text-2xl font-bold text-gray-800">{{ stats?.projects_count }}</h3>
-            </div>
+      <!-- Landing Page Filter -->
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Filter by Page</label>
+        <select [(ngModel)]="selectedLandingPageId" (change)="onFilterChange()" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+          <option value="">All Pages (الكل)</option>
+          <option *ngFor="let lp of landingPages()" [value]="lp.id">
+            {{ translate.currentLang() === 'ar' ? lp.title_ar : lp.title_en }} ({{ lp.slug }})
+          </option>
+        </select>
+      </div>
+
+      <!-- Date Range Filter -->
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Time Period</label>
+        <select [(ngModel)]="selectedRange" (change)="onFilterChange()" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+          <option value="today">Today (اليوم)</option>
+          <option value="yesterday">Yesterday (أمس)</option>
+          <option value="week">Last 7 Days (أسبوع)</option>
+          <option value="month">Last 30 Days (شهر)</option>
+          <option value="custom">Custom Date Range (محدد)</option>
+        </select>
+      </div>
+
+      <!-- Custom Date Inputs (only when Range is Custom) -->
+      <div *ngIf="selectedRange === 'custom'" class="sm:col-span-2 lg:col-span-1 grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 mb-1">Start Date</label>
+          <input type="date" [(ngModel)]="startDate" (change)="onFilterChange()" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs">
         </div>
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 mb-1">End Date</label>
+          <input type="date" [(ngModel)]="endDate" (change)="onFilterChange()" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Loading State overlay -->
+  <div *ngIf="isLoading && !stats" class="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
+    <div class="inline-block h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+    <p class="text-gray-500 mt-4 font-medium">Fetching statistics...</p>
+  </div>
+
+  <div *ngIf="stats" class="space-y-8">
+    
+    <!-- Stats Cards Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      
+      <!-- Leads Today -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all duration-200">
+        <div class="p-3.5 rounded-xl bg-blue-50 text-blue-600 flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Leads Today</p>
+          <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ stats.leads_today }}</h3>
+        </div>
+      </div>
+
+      <!-- Leads Yesterday -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all duration-200">
+        <div class="p-3.5 rounded-xl bg-indigo-50 text-indigo-600 flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Leads Yesterday</p>
+          <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ stats.leads_yesterday }}</h3>
+        </div>
+      </div>
+
+      <!-- Total Leads -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all duration-200">
+        <div class="p-3.5 rounded-xl bg-green-50 text-green-600 flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Leads</p>
+          <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ stats.leads_total }}</h3>
+        </div>
+      </div>
+
+      <!-- Projects count -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all duration-200">
+        <div class="p-3.5 rounded-xl bg-amber-50 text-amber-600 flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Projects</p>
+          <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ stats.projects_count }}</h3>
+        </div>
+      </div>
+
+      <!-- Landing Pages count -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all duration-200">
+        <div class="p-3.5 rounded-xl bg-purple-50 text-purple-600 flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Landing Pages</p>
+          <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ stats.landing_pages_count }}</h3>
+        </div>
+      </div>
+
+      <!-- Blog Posts count -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all duration-200">
+        <div class="p-3.5 rounded-xl bg-pink-50 text-pink-600 flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Blog Articles</p>
+          <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ stats.blog_posts_count }}</h3>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Stat Card 2 -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <div class="flex items-center">
-            <div class="p-3 rounded-full bg-green-50 text-green-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-            </div>
-            <div class="ml-4">
-                <p class="text-sm text-gray-500 font-medium">New Leads</p>
-                <h3 class="text-2xl font-bold text-gray-800">{{ stats.leads_count }}</h3>
-            </div>
+    <!-- Leads Interactive Chart Section -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Leads Acquisition Chart</h2>
+          <p class="text-xs text-gray-500 mt-1">Number of incoming leads matching active filters per day.</p>
         </div>
+        
+        <!-- Legend -->
+        <div class="flex items-center gap-4 text-xs font-medium text-gray-600">
+          <div class="flex items-center gap-1.5">
+            <span class="inline-block h-3 w-3 bg-blue-600 rounded"></span>
+            <span>Leads Submission Volume</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Native Dynamic SVG Bar Chart -->
+      <div *ngIf="chartBars.length > 0; else emptyChart" class="w-full relative">
+        <svg viewBox="0 0 800 280" class="w-full h-auto overflow-visible">
+          <!-- Grid Lines & Y Axis Values -->
+          <g *ngFor="let line of chartGridLines">
+            <line x1="50" [attr.y1]="line.y" x2="780" [attr.y2]="line.y" stroke="#f1f5f9" stroke-width="1.5" stroke-dasharray="4" />
+            <text x="40" [attr.y]="line.y + 4" text-anchor="end" class="text-[10px] fill-gray-400 font-semibold">{{ line.value }}</text>
+          </g>
+
+          <!-- Interactive Bar Rects -->
+          <g *ngFor="let bar of chartBars; let i = index" class="group">
+            <!-- Gradient style hover bars -->
+            <rect 
+              [attr.x]="bar.x" 
+              [attr.y]="bar.y" 
+              [attr.width]="bar.width" 
+              [attr.height]="bar.height > 0 ? bar.height : 2" 
+              rx="4"
+              class="fill-blue-600 hover:fill-blue-700 transition-all duration-200 cursor-pointer"
+            />
+            
+            <!-- Hover Tooltip display -->
+            <g class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              <!-- Dark background tooltip card -->
+              <rect 
+                [attr.x]="bar.x + (bar.width / 2) - 40" 
+                [attr.y]="bar.y - 35" 
+                width="80" 
+                height="26" 
+                rx="6" 
+                fill="#0f172a" 
+              />
+              <text 
+                [attr.x]="bar.x + (bar.width / 2)" 
+                [attr.y]="bar.y - 18" 
+                text-anchor="middle" 
+                fill="#ffffff" 
+                class="text-[10px] font-extrabold"
+              >
+                {{ bar.count }} leads
+              </text>
+            </g>
+
+            <!-- X-axis date labels -->
+            <text 
+              [attr.x]="bar.x + (bar.width / 2)" 
+              y="260" 
+              text-anchor="middle" 
+              class="text-[9px] fill-gray-400 font-semibold uppercase tracking-wider"
+            >
+              {{ bar.formattedDate }}
+            </text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Empty State -->
+      <ng-template #emptyChart>
+        <div class="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+          </svg>
+          <h3 class="text-sm font-bold text-gray-700">No Lead Data Found (لا توجد ليدات مسجلة)</h3>
+          <p class="text-xs text-gray-500 mt-1">There are no leads registered matching the active filters in this time window. (لا توجد أي بيانات ليدات مسجلة تطابق خيارات التصفية الحالية في هذه الفترة الزمنية.)</p>
+        </div>
+      </ng-template>
+
     </div>
 
-    <!-- Stat Card 3 -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <div class="flex items-center">
-            <div class="p-3 rounded-full bg-purple-50 text-purple-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
-            </div>
-            <div class="ml-4">
-                <p class="text-sm text-gray-500 font-medium">Blog Posts</p>
-                <h3 class="text-2xl font-bold text-gray-800">{{ stats.blog_posts_count }}</h3>
-            </div>
-        </div>
-    </div>
+  </div>
+
 </div>

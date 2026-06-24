@@ -1,0 +1,57 @@
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+  <div *ngIf="isLoading" class="text-center py-16">
+    <div class="inline-block h-12 w-12 border-4 border-crete-gold border-t-transparent rounded-full animate-spin"></div>
+    <p class="text-gray-500 mt-4">Loading details...</p>
+  </div>
+
+  <div *ngIf="!isLoading && page() as p">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-extrabold text-crete-blue mb-4">
+        {{ translate.currentLang() === 'ar' ? p.title_ar : p.title_en }}
+      </h1>
+      <div class="h-1 w-20 bg-crete-gold mx-auto rounded"></div>
+    </div>
+
+    <!-- Page Content Container -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 prose max-w-none" [innerHTML]="translate.currentLang() === 'ar' ? p.content_ar : p.content_en"></div>
+  </div>
+
+  <!-- Fallback in case about-us page is not created in the database yet -->
+  <div *ngIf="!isLoading && !page()" class="text-center">
+    <ng-container *ngIf="translate.currentLang() === 'ar'; else englishFallback">
+      <div class="mb-12">
+        <h1 class="text-4xl font-extrabold text-crete-blue mb-4">من نحن</h1>
+        <p class="text-xl text-gray-500">تعرف على المزيد حول مشاريعنا التطويرية ورسالتنا وقيمنا.</p>
+        <div class="h-1 w-20 bg-crete-gold mx-auto rounded mt-4"></div>
+      </div>
+      
+      <div class="bg-white rounded-2xl shadow-xl p-10 border border-gray-100 space-y-6 text-right max-w-2xl mx-auto" dir="rtl">
+        <h3 class="text-2xl font-bold text-crete-blue">ريادة في تقديم مساحات معيشة فاخرة</h3>
+        <p class="text-gray-600 leading-relaxed">
+          مرحباً بكم في كريت للتطوير العقاري. نحن ملتزمون بإنشاء مساحات سكنية وتجارية عالمية المستوى تمزج بين الجماليات الراقية والتكامل الهيكلي المتميز.
+        </p>
+        <p class="text-gray-600 leading-relaxed text-sm">
+          يمكنك إدارة محتوى هذه الصفحة ديناميكياً عن طريق إنشاء صفحة بالرابط المخصص <code class="bg-gray-50 text-red-600 px-2 py-0.5 rounded font-mono text-xs">about-us</code> في لوحة تحكم الصفحات الإدارية!
+        </p>
+      </div>
+    </ng-container>
+
+    <ng-template #englishFallback>
+      <div class="mb-12">
+        <h1 class="text-4xl font-extrabold text-crete-blue mb-4">About Us</h1>
+        <p class="text-xl text-gray-500">Learn more about our developments, mission and values.</p>
+        <div class="h-1 w-20 bg-crete-gold mx-auto rounded mt-4"></div>
+      </div>
+      
+      <div class="bg-white rounded-2xl shadow-xl p-10 border border-gray-100 space-y-6 text-left max-w-2xl mx-auto">
+        <h3 class="text-2xl font-bold text-crete-blue">Pioneering Premium Living Spaces</h3>
+        <p class="text-gray-600 leading-relaxed">
+          Welcome to CRETE Developments. We are dedicated to creating world-class residential and commercial spaces that blend high aesthetics, micro-animations and structural integrity.
+        </p>
+        <p class="text-gray-600 leading-relaxed text-sm">
+          Configure this page content dynamically by creating a page with the slug <code class="bg-gray-100 text-red-600 px-2 py-0.5 rounded font-mono text-xs">about-us</code> in your Admin Pages Dashboard!
+        </p>
+      </div>
+    </ng-template>
+  </div>
+</div>

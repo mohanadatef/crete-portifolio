@@ -31,6 +31,7 @@ class StoreLandingPageRequest extends FormRequest
             'content_en' => 'nullable|string',
             'status' => 'boolean',
             'project_id' => 'nullable|exists:projects,id',
+            'show_header_footer' => 'boolean',
             'layout' => 'nullable|array',
             'form_schema' => 'nullable|array'
         ];

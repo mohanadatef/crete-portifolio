@@ -33,6 +33,10 @@ export class LandingPageService {
     return this.http.delete<ApiResponse<boolean>>(`${this.adminUrl}/${id}`);
   }
 
+  getLogs(id: number): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.adminUrl}/${id}/logs`);
+  }
+
   // Public Methods
   getPublic(params: any = {}): Observable<ApiResponse<PaginatedData<LandingPage> | LandingPage[]>> {
     return this.http.get<ApiResponse<PaginatedData<LandingPage> | LandingPage[]>>(this.publicUrl, { params });

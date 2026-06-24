@@ -47,10 +47,12 @@ class LeadSubmissionTest extends TestCase
 
     public function test_unconfirmed_delete_returns_422()
     {
+        $this->withoutMiddleware(\Spatie\Permission\Middleware\PermissionMiddleware::class);
         $admin = User::create([
             'name' => 'Admin Test',
             'email' => 'admintest' . rand(1, 1000) . '@admin.com',
-            'password' => bcrypt('password')
+            'password' => bcrypt('password'),
+            'is_active' => true
         ]);
         $lead = Lead::create([
             'name' => 'Jane Doe',

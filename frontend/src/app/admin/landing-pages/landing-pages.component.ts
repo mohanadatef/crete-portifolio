@@ -8,6 +8,7 @@ import { ProjectService } from '../../core/services/project.service';
 import { MediaService } from '../../core/services/media.service';
 import { LandingPage, Project } from '../../core/models/models';
 import { QuillModule } from 'ngx-quill';
+import { HasPermissionDirective } from '../../directives/has-permission.directive';
 
 interface LayoutBlock {
   type: 'text' | 'image' | 'video' | 'form';
@@ -31,7 +32,7 @@ interface FormField {
 @Component({
   selector: 'app-landing-pages',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, QuillModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, QuillModule, HasPermissionDirective],
   templateUrl: './landing-pages.component.html'
 })
 export class LandingPagesComponent implements OnInit {
@@ -47,6 +48,12 @@ export class LandingPagesComponent implements OnInit {
   projects = signal<Project[]>([]);
   status = signal<'loading' | 'success' | 'error'>('loading');
   showModal = signal(false);
+  showLogsModal = signal(false);
+  logsData = signal<any[]>([]);
+  logsLoading = signal(false);
+  editingHasLeads = signal(false);
+  originalFieldNames = new Set<string>();
+  copiedSlug = signal('');
   activeTab = signal<'general' | 'layout' | 'form'>('general');
   
   // Layout Builder State
@@ -57,9 +64,10 @@ export class LandingPagesComponent implements OnInit {
   
   dataForm: FormGroup;
 
-  filters = {
+  filters: any = {
     search: '',
     status: '',
+    project_id: '',
     page: 1,
     per_page: 10
   };
@@ -75,6 +83,10 @@ export class LandingPagesComponent implements OnInit {
 
   toasts = signal<{id: number, message: string, type: 'success' | 'error'}[]>([]);
   toastIdCounter = 0;
+
+  objectKeys(obj: any): string[] {
+    return obj ? Object.keys(obj) : [];
+  }
 
   showToast(message: string, type: 'success' | 'error' = 'success') {
     const id = ++this.toastIdCounter;
@@ -94,6 +106,7 @@ export class LandingPagesComponent implements OnInit {
       content_en: [''],
       project_id: [null],
       status: [true],
+      show_header_footer: [true],
     });
 
     this.searchSubject.pipe(
@@ -125,6 +138,11 @@ export class LandingPagesComponent implements OnInit {
     this.searchSubject.next(value);
   }
 
+  onFilterChange() {
+    this.filters.page = 1;
+    this.loadData();
+  }
+
   onPerPageChange(event: Event) {
     this.filters.per_page = Number((event.target as HTMLSelectElement).value);
     this.filters.page = 1;
@@ -136,6 +154,19 @@ export class LandingPagesComponent implements OnInit {
       this.filters.page = page;
       this.loadData();
     }
+  }
+
+  copyLink(slug: string) {
+    const url = `${window.location.origin}/landing/${slug}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.copiedSlug.set(slug);
+      this.showToast('Link copied to clipboard!', 'success');
+      setTimeout(() => this.copiedSlug.set(''), 2000);
+    });
+  }
+
+  previewPage(slug: string) {
+    window.open(`/landing/${slug}`, '_blank');
   }
 
   loadData() {
@@ -158,19 +189,43 @@ export class LandingPagesComponent implements OnInit {
     });
   }
 
+  isFieldProtected(fieldName: string): boolean {
+    return this.editingHasLeads() && this.originalFieldNames.has(fieldName);
+  }
+
   openModal(item?: LandingPage) {
     this.activeTab.set('general');
+    this.originalFieldNames.clear();
     
     if (item) {
       this.dataForm.patchValue({
         ...item,
-        status: !!item.status
+        status: !!item.status,
+        show_header_footer: item.show_header_footer !== undefined ? !!item.show_header_footer : true
       });
       this.layoutRows.set(item.layout ? JSON.parse(JSON.stringify(item.layout)) : []);
-      this.formFields.set(item.form_schema ? JSON.parse(JSON.stringify(item.form_schema)) : []);
+      const schema = item.form_schema ? JSON.parse(JSON.stringify(item.form_schema)) : [];
+      this.formFields.set(schema);
+      schema.forEach((field: FormField) => {
+        if (field.name) {
+          this.originalFieldNames.add(field.name);
+        }
+      });
+      // Check if this landing page has any leads submitted
+      this.editingHasLeads.set(false);
+      this.dataService.getById(item.id).subscribe({
+        next: (res: any) => {
+          const page = res.data;
+          if (page?.leads_count && page.leads_count > 0) {
+            this.editingHasLeads.set(true);
+          }
+        }
+      });
     } else {
+      this.editingHasLeads.set(false);
       this.dataForm.reset({
         status: true,
+        show_header_footer: true,
         project_id: ''
       });
       this.layoutRows.set([]);
@@ -181,6 +236,26 @@ export class LandingPagesComponent implements OnInit {
 
   closeModal() {
     this.showModal.set(false);
+  }
+
+  // Form Field Reordering
+  moveFieldUp(index: number) {
+    if (index <= 0) return;
+    this.formFields.update(fields => {
+      const newFields = [...fields];
+      [newFields[index - 1], newFields[index]] = [newFields[index], newFields[index - 1]];
+      return newFields;
+    });
+  }
+
+  moveFieldDown(index: number) {
+    const fields = this.formFields();
+    if (index >= fields.length - 1) return;
+    this.formFields.update(f => {
+      const newFields = [...f];
+      [newFields[index], newFields[index + 1]] = [newFields[index + 1], newFields[index]];
+      return newFields;
+    });
   }
 
   // Layout Builder Methods
@@ -248,7 +323,11 @@ export class LandingPagesComponent implements OnInit {
           this.showToast('Landing Page updated successfully', 'success');
         },
         error: (err) => {
-          const msg = err.error?.message || 'Error saving data';
+          let msg = err.error?.message || 'Error saving data';
+          if (err.error?.errors) {
+            const errors = Object.values(err.error.errors) as string[][];
+            msg = errors[0]?.[0] || msg;
+          }
           this.showToast(msg, 'error');
         }
       });
@@ -260,7 +339,11 @@ export class LandingPagesComponent implements OnInit {
           this.showToast('Landing Page created successfully', 'success');
         },
         error: (err) => {
-          const msg = err.error?.message || 'Error saving data';
+          let msg = err.error?.message || 'Error saving data';
+          if (err.error?.errors) {
+            const errors = Object.values(err.error.errors) as string[][];
+            msg = errors[0]?.[0] || msg;
+          }
           this.showToast(msg, 'error');
         }
       });
@@ -307,5 +390,26 @@ export class LandingPagesComponent implements OnInit {
         }
       });
     }
+  }
+
+  openLogs(id: number) {
+    this.logsLoading.set(true);
+    this.logsData.set([]);
+    this.showLogsModal.set(true);
+    this.dataService.getLogs(id).subscribe({
+      next: (res: any) => {
+        this.logsData.set(res.data || []);
+        this.logsLoading.set(false);
+      },
+      error: () => {
+        this.logsLoading.set(false);
+        this.showToast('Failed to load activity logs', 'error');
+      }
+    });
+  }
+
+  closeLogs() {
+    this.showLogsModal.set(false);
+    this.logsData.set([]);
   }
 }

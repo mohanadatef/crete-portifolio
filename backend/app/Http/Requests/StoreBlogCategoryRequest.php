@@ -24,9 +24,10 @@ class StoreBlogCategoryRequest extends FormRequest
     public function rules()
     {
         return [
-            'slug' => 'required|string|unique:blog_categories,slug',
+            'slug' => 'nullable|string|unique:blog_categories,slug',
             'name_ar' => 'required|string',
-            'name_en' => 'required|string'
+            'name_en' => 'required|string',
+            'status' => 'boolean'
         ];
     }
 }

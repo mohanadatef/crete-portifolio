@@ -1,28 +1,29 @@
-import { Component, inject, OnInit, signal, effect } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ProjectService } from '../../core/services/project.service';
 import { ProjectTypeService } from '../../core/services/project-type.service';
 import { Project, ProjectType } from '../../core/models/models';
+import { HasPermissionDirective } from '../../directives/has-permission.directive';
+import { RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, FormsModule, HasPermissionDirective, RouterModule],
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.scss'
 })
 export class ProjectsComponent implements OnInit {
   private projectService = inject(ProjectService);
   private projectTypeService = inject(ProjectTypeService);
-  private fb = inject(FormBuilder);
+  private router = inject(Router);
+  backendUrl = environment.backendUrl;
+
   projects = signal<Project[]>([]);
   projectTypes = signal<ProjectType[]>([]);
   status = signal<'loading' | 'success' | 'error'>('loading');
-  showModal = signal(false);
-  
-  projectForm: FormGroup;
-  selectedFiles: File[] = [];
 
   filters = {
     search: '',
@@ -30,34 +31,15 @@ export class ProjectsComponent implements OnInit {
     status: ''
   };
 
-  constructor() {
-    this.projectForm = this.fb.group({
-      title_ar: ['', Validators.required],
-      title_en: ['', Validators.required],
-      slug: ['', Validators.required],
-      description_ar: [''],
-      description_en: [''],
-      location: [''],
-      project_type_id: ['', Validators.required],
-      status: [true],
-      featured: [false],
-      price: [null],
-      area: [null],
-      bedrooms: [null],
-      developer: [''],
-      delivery_date: [null]
-    });
-  }
-
   ngOnInit() {
     this.loadProjectTypes();
     this.loadProjects();
   }
 
   loadProjectTypes() {
-    this.projectTypeService.getAll().subscribe({
+    this.projectTypeService.getActive().subscribe({
       next: (res) => {
-        this.projectTypes.set(res.data.data || []);
+        this.projectTypes.set(res.data || []);
       },
       error: (err) => console.error('Error loading project types', err)
     });
@@ -80,64 +62,26 @@ export class ProjectsComponent implements OnInit {
     this.loadProjects();
   }
 
-  onFileSelect(event: any) {
-    this.selectedFiles = Array.from(event.target.files);
+  isVideoUrl(url: string): boolean {
+    if (!url) return false;
+    const cleanUrl = url.split('?')[0].toLowerCase();
+    return cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.webm') || cleanUrl.endsWith('.ogg') || cleanUrl.endsWith('.mov');
   }
 
-  openModal(project?: Project) {
-    if (project) {
-      this.projectForm.patchValue({
-        ...project,
-        status: !!project.status,
-        featured: !!project.featured
-      });
-    } else {
-      this.projectForm.reset({
-        status: true,
-        featured: false
-      });
-    }
-    this.selectedFiles = [];
-    this.showModal.set(true);
+  isImageUrl(url: string): boolean {
+    return !this.isVideoUrl(url);
   }
 
-  closeModal() {
-    this.showModal.set(false);
+  getPrimaryImage(project: Project): string | null {
+    if (!project.images || project.images.length === 0) return null;
+    const primary = project.images.find(img => img.is_primary);
+    return primary ? primary.image_path : project.images[0].image_path;
   }
 
-  saveProject() {
-    if (this.projectForm.invalid) {
-      this.projectForm.markAllAsTouched();
-      return;
-    }
-
-    const data = new FormData();
-    const formValues = this.projectForm.value;
-
-    Object.keys(formValues).forEach(key => {
-      let value = formValues[key];
-      if (value !== null && value !== undefined) {
-        if (key === 'status' || key === 'featured') {
-          value = value ? '1' : '0';
-        }
-        data.append(key, value);
-      }
-    });
-
-    this.selectedFiles.forEach(file => {
-      data.append('images[]', file, file.name);
-    });
-
-    this.projectService.create(data as any).subscribe({
-      next: () => {
-        this.closeModal();
-        this.loadProjects();
-      },
-      error: (err) => {
-        console.error(err);
-        alert('Error saving project. Please check the inputs.');
-      }
-    });
+  getImageUrl(path: string | null): string {
+    if (!path) return 'assets/images/placeholder.jpg';
+    if (path.startsWith('data:') || path.startsWith('http://') || path.startsWith('https://')) return path;
+    return this.backendUrl + (path.startsWith('/') ? path : '/' + path);
   }
 
   deleteProject(id: number) {

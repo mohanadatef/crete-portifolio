@@ -25,16 +25,17 @@ export const routes: Routes = [
             { path: '', component: HomeComponent },
             { path: 'projects', loadComponent: () => import('./public/projects/projects.component').then(m => m.ProjectsComponent) },
             { path: 'blog', component: BlogComponent },
-            { path: 'contact', component: ContactComponent }
+            { path: 'about', loadComponent: () => import('./public/about/about.component').then(m => m.AboutComponent) },
+            { path: 'contact', component: ContactComponent },
+            {
+                path: 'landing/:slug/thank-you',
+                loadComponent: () => import('./public/landing-page/thank-you.component').then(m => m.ThankYouComponent)
+            },
+            {
+                path: 'landing/:slug',
+                loadComponent: () => import('./public/landing-page/landing-page.component').then(m => m.PublicLandingPageComponent)
+            }
         ]
-    },
-    {
-        path: 'landing/:slug',
-        loadComponent: () => import('./public/landing-page/landing-page.component').then(m => m.PublicLandingPageComponent)
-    },
-    {
-        path: 'landing/:slug/thank-you',
-        loadComponent: () => import('./public/landing-page/thank-you.component').then(m => m.ThankYouComponent)
     },
     {
         path: 'admin/login',
@@ -63,6 +64,18 @@ export const routes: Routes = [
                 component: ProjectsComponent,
                 canActivate: [permissionGuard],
                 data: { permission: 'view-projects' }
+            },
+            {
+                path: 'projects/create',
+                loadComponent: () => import('./admin/projects/project-form/project-form.component').then(m => m.ProjectFormComponent),
+                canActivate: [permissionGuard],
+                data: { permission: 'create-projects' }
+            },
+            {
+                path: 'projects/edit/:id',
+                loadComponent: () => import('./admin/projects/project-form/project-form.component').then(m => m.ProjectFormComponent),
+                canActivate: [permissionGuard],
+                data: { permission: 'edit-projects' }
             },
             { 
                 path: 'project-types', 
@@ -105,6 +118,18 @@ export const routes: Routes = [
                 component: PostsComponent,
                 canActivate: [permissionGuard],
                 data: { permission: 'view-blog-posts' }
+            },
+            {
+                path: 'blog/posts/create',
+                loadComponent: () => import('./admin/blog/posts/post-form/post-form.component').then(m => m.BlogPostFormComponent),
+                canActivate: [permissionGuard],
+                data: { permission: 'create-blog-posts' }
+            },
+            {
+                path: 'blog/posts/edit/:id',
+                loadComponent: () => import('./admin/blog/posts/post-form/post-form.component').then(m => m.BlogPostFormComponent),
+                canActivate: [permissionGuard],
+                data: { permission: 'edit-blog-posts' }
             },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]

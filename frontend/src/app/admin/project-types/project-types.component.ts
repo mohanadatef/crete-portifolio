@@ -1,12 +1,14 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HasPermissionDirective } from '../../directives/has-permission.directive';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-project-types',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HasPermissionDirective],
   templateUrl: './project-types.component.html',
   styleUrl: './project-types.component.scss'
 })
@@ -16,29 +18,82 @@ export class ProjectTypesComponent implements OnInit {
   showModal = false;
   isEditing = false;
   editingId: number | null = null;
+
+  // Toasts
+  toasts = signal<{id: number, message: string, type: 'success' | 'error'}[]>([]);
+  toastIdCounter = 0;
+
+  showToast(message: string, type: 'success' | 'error' = 'success') {
+    const id = ++this.toastIdCounter;
+    this.toasts.update(t => [...t, { id, message, type }]);
+    setTimeout(() => {
+      this.toasts.update(t => t.filter(toast => toast.id !== id));
+    }, 4000);
+  }
   
   formData: any = {
     name_ar: '',
     name_en: '',
-    slug: '',
     is_active: true
   };
+
+  // Filters
+  filters = {
+    search: '',
+    status: ''
+  };
+
+  // Pagination
+  currentPage = 1;
+  lastPage = 1;
+  perPage = 10;
+  totalRecords = 0;
 
   ngOnInit() {
     this.loadProjectTypes();
   }
 
-  loadProjectTypes() {
-    this.http.get<any>('http://backend.test/api/v1/admin/project-types', {
-      headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
-    }).subscribe({
+  loadProjectTypes(page: number = 1) {
+    const headers = { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` };
+    let params = new URLSearchParams();
+    if (this.filters.search) params.append('search', this.filters.search);
+    if (this.filters.status) params.append('status', this.filters.status);
+    params.append('page', page.toString());
+    params.append('per_page', this.perPage.toString());
+
+    this.http.get<any>(`${environment.apiUrl}/admin/project-types?${params.toString()}`, { headers }).subscribe({
       next: (res) => {
         const paginatedData = res.data || {};
-        const typesArray = paginatedData.data || res || [];
-        this.projectTypes = Array.isArray(typesArray) ? typesArray : [];
+        this.projectTypes = paginatedData.data || [];
+        this.currentPage = paginatedData.current_page || 1;
+        this.lastPage = paginatedData.last_page || 1;
+        this.totalRecords = paginatedData.total || this.projectTypes.length;
       },
-      error: (err) => console.error('Error loading project types', err)
+      error: (err) => {
+        console.error('Error loading project types', err);
+        this.showToast('Error loading project types', 'error');
+      }
     });
+  }
+
+  applyFilters() {
+    this.loadProjectTypes(1);
+  }
+
+  resetFilters() {
+    this.filters = { search: '', status: '' };
+    this.loadProjectTypes(1);
+  }
+
+  changePage(page: number) {
+    if (page >= 1 && page <= this.lastPage) {
+      this.loadProjectTypes(page);
+    }
+  }
+
+  changePerPage(event: any) {
+    this.perPage = parseInt(event.target.value, 10);
+    this.loadProjectTypes(1);
   }
 
   openModal() {
@@ -47,7 +102,6 @@ export class ProjectTypesComponent implements OnInit {
     this.formData = {
       name_ar: '',
       name_en: '',
-      slug: '',
       is_active: true
     };
     this.showModal = true;
@@ -59,7 +113,6 @@ export class ProjectTypesComponent implements OnInit {
     this.formData = {
       name_ar: type.name_ar,
       name_en: type.name_en,
-      slug: type.slug,
       is_active: type.is_active
     };
     this.showModal = true;
@@ -77,31 +130,45 @@ export class ProjectTypesComponent implements OnInit {
     };
 
     if (this.isEditing && this.editingId) {
-      this.http.put(`http://backend.test/api/v1/admin/project-types/${this.editingId}`, payload, { headers }).subscribe({
+      this.http.put(`${environment.apiUrl}/admin/project-types/${this.editingId}`, payload, { headers }).subscribe({
         next: () => {
           this.closeModal();
-          this.loadProjectTypes();
+          this.loadProjectTypes(this.currentPage);
+          this.showToast('Project Type updated successfully', 'success');
         },
-        error: (err) => alert('Error updating project type')
+        error: (err) => {
+          const msg = err.error?.message || 'Error updating project type';
+          this.showToast(msg, 'error');
+        }
       });
     } else {
-      this.http.post('http://backend.test/api/v1/admin/project-types', payload, { headers }).subscribe({
+      this.http.post(`${environment.apiUrl}/admin/project-types`, payload, { headers }).subscribe({
         next: () => {
           this.closeModal();
-          this.loadProjectTypes();
+          this.loadProjectTypes(1);
+          this.showToast('Project Type created successfully', 'success');
         },
-        error: (err) => alert('Error creating project type')
+        error: (err) => {
+          const msg = err.error?.message || 'Error creating project type';
+          this.showToast(msg, 'error');
+        }
       });
     }
   }
 
   deleteType(id: number) {
     if (confirm('Are you sure you want to delete this project type?')) {
-      this.http.delete(`http://backend.test/api/v1/admin/project-types/${id}`, {
+      this.http.delete(`${environment.apiUrl}/admin/project-types/${id}`, {
         headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
       }).subscribe({
-        next: () => this.loadProjectTypes(),
-        error: (err) => alert('Error deleting project type')
+        next: () => {
+          this.loadProjectTypes(this.currentPage);
+          this.showToast('Project Type deleted successfully', 'success');
+        },
+        error: (err) => {
+          const msg = err.error?.message || 'Error deleting project type';
+          this.showToast(msg, 'error');
+        }
       });
     }
   }

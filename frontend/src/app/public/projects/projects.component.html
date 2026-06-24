@@ -68,7 +68,7 @@
     <div *ngIf="status === 'success' && projects.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <div *ngFor="let project of projects" class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 group">
         <div class="relative h-64 overflow-hidden">
-          <img loading="lazy" [src]="'http://backend.test' + (project.project_images?.[0]?.image_path || '/placeholder.jpg')" 
+          <img loading="lazy" [src]="backendUrl + (getPrimaryImagePath(project) || '/placeholder.jpg')" 
                [alt]="project.title_en" 
                class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
           <div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-bold text-crete-blue shadow">

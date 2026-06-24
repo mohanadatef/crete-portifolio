@@ -5,15 +5,18 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { RoleService } from '../../core/services/role.service';
 import { Role } from '../../core/models/models';
+import { HasPermissionDirective } from '../../directives/has-permission.directive';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, HasPermissionDirective],
   templateUrl: './roles.component.html'
 })
 export class RolesComponent implements OnInit {
   private dataService = inject(RoleService);
+  public authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
   roles = signal<Role[]>([]);

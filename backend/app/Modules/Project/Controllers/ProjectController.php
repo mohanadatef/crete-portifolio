@@ -91,7 +91,8 @@ class ProjectController extends Controller
     {
         try {
             $project = $this->projectService->getProjectBySlug($slug);
-            $project->load('projectImages');
+            $project->increment('views_count');
+            $project->load(['projectImages', 'projectUnits']);
             return $this->successResponse(new ProjectResource($project), 'Project retrieved successfully');
         } catch (Exception $e) {
             return $this->errorResponse('Project not found', 404);
@@ -102,7 +103,7 @@ class ProjectController extends Controller
     {
         try {
             $project = $this->projectService->getProjectById($id);
-            $project->load('projectImages');
+            $project->load(['projectImages', 'projectUnits']);
             return $this->successResponse(new ProjectResource($project), 'Project retrieved successfully');
         } catch (Exception $e) {
             return $this->errorResponse('Project not found', 404);
