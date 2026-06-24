@@ -35,6 +35,11 @@ class BlogService
         return BlogCategory::latest()->get();
     }
 
+    public function getActiveCategories(): Collection
+    {
+        return BlogCategory::where('status', true)->latest()->get();
+    }
+
     public function getCategoryById(int $id): BlogCategory
     {
         return BlogCategory::findOrFail($id);

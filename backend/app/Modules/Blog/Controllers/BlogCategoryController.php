@@ -53,7 +53,7 @@ class BlogCategoryController extends Controller
     public function indexPublic(): JsonResponse
     {
         try {
-            $categories = $this->blogService->getAllCategories();
+            $categories = $this->blogService->getActiveCategories();
             return $this->successResponse(
                 BlogCategoryResource::collection($categories),
                 'Categories retrieved successfully'

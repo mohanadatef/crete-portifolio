@@ -85,9 +85,10 @@ export class BlogPostFormComponent implements OnInit {
   }
 
   private loadCategories() {
-    this.categoryService.getAll().subscribe({
+    this.categoryService.getPublic().subscribe({
       next: (res) => {
-        this.categories.set(res.data.data || []);
+        const categoriesList = res.data;
+        this.categories.set(Array.isArray(categoriesList) ? categoriesList : []);
       },
       error: (err) => console.error('Error loading blog categories', err)
     });
