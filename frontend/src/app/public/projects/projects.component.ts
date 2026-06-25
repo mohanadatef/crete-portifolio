@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { SeoService } from '../../services/seo.service';
@@ -20,6 +20,7 @@ export class ProjectsComponent implements OnInit {
   public translate = inject(TranslateService);
   private seoService = inject(SeoService);
   private settingService = inject(SettingService);
+  private route = inject(ActivatedRoute);
   
   backendUrl = environment.backendUrl;
   projects: any[] = [];
@@ -32,7 +33,13 @@ export class ProjectsComponent implements OnInit {
     return primary ? primary.image_path : project.images[0].image_path;
   }
   
-  filters = {
+  filters: {
+    project_type_id: string;
+    location: string;
+    min_price: number | null;
+    max_price: number | null;
+    bedrooms: number | null;
+  } = {
     project_type_id: '',
     location: '',
     min_price: null,
@@ -44,7 +51,15 @@ export class ProjectsComponent implements OnInit {
     const siteName = this.settingService.getSetting('site_name') || 'CRETE Developments';
     this.seoService.updateTitle(`Projects | ${siteName}`);
     this.loadProjectTypes();
-    this.loadProjects();
+    
+    this.route.queryParams.subscribe(params => {
+      this.filters.project_type_id = params['project_type_id'] || '';
+      this.filters.location = params['location'] || '';
+      this.filters.min_price = params['min_price'] ? Number(params['min_price']) : null;
+      this.filters.max_price = params['max_price'] ? Number(params['max_price']) : null;
+      this.filters.bedrooms = params['bedrooms'] ? Number(params['bedrooms']) : null;
+      this.loadProjects();
+    });
   }
 
   loadProjectTypes() {

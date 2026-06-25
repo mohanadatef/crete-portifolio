@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { RouterOutlet, RouterLink } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateService, TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { DOCUMENT, CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -10,7 +10,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
   selector: 'app-public-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, TranslatePipe, TranslateDirective, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, TranslateDirective, CommonModule],
   templateUrl: './public-layout.component.html',
   styleUrl: './public-layout.component.scss'
 })

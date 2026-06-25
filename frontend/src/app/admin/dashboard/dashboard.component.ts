@@ -128,10 +128,10 @@ export class DashboardComponent implements OnInit {
     this.chartMaxCount = maxVal > 0 ? maxVal : 5;
 
     const svgWidth = 800;
-    const svgHeight = 240;
+    const svgHeight = 260;
     const paddingLeft = 50;
     const paddingRight = 20;
-    const paddingTop = 30;
+    const paddingTop = 50;
     const chartWidth = svgWidth - paddingLeft - paddingRight;
     const chartHeight = svgHeight - paddingTop;
 
@@ -157,7 +157,7 @@ export class DashboardComponent implements OnInit {
 
       // Transform string for rotated labels — rotate around the label center point
       const labelTransform = this.chartRotateLabels
-        ? `rotate(-45 ${cx} 258)`
+        ? `rotate(-45 ${cx} 278)`
         : '';
 
       return {
