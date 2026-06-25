@@ -28,7 +28,11 @@ class LeadController extends Controller
     {
         try {
             $filters = $request->only(['search', 'status', 'assigned_to', 'landing_page_id', 'project_id', 'source']);
-            $leads = $this->leadService->getLeads(15, $filters);
+            $perPage = $request->integer('per_page', 15);
+            if ($perPage < 1 || $perPage > 100) {
+                $perPage = 15;
+            }
+            $leads = $this->leadService->getLeads($perPage, $filters);
             return $this->successResponse(
                 LeadResource::collection($leads)->response()->getData(true),
                 'Leads retrieved successfully'

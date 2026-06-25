@@ -1,50 +1,46 @@
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full">
-  <!-- Header & Filters -->
-  <div class="p-6 border-b border-gray-100 bg-white/50 shrink-0">
-    <div class="flex justify-between items-center mb-4">
-      <div>
-        <h2 class="text-xl font-bold text-gray-800">Categories Management</h2>
-        <p class="text-sm text-gray-500 mt-1">Manage blog categories used in posts</p>
-      </div>
-      <button *appHasPermission="'create-blog-categories'" (click)="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-        </svg>
-        Add Category
-      </button>
+<div class="glass-panel overflow-hidden">
+  <!-- Header -->
+  <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white/40 shrink-0">
+    <div>
+      <h2 class="text-xl font-bold text-gray-800">Categories Management</h2>
+      <p class="text-sm text-gray-500 mt-1">Manage blog categories used in posts</p>
     </div>
+    <button *appHasPermission="'create-blog-categories'" (click)="openModal()" class="btn-primary flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+      </svg>
+      Add Category
+    </button>
+  </div>
 
-    <!-- Filters Row -->
-    <div class="flex flex-wrap gap-3 items-center">
-      <div class="relative flex-1 min-w-[200px]">
-        <input type="text" [(ngModel)]="filters.search" (keyup.enter)="applyFilters()" placeholder="Search by name..." 
-               class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-shadow w-full text-gray-900 bg-white">
-        <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-      </div>
-      <select [(ngModel)]="filters.status" (change)="applyFilters()" class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-[140px] text-gray-900 bg-white">
-        <option value="" class="text-gray-900 bg-white">All Statuses</option>
-        <option value="true" class="text-gray-900 bg-white">Active</option>
-        <option value="false" class="text-gray-900 bg-white">Inactive</option>
-      </select>
-      <button (click)="resetFilters()" class="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium bg-white">Reset</button>
-      <button (click)="applyFilters()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium">Apply</button>
+  <!-- Filters Panel -->
+  <div class="p-6 bg-white/20 border-b border-gray-100 flex flex-wrap gap-4 items-center">
+    <input type="text" [(ngModel)]="filters.search" (keyup.enter)="applyFilters()" placeholder="Search by name..." class="input-premium flex-1 min-w-[200px]">
+    <select [(ngModel)]="filters.status" (change)="applyFilters()" class="input-premium w-full sm:w-48 bg-white text-gray-700">
+      <option value="">All Statuses</option>
+      <option value="true">Active</option>
+      <option value="false">Inactive</option>
+    </select>
+    <div class="flex gap-2 ml-auto sm:ml-0">
+      <button (click)="resetFilters()" class="btn-secondary">Reset</button>
+      <button (click)="applyFilters()" class="btn-primary">Apply</button>
     </div>
   </div>
 
   <!-- Table -->
-  <div class="overflow-x-auto flex-1">
+  <div class="overflow-x-auto">
     <table class="w-full text-left border-collapse">
       <thead>
-        <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-          <th class="p-4 font-semibold">Name (AR)</th>
-          <th class="p-4 font-semibold">Name (EN)</th>
-          <th class="p-4 font-semibold">Status</th>
-          <th class="p-4 font-semibold text-right">Actions</th>
+        <tr>
+          <th>Name (AR)</th>
+          <th>Name (EN)</th>
+          <th>Status</th>
+          <th class="text-right">Actions</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100 text-sm">
-        <tr *ngFor="let item of categories()" class="hover:bg-gray-50/50 transition-colors">
-          <td class="p-4 font-medium text-gray-800">{{ item.name_ar }}</td>
+      <tbody class="divide-y divide-gray-100">
+        <tr *ngFor="let item of categories()">
+          <td class="p-4 font-semibold text-gray-800">{{ item.name_ar }}</td>
           <td class="p-4 text-gray-600">{{ item.name_en }}</td>
           <td class="p-4">
             <span *ngIf="item.status" class="px-2.5 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">Active</span>
@@ -52,11 +48,15 @@
           </td>
           <td class="p-4 text-right">
             <div class="flex items-center justify-end gap-1.5">
-              <button *appHasPermission="'edit-blog-categories'" (click)="openModal(item)" class="p-2 text-amber-600 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors rounded-lg shadow-sm" title="Edit">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+              <button *appHasPermission="'edit-blog-categories'" (click)="openModal(item)" title="Edit" class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
               </button>
-              <button *appHasPermission="'delete-blog-categories'" (click)="deleteData(item.id)" class="p-2 text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors rounded-lg shadow-sm" title="Delete">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              <button *appHasPermission="'delete-blog-categories'" (click)="deleteData(item.id)" title="Delete" class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
               </button>
             </div>
           </td>
@@ -69,37 +69,39 @@
   </div>
 
   <!-- Pagination Footer -->
-  <div *ngIf="categories().length > 0" class="bg-white px-4 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between sm:px-6 rounded-b-lg shrink-0">
-    <div class="flex-1 flex justify-between sm:hidden w-full mb-4 sm:mb-0">
-      <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">Previous</button>
-      <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === lastPage" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">Next</button>
+  <div *ngIf="categories().length > 0" class="bg-white/40 px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-b-2xl">
+    <div class="flex-1 flex justify-between sm:hidden w-full">
+      <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="btn-secondary py-1.5 px-3 text-sm disabled:opacity-50">Previous</button>
+      <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === lastPage" class="btn-secondary py-1.5 px-3 text-sm disabled:opacity-50">Next</button>
     </div>
-    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-      <div class="flex items-center gap-4">
-        <p class="text-sm text-gray-700">
-          Showing <span class="font-medium">{{ totalRecords }}</span> total results
+    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between w-full">
+      <div class="flex items-center gap-6">
+        <p class="text-sm text-gray-600">
+          Showing <span class="font-semibold text-gray-800">{{ totalRecords }}</span> total results
         </p>
-        <div class="flex items-center gap-2 text-sm text-gray-700">
+        <div class="flex items-center gap-2 text-sm text-gray-600">
           <span>Rows per page:</span>
-          <select [ngModel]="perPage" (change)="changePerPage($event)" class="border-gray-300 rounded text-sm py-1 pl-2 pr-6 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white">
-            <option value="10" class="text-gray-900 bg-white">10</option>
-            <option value="25" class="text-gray-900 bg-white">25</option>
-            <option value="50" class="text-gray-900 bg-white">50</option>
+          <select [ngModel]="perPage" (change)="changePerPage($event)" class="border-gray-200 bg-white/50 rounded-lg text-sm py-1.5 pl-3 pr-8 focus:ring-blue-500 focus:border-blue-500 shadow-sm text-gray-900">
+            <option [value]="10">10</option>
+            <option [value]="15">15</option>
+            <option [value]="30">30</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
           </select>
         </div>
       </div>
       <div>
-        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-          <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+        <nav class="relative z-0 inline-flex rounded-lg shadow-sm -space-x-px bg-white border border-gray-200 overflow-hidden" aria-label="Pagination">
+          <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="relative inline-flex items-center px-3 py-2 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors">
             <span class="sr-only">Previous</span>
             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
             </svg>
           </button>
-          <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+          <span class="relative inline-flex items-center px-4 py-2 bg-gray-50/50 text-sm font-medium text-gray-700 border-x border-gray-100">
             Page {{ currentPage }} of {{ lastPage }}
           </span>
-          <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === lastPage" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+          <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === lastPage" class="relative inline-flex items-center px-3 py-2 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors">
             <span class="sr-only">Next</span>
             <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />

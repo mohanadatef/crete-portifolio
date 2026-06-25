@@ -25,6 +25,11 @@ export class ProjectsComponent implements OnInit {
   projectTypes = signal<ProjectType[]>([]);
   status = signal<'loading' | 'success' | 'error'>('loading');
 
+  currentPage = 1;
+  lastPage = 1;
+  perPage = 15;
+  totalRecords = 0;
+
   filters = {
     search: '',
     project_type_id: '',
@@ -33,7 +38,7 @@ export class ProjectsComponent implements OnInit {
 
   ngOnInit() {
     this.loadProjectTypes();
-    this.loadProjects();
+    this.loadProjects(1);
   }
 
   loadProjectTypes() {
@@ -45,21 +50,40 @@ export class ProjectsComponent implements OnInit {
     });
   }
 
-  loadProjects() {
+  loadProjects(page: number = 1) {
     this.status.set('loading');
-    this.projectService.getAll(this.filters).subscribe({
+    const params = {
+      ...this.filters,
+      page: page,
+      per_page: this.perPage
+    };
+    this.projectService.getAll(params).subscribe({
       next: (response) => {
         const paginatedData = response.data;
         this.projects.set(paginatedData.data || []);
+        this.currentPage = paginatedData.current_page || 1;
+        this.lastPage = paginatedData.last_page || 1;
+        this.totalRecords = paginatedData.total || 0;
         this.status.set('success');
       },
       error: () => this.status.set('error')
     });
   }
 
+  changePage(page: number) {
+    if (page >= 1 && page <= this.lastPage) {
+      this.loadProjects(page);
+    }
+  }
+
+  changePerPage(event: any) {
+    this.perPage = parseInt(event.target.value, 10);
+    this.loadProjects(1);
+  }
+
   onFilterChange(event: any, field: string) {
     (this.filters as any)[field] = event.target.value;
-    this.loadProjects();
+    this.loadProjects(1);
   }
 
   isVideoUrl(url: string): boolean {

@@ -32,7 +32,11 @@ class ProjectController extends Controller
     {
         try {
             $filter = ProjectFilterDTO::fromRequest($request);
-            $projects = $this->projectService->getProjects($filter);
+            $perPage = $request->integer('per_page', 15);
+            if ($perPage < 1 || $perPage > 100) {
+                $perPage = 15;
+            }
+            $projects = $this->projectService->getProjects($filter, $perPage);
             
             // For pagination, we can use Laravel's resource collection
             return $this->successResponse(
@@ -63,8 +67,12 @@ class ProjectController extends Controller
     {
         try {
             $filter = ProjectFilterDTO::fromRequest($request);
+            $perPage = $request->integer('per_page', 12);
+            if ($perPage < 1 || $perPage > 100) {
+                $perPage = 12;
+            }
             // Pass onlyPublished = true
-            $projects = $this->projectService->getProjects($filter, 12, true);
+            $projects = $this->projectService->getProjects($filter, $perPage, true);
             
             return $this->successResponse(
                 ProjectResource::collection($projects)->response()->getData(true),
