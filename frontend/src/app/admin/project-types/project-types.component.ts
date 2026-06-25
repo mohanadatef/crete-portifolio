@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
 import { environment } from '../../../environments/environment';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-project-types',
@@ -48,6 +50,23 @@ export class ProjectTypesComponent implements OnInit {
   lastPage = 1;
   perPage = 10;
   totalRecords = 0;
+
+  searchSubject = new Subject<string>();
+
+  constructor() {
+    this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe((searchValue) => {
+      this.filters.search = searchValue;
+      this.loadProjectTypes(1);
+    });
+  }
+
+  onSearch(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value);
+  }
 
   ngOnInit() {
     this.loadProjectTypes();
