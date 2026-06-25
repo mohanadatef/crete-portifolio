@@ -7,6 +7,8 @@ import { HasPermissionDirective } from '../../directives/has-permission.directiv
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../environments/environment';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-projects',
@@ -36,6 +38,23 @@ export class ProjectsComponent implements OnInit {
     status: ''
   };
 
+  searchSubject = new Subject<string>();
+
+  constructor() {
+    this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe((searchValue) => {
+      this.filters.search = searchValue;
+      this.loadProjects(1);
+    });
+  }
+
+  onSearch(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value);
+  }
+
   ngOnInit() {
     this.loadProjectTypes();
     this.loadProjects(1);
@@ -59,11 +78,11 @@ export class ProjectsComponent implements OnInit {
     };
     this.projectService.getAll(params).subscribe({
       next: (response) => {
-        const paginatedData = response.data;
+        const paginatedData = response.data as any;
         this.projects.set(paginatedData.data || []);
-        this.currentPage = paginatedData.current_page || 1;
-        this.lastPage = paginatedData.last_page || 1;
-        this.totalRecords = paginatedData.total || 0;
+        this.currentPage = paginatedData.meta?.current_page || paginatedData.current_page || 1;
+        this.lastPage = paginatedData.meta?.last_page || paginatedData.last_page || 1;
+        this.totalRecords = paginatedData.meta?.total || paginatedData.total || 0;
         this.status.set('success');
       },
       error: () => this.status.set('error')

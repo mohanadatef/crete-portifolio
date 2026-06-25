@@ -65,9 +65,9 @@ export class ProjectTypesComponent implements OnInit {
       next: (res) => {
         const paginatedData = res.data || {};
         this.projectTypes = paginatedData.data || [];
-        this.currentPage = paginatedData.current_page || 1;
-        this.lastPage = paginatedData.last_page || 1;
-        this.totalRecords = paginatedData.total || this.projectTypes.length;
+        this.currentPage = paginatedData.meta?.current_page || paginatedData.current_page || 1;
+        this.lastPage = paginatedData.meta?.last_page || paginatedData.last_page || 1;
+        this.totalRecords = paginatedData.meta?.total || paginatedData.total || this.projectTypes.length;
       },
       error: (err) => {
         console.error('Error loading project types', err);

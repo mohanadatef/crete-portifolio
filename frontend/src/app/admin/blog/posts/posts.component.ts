@@ -41,11 +41,11 @@ export class PostsComponent implements OnInit {
     };
     this.dataService.getAll(params).subscribe({
       next: (response) => {
-        const paginatedData = response.data;
+        const paginatedData = response.data as any;
         this.posts.set(paginatedData.data || []);
-        this.currentPage = paginatedData.current_page || 1;
-        this.lastPage = paginatedData.last_page || 1;
-        this.totalRecords = paginatedData.total || 0;
+        this.currentPage = paginatedData.meta?.current_page || paginatedData.current_page || 1;
+        this.lastPage = paginatedData.meta?.last_page || paginatedData.last_page || 1;
+        this.totalRecords = paginatedData.meta?.total || paginatedData.total || 0;
         this.status.set('success');
       },
       error: () => this.status.set('error')
