@@ -5,6 +5,8 @@ import { RouterModule } from '@angular/router';
 import { BlogPostService } from '../../../core/services/blog-post.service';
 import { BlogPost } from '../../../core/models/models';
 import { HasPermissionDirective } from '../../../directives/has-permission.directive';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-posts',
@@ -27,6 +29,23 @@ export class PostsComponent implements OnInit {
     search: '',
     status: ''
   };
+
+  searchSubject = new Subject<string>();
+
+  constructor() {
+    this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe((searchValue) => {
+      this.filters.search = searchValue;
+      this.loadData(1);
+    });
+  }
+
+  onSearch(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value);
+  }
 
   ngOnInit() {
     this.loadData(1);
