@@ -21,6 +21,7 @@ export class AdminLayoutComponent implements OnInit {
 
   siteName = signal<string>('CRETE');
   siteLogo = signal<string>('');
+  sidebarOpen = signal<boolean>(true);
 
   ngOnInit() {
     this.loadAdminSettings();
@@ -53,6 +54,10 @@ export class AdminLayoutComponent implements OnInit {
         this.seoService.updateTitle('Admin Dashboard | CRETE');
       }
     });
+  }
+
+  toggleSidebar() {
+    this.sidebarOpen.update(v => !v);
   }
 
   logout() {

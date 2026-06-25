@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { ProjectService } from '../../core/services/project.service';
 import { LandingPageService } from '../../core/services/landing-page.service';
@@ -11,7 +12,7 @@ import { Project, LandingPage } from '../../core/models/models';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -36,6 +37,7 @@ export class DashboardComponent implements OnInit {
   chartBars: any[] = [];
   chartGridLines: any[] = [];
   chartMaxCount: number = 5;
+  chartRotateLabels: boolean = false;
   isLoading = false;
 
   ngOnInit() {
@@ -101,6 +103,18 @@ export class DashboardComponent implements OnInit {
     this.fetchStats();
   }
 
+  /** Build query params to pass to leads page from the current dashboard filters */
+  get leadsQueryParams(): any {
+    const p: any = { range: this.selectedRange };
+    if (this.selectedProjectId)    p['project_id']     = this.selectedProjectId;
+    if (this.selectedLandingPageId) p['landing_page_id'] = this.selectedLandingPageId;
+    if (this.selectedRange === 'custom') {
+      if (this.startDate) p['start_date'] = this.startDate;
+      if (this.endDate)   p['end_date']   = this.endDate;
+    }
+    return p;
+  }
+
   calculateChart() {
     if (!this.stats || !this.stats.chart_data || this.stats.chart_data.length === 0) {
       this.chartBars = [];
@@ -125,25 +139,37 @@ export class DashboardComponent implements OnInit {
     const slotWidth = chartWidth / (numItems || 1);
     const barWidthPercent = 0.55; // width ratio of bars in each slot
 
+    // Rotate labels when bars are dense to prevent text overlap
+    // Labels are ~30px wide; slot needs to be >= 32px for horizontal text
+    this.chartRotateLabels = slotWidth < 32;
+
     this.chartBars = data.map((item: any, i: number) => {
       const height = (item.count / this.chartMaxCount) * (chartHeight - 20);
       const x = paddingLeft + (i * slotWidth) + (slotWidth * (1 - barWidthPercent) / 2);
       const y = svgHeight - height;
-      
+      const cx = x + (slotWidth * barWidthPercent) / 2; // center X of bar
+
       const dateObj = new Date(item.date);
       const formattedDate = dateObj.toLocaleDateString(this.translate.currentLang() === 'ar' ? 'ar-EG' : 'en-US', {
         month: 'short',
         day: 'numeric'
       });
 
+      // Transform string for rotated labels — rotate around the label center point
+      const labelTransform = this.chartRotateLabels
+        ? `rotate(-45 ${cx} 258)`
+        : '';
+
       return {
         x,
         y,
+        cx,
         width: slotWidth * barWidthPercent,
         height,
         date: item.date,
         count: item.count,
-        formattedDate
+        formattedDate,
+        labelTransform
       };
     });
 

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
 import { AuthService } from '../../services/auth.service';
@@ -17,6 +18,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class LeadsComponent implements OnInit {
   private http = inject(HttpClient);
+  private route = inject(ActivatedRoute);
   public authService = inject(AuthService);
 
   searchSubject = new Subject<string>();
@@ -60,6 +62,11 @@ export class LeadsComponent implements OnInit {
   };
 
   ngOnInit() {
+    // Read query params from dashboard navigation (range, project_id, landing_page_id, etc.)
+    const qp = this.route.snapshot.queryParams;
+    if (qp['project_id'])     this.filters.project_id = qp['project_id'];
+    if (qp['landing_page_id']) this.filters.landing_page_id = qp['landing_page_id'];
+    // Note: 'range' is a dashboard filter, leads table uses date columns — just pre-filter by project/page
     this.loadFiltersData();
     this.loadLeads();
   }

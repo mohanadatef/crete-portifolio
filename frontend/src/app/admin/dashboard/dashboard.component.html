@@ -10,7 +10,7 @@
     <!-- Reload indicator / Last sync -->
     <div class="flex items-center gap-2 text-xs text-gray-400">
       <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-      <span>Connected to Cret Analytics</span>
+      <span>Connected to Analytics</span>
     </div>
   </div>
 
@@ -75,86 +75,143 @@
 
   <div *ngIf="stats" class="space-y-8">
     
-    <!-- Stats Cards Grid -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <!-- Stats Cards Grid — each card links to its management page carrying current filters -->
+    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-5">
       
       <!-- Leads Today -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all duration-200">
-        <div class="p-3.5 rounded-xl bg-blue-50 text-blue-600 flex-shrink-0">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      <a
+        routerLink="/admin/leads"
+        [queryParams]="{ range: 'today' }"
+        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md hover:border-blue-200 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+        title="عرض ليدات اليوم"
+      >
+        <div class="flex items-center justify-between">
+          <div class="p-2.5 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+          </div>
+          <svg class="w-3.5 h-3.5 text-gray-300 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
         <div>
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Leads Today</p>
-          <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ stats.leads_today }}</h3>
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Leads Today</p>
+          <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">{{ stats.leads_today }}</h3>
         </div>
-      </div>
+      </a>
 
       <!-- Leads Yesterday -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all duration-200">
-        <div class="p-3.5 rounded-xl bg-indigo-50 text-indigo-600 flex-shrink-0">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      <a
+        routerLink="/admin/leads"
+        [queryParams]="{ range: 'yesterday' }"
+        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md hover:border-indigo-200 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+        title="عرض ليدات أمس"
+      >
+        <div class="flex items-center justify-between">
+          <div class="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <svg class="w-3.5 h-3.5 text-gray-300 group-hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
         <div>
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Leads Yesterday</p>
-          <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ stats.leads_yesterday }}</h3>
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Leads Yesterday</p>
+          <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">{{ stats.leads_yesterday }}</h3>
         </div>
-      </div>
+      </a>
 
-      <!-- Total Leads -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all duration-200">
-        <div class="p-3.5 rounded-xl bg-green-50 text-green-600 flex-shrink-0">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+      <!-- Total Leads (with current dashboard filter) -->
+      <a
+        routerLink="/admin/leads"
+        [queryParams]="leadsQueryParams"
+        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md hover:border-green-200 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+        title="عرض كل الليدات بالفلتر الحالي"
+      >
+        <div class="flex items-center justify-between">
+          <div class="p-2.5 rounded-xl bg-green-50 text-green-600 group-hover:bg-green-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
+          <svg class="w-3.5 h-3.5 text-gray-300 group-hover:text-green-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
         <div>
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Leads</p>
-          <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ stats.leads_total }}</h3>
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Leads</p>
+          <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">{{ stats.leads_total }}</h3>
         </div>
-      </div>
+      </a>
 
       <!-- Projects count -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all duration-200">
-        <div class="p-3.5 rounded-xl bg-amber-50 text-amber-600 flex-shrink-0">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+      <a
+        routerLink="/admin/projects"
+        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md hover:border-amber-200 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+        title="إدارة المشاريع"
+      >
+        <div class="flex items-center justify-between">
+          <div class="p-2.5 rounded-xl bg-amber-50 text-amber-600 group-hover:bg-amber-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          <svg class="w-3.5 h-3.5 text-gray-300 group-hover:text-amber-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
         <div>
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Projects</p>
-          <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ stats.projects_count }}</h3>
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Projects</p>
+          <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">{{ stats.projects_count }}</h3>
         </div>
-      </div>
+      </a>
 
       <!-- Landing Pages count -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all duration-200">
-        <div class="p-3.5 rounded-xl bg-purple-50 text-purple-600 flex-shrink-0">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      <a
+        routerLink="/admin/landing-pages"
+        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md hover:border-purple-200 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+        title="إدارة صفحات الهبوط"
+      >
+        <div class="flex items-center justify-between">
+          <div class="p-2.5 rounded-xl bg-purple-50 text-purple-600 group-hover:bg-purple-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <svg class="w-3.5 h-3.5 text-gray-300 group-hover:text-purple-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
         <div>
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Landing Pages</p>
-          <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ stats.landing_pages_count }}</h3>
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Landing Pages</p>
+          <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">{{ stats.landing_pages_count }}</h3>
         </div>
-      </div>
+      </a>
 
       <!-- Blog Posts count -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all duration-200">
-        <div class="p-3.5 rounded-xl bg-pink-50 text-pink-600 flex-shrink-0">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+      <a
+        routerLink="/admin/blog/posts"
+        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md hover:border-pink-200 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+        title="إدارة المقالات"
+      >
+        <div class="flex items-center justify-between">
+          <div class="p-2.5 rounded-xl bg-pink-50 text-pink-600 group-hover:bg-pink-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+            </svg>
+          </div>
+          <svg class="w-3.5 h-3.5 text-gray-300 group-hover:text-pink-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
         <div>
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Blog Articles</p>
-          <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ stats.blog_posts_count }}</h3>
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Blog Articles</p>
+          <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">{{ stats.blog_posts_count }}</h3>
         </div>
-      </div>
+      </a>
 
     </div>
 
@@ -163,7 +220,9 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h2 class="text-xl font-bold text-gray-800">Leads Acquisition Chart</h2>
-          <p class="text-xs text-gray-500 mt-1">Number of incoming leads matching active filters per day.</p>
+          <p class="text-xs text-gray-500 mt-1">
+            Number of incoming leads per day — hover over a bar to see exact date &amp; count.
+          </p>
         </div>
         
         <!-- Legend -->
@@ -176,54 +235,80 @@
       </div>
 
       <!-- Native Dynamic SVG Bar Chart -->
+      <!-- viewBox height is 320 to give room for rotated / straight labels -->
       <div *ngIf="chartBars.length > 0; else emptyChart" class="w-full relative">
-        <svg viewBox="0 0 800 280" class="w-full h-auto overflow-visible">
+        <svg
+          [attr.viewBox]="chartRotateLabels ? '0 0 800 320' : '0 0 800 280'"
+          class="w-full h-auto overflow-visible"
+        >
           <!-- Grid Lines & Y Axis Values -->
           <g *ngFor="let line of chartGridLines">
             <line x1="50" [attr.y1]="line.y" x2="780" [attr.y2]="line.y" stroke="#f1f5f9" stroke-width="1.5" stroke-dasharray="4" />
             <text x="40" [attr.y]="line.y + 4" text-anchor="end" class="text-[10px] fill-gray-400 font-semibold">{{ line.value }}</text>
           </g>
 
-          <!-- Interactive Bar Rects -->
+          <!-- Bars + Tooltip + X-axis Date Labels -->
           <g *ngFor="let bar of chartBars; let i = index" class="group">
-            <!-- Gradient style hover bars -->
+
+            <!-- Bar rectangle -->
             <rect 
               [attr.x]="bar.x" 
               [attr.y]="bar.y" 
               [attr.width]="bar.width" 
               [attr.height]="bar.height > 0 ? bar.height : 2" 
               rx="4"
-              class="fill-blue-600 hover:fill-blue-700 transition-all duration-200 cursor-pointer"
+              class="fill-blue-600 hover:fill-blue-500 transition-all duration-200 cursor-pointer"
             />
             
-            <!-- Hover Tooltip display -->
+            <!-- Hover Tooltip: dark card with date + count -->
             <g class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-              <!-- Dark background tooltip card -->
+              <!-- Tooltip background pill -->
               <rect 
-                [attr.x]="bar.x + (bar.width / 2) - 40" 
-                [attr.y]="bar.y - 35" 
-                width="80" 
-                height="26" 
-                rx="6" 
+                [attr.x]="bar.cx - 52" 
+                [attr.y]="bar.y - 44" 
+                width="104" 
+                height="36" 
+                rx="8" 
                 fill="#0f172a" 
               />
+              <!-- Arrow pointer -->
+              <polygon
+                [attr.points]="(bar.cx - 5) + ',' + (bar.y - 8) + ' ' + (bar.cx + 5) + ',' + (bar.y - 8) + ' ' + bar.cx + ',' + (bar.y - 2)"
+                fill="#0f172a"
+              />
+              <!-- Date line -->
               <text 
-                [attr.x]="bar.x + (bar.width / 2)" 
-                [attr.y]="bar.y - 18" 
+                [attr.x]="bar.cx"
+                [attr.y]="bar.y - 30" 
+                text-anchor="middle" 
+                fill="#94a3b8" 
+                font-size="9"
+                font-weight="600"
+                letter-spacing="0.5"
+              >
+                {{ bar.formattedDate }}
+              </text>
+              <!-- Count line -->
+              <text 
+                [attr.x]="bar.cx"
+                [attr.y]="bar.y - 17" 
                 text-anchor="middle" 
                 fill="#ffffff" 
-                class="text-[10px] font-extrabold"
+                font-size="11"
+                font-weight="800"
               >
                 {{ bar.count }} leads
               </text>
             </g>
 
-            <!-- X-axis date labels -->
+            <!-- X-axis date label — always visible, rotated when dense -->
             <text 
-              [attr.x]="bar.x + (bar.width / 2)" 
-              y="260" 
-              text-anchor="middle" 
-              class="text-[9px] fill-gray-400 font-semibold uppercase tracking-wider"
+              [attr.x]="bar.cx"
+              [attr.y]="258"
+              [attr.text-anchor]="chartRotateLabels ? 'end' : 'middle'"
+              [attr.transform]="bar.labelTransform"
+              font-size="9"
+              class="fill-gray-400 font-semibold uppercase"
             >
               {{ bar.formattedDate }}
             </text>
@@ -238,7 +323,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
           </svg>
           <h3 class="text-sm font-bold text-gray-700">No Lead Data Found (لا توجد ليدات مسجلة)</h3>
-          <p class="text-xs text-gray-500 mt-1">There are no leads registered matching the active filters in this time window. (لا توجد أي بيانات ليدات مسجلة تطابق خيارات التصفية الحالية في هذه الفترة الزمنية.)</p>
+          <p class="text-xs text-gray-500 mt-1">There are no leads registered matching the active filters in this time window.</p>
         </div>
       </ng-template>
 

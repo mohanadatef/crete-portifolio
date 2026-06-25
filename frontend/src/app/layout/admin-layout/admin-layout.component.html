@@ -1,10 +1,17 @@
-<div class="flex h-screen bg-gray-50">
-    <!-- Premium Admin Sidebar -->
-    <aside class="w-64 text-white flex flex-col shadow-xl" [style.background-color]="'var(--admin-primary-color, #1e3678)'">
+<div class="flex h-screen bg-gray-50 overflow-hidden">
+
+    <!-- ===== Sidebar ===== -->
+    <aside
+        class="flex flex-col shadow-xl flex-shrink-0 transition-all duration-300 ease-in-out"
+        [class.w-64]="sidebarOpen()"
+        [class.w-0]="!sidebarOpen()"
+        [style.background-color]="'var(--admin-primary-color, #1e3678)'"
+        style="overflow:hidden"
+    >
         <!-- Sidebar Brand/Logo -->
-        <div class="p-6 border-b border-white/10 flex items-center justify-between">
+        <div class="p-6 border-b border-white/10 flex items-center justify-between min-w-[256px]">
             <h2 dir="ltr" class="text-xl font-bold flex items-center gap-2">
-                <img *ngIf="siteLogo() as logoUrl; else textLogo" [src]="logoUrl" [alt]="siteName()" class="h-9 max-w-[170px] object-contain">
+                <img *ngIf="siteLogo() as logoUrl; else textLogo" [src]="logoUrl" [alt]="siteName()" class="h-9 max-w-[150px] object-contain">
                 <ng-template #textLogo>
                   <span class="tracking-wider uppercase">{{ siteName() }}</span>
                 </ng-template>
@@ -13,7 +20,7 @@
         </div>
         
         <!-- Navigation Menu -->
-        <nav class="flex-1 p-4 space-y-6 overflow-y-auto">
+        <nav class="flex-1 p-4 space-y-6 overflow-y-auto min-w-[256px]">
             <!-- Main Section -->
             <div class="space-y-1">
                 <span class="text-xs font-semibold text-gray-300/60 uppercase tracking-wider px-3 block mb-2">Main</span>
@@ -82,16 +89,46 @@
         </nav>
         
         <!-- Sidebar Footer -->
-        <div class="p-4 border-t border-white/10">
-            <button routerLink="/admin/login" class="w-full flex items-center justify-center gap-2 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium">
+        <div class="p-4 border-t border-white/10 min-w-[256px]">
+            <button (click)="logout()" class="w-full flex items-center justify-center gap-2 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium">
                 <i class="fi fi-rr-sign-out-alt"></i>
                 <span>Logout</span>
             </button>
         </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="flex-grow overflow-y-auto p-8">
-        <router-outlet></router-outlet>
-    </main>
+    <!-- ===== Main Content Area ===== -->
+    <div class="flex flex-col flex-grow min-w-0 overflow-hidden">
+
+        <!-- Top Header Bar -->
+        <header class="flex items-center gap-3 px-6 py-3.5 bg-white border-b border-gray-100 shadow-sm flex-shrink-0">
+            <!-- Sidebar Toggle Button -->
+            <button
+                (click)="toggleSidebar()"
+                class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"
+                [title]="sidebarOpen() ? 'Collapse Sidebar' : 'Expand Sidebar'"
+            >
+                <!-- Hamburger / Close icon -->
+                <svg *ngIf="!sidebarOpen()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <svg *ngIf="sidebarOpen()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7M18 19l-7-7 7-7"/>
+                </svg>
+            </button>
+
+            <!-- Breadcrumb / Site Name -->
+            <span class="text-sm font-semibold text-gray-700">{{ siteName() }} Admin</span>
+
+            <div class="ml-auto flex items-center gap-2 text-xs text-gray-400">
+                <span class="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span>Online</span>
+            </div>
+        </header>
+
+        <!-- Scrollable Page Content -->
+        <main class="flex-grow overflow-y-auto p-8">
+            <router-outlet></router-outlet>
+        </main>
+    </div>
 </div>
