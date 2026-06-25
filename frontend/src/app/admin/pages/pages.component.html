@@ -13,10 +13,9 @@
     </button>
   </div>
 
-  <!-- Filters Header -->
+  <!-- Filters Row -->
   <div class="p-6 bg-white/20 border-b border-gray-100 flex flex-wrap gap-4 items-center">
-    <input type="text" [(ngModel)]="filters.search" (keyup.enter)="loadData(1)" placeholder="Search..." class="input-premium flex-1 min-w-[200px]">
-    <button (click)="loadData(1)" class="btn-primary">Apply Filters</button>
+    <input type="text" (input)="onSearch($event)" placeholder="Search..." class="input-premium flex-1 min-w-[200px]">
   </div>
 
   <!-- Table -->

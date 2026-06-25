@@ -5,6 +5,8 @@ import { PageService } from '../../core/services/page.service';
 import { Page } from '../../core/models/models';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
 import { QuillModule } from 'ngx-quill';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-pages',
@@ -32,6 +34,8 @@ export class PagesComponent implements OnInit {
     status: ''
   };
 
+  searchSubject = new Subject<string>();
+
   constructor() {
     this.dataForm = this.fb.group({
       id: [null],
@@ -42,6 +46,19 @@ export class PagesComponent implements OnInit {
       content_en: ['', Validators.required],
       status: [true],
     });
+
+    this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe((searchValue) => {
+      this.filters.search = searchValue;
+      this.loadData(1);
+    });
+  }
+
+  onSearch(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value);
   }
 
   ngOnInit() {
