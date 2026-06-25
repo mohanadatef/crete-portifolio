@@ -80,7 +80,8 @@ export class BlogPostFormComponent implements OnInit {
       content_ar: [''],
       content_en: [''],
       blog_category_id: [null, Validators.required],
-      status: [true]
+      status: [true],
+      tags: ['']
     });
   }
 
@@ -109,7 +110,8 @@ export class BlogPostFormComponent implements OnInit {
           content_ar: p.content_ar || '',
           content_en: p.content_en || '',
           blog_category_id: p.blog_category_id || null,
-          status: !!p.status
+          status: !!p.status,
+          tags: p.tags || ''
         });
 
         if (p.category) {

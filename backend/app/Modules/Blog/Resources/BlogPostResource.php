@@ -24,6 +24,7 @@ class BlogPostResource extends JsonResource
             'image' => $this->image,
             'status' => (bool)$this->status,
             'views_count' => (int)$this->views_count,
+            'tags' => $this->tags,
             'blog_category_id' => $this->blog_category_id,
             'category_id' => $this->blog_category_id,
             'meta_title' => $this->meta_title,

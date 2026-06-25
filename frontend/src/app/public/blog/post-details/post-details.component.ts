@@ -101,4 +101,9 @@ export class BlogPostDetailsComponent implements OnInit, OnDestroy {
     }
     return this.backendUrl + (imagePath.startsWith('/') ? '' : '/') + imagePath;
   }
+
+  getTags(): string[] {
+    const tagsStr = this.post()?.tags;
+    return tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(t => t.length > 0) : [];
+  }
 }

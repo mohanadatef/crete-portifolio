@@ -121,6 +121,7 @@ export interface BlogPost {
   blog_category?: BlogCategory;
   category?: BlogCategory;
   views_count?: number;
+  tags?: string;
   created_at?: string;
   updated_at?: string;
 }

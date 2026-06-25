@@ -83,6 +83,16 @@
              [innerHTML]="translate.currentLang() === 'ar' ? (post()?.content_ar || post()?.content_en) : (post()?.content_en || post()?.content_ar)">
         </div>
 
+        <!-- Article Tags -->
+        <div *ngIf="getTags().length > 0" class="mt-10 pt-6 border-t border-gray-100">
+          <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">{{ translate.currentLang() === 'ar' ? 'الوسوم' : 'Tags' }}</h4>
+          <div class="flex flex-wrap gap-2">
+            <span *ngFor="let tag of getTags()" class="inline-flex items-center px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-100 text-xs font-semibold text-gray-600 shadow-sm hover:border-crete-gold hover:text-crete-gold transition-all duration-200 cursor-default">
+              #{{ tag }}
+            </span>
+          </div>
+        </div>
+
       </div>
 
     </article>
