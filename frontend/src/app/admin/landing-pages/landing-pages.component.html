@@ -15,16 +15,19 @@
 
   <!-- Filters Row -->
   <div class="p-6 bg-white/20 border-b border-gray-100 flex flex-wrap gap-4 items-center">
-    <input type="text" placeholder="Search..." (input)="onSearch($event)" class="input-premium flex-1 min-w-[200px]">
+    <input type="text" placeholder="Search..." [value]="filters.search" (input)="onSearch($event)" class="input-premium flex-1 min-w-[200px]">
     <select [(ngModel)]="filters.project_id" (change)="onFilterChange()" class="input-premium w-full sm:w-48 bg-white text-gray-700">
-      <option value="">All Projects</option>
+      <option value="">All Projects (الكل)</option>
       <option *ngFor="let p of projects()" [value]="p.id">{{ p.title_ar || p.title_en }}</option>
     </select>
     <select [(ngModel)]="filters.status" (change)="onFilterChange()" class="input-premium w-full sm:w-48 bg-white text-gray-700">
       <option value="">All Statuses</option>
-      <option value="1">Active</option>
-      <option value="0">Inactive</option>
+      <option value="1">Active (نشط)</option>
+      <option value="0">Inactive (غير نشط)</option>
     </select>
+    <div class="flex gap-2 ml-auto sm:ml-0">
+      <button (click)="resetFilters()" class="btn-secondary">Reset</button>
+    </div>
   </div>
 
   <div class="p-6">

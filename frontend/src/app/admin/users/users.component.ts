@@ -117,6 +117,17 @@ export class UsersComponent implements OnInit {
     this.loadData();
   }
 
+  resetFilters() {
+    this.filters = {
+      search: '',
+      role: '',
+      status: '',
+      page: 1,
+      per_page: 10
+    };
+    this.loadData();
+  }
+
   onPerPageChange(event: Event) {
     this.filters.per_page = Number((event.target as HTMLSelectElement).value);
     this.filters.page = 1;

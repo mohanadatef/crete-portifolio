@@ -15,7 +15,10 @@
 
   <!-- Filters Row -->
   <div class="p-6 bg-white/20 border-b border-gray-100 flex flex-wrap gap-4 items-center">
-    <input type="text" (input)="onSearch($event)" placeholder="Search..." class="input-premium flex-1 min-w-[200px]">
+    <input type="text" [value]="filters.search" (input)="onSearch($event)" placeholder="Search..." class="input-premium flex-1 min-w-[200px]">
+    <div class="flex gap-2 ml-auto sm:ml-0">
+      <button (click)="resetFilters()" class="btn-secondary">Reset</button>
+    </div>
   </div>
 
   <!-- Table -->

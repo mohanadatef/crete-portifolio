@@ -103,6 +103,15 @@ export class DashboardComponent implements OnInit {
     this.fetchStats();
   }
 
+  resetFilters() {
+    this.selectedProjectId = '';
+    this.selectedLandingPageId = '';
+    this.selectedRange = 'week';
+    this.startDate = '';
+    this.endDate = '';
+    this.fetchStats();
+  }
+
   /** Build query params to pass to leads page from the current dashboard filters */
   get leadsQueryParams(): any {
     const p: any = { range: this.selectedRange };

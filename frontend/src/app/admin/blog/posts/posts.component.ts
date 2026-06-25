@@ -51,6 +51,14 @@ export class PostsComponent implements OnInit {
     this.loadData(1);
   }
 
+  resetFilters() {
+    this.filters = {
+      search: '',
+      status: ''
+    };
+    this.loadData(1);
+  }
+
   loadData(page: number = 1) {
     this.status.set('loading');
     const params = {

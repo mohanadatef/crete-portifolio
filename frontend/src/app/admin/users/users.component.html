@@ -16,20 +16,24 @@
   <!-- Filters Panel -->
   <div class="p-6 bg-white/20 border-b border-gray-100 flex flex-wrap gap-4 items-center shrink-0">
     <!-- Live Search -->
-    <input type="text" (input)="onSearch($event)" placeholder="Search by name or email..." class="input-premium flex-1 min-w-[200px]">
+    <input type="text" [value]="filters.search" (input)="onSearch($event)" placeholder="Search by name or email..." class="input-premium flex-1 min-w-[200px]">
 
     <!-- Role Filter -->
-    <select (change)="onRoleFilterChange($event)" class="input-premium w-full sm:w-48 bg-white text-gray-700">
-      <option value="">All Roles</option>
+    <select [value]="filters.role" (change)="onRoleFilterChange($event)" class="input-premium w-full sm:w-48 bg-white text-gray-700">
+      <option value="">All Roles (الكل)</option>
       <option *ngFor="let role of availableRoles()" [value]="role.name">{{ role.name }}</option>
     </select>
 
     <!-- Status Filter -->
-    <select (change)="onStatusFilterChange($event)" class="input-premium w-full sm:w-48 bg-white text-gray-700">
+    <select [value]="filters.status" (change)="onStatusFilterChange($event)" class="input-premium w-full sm:w-48 bg-white text-gray-700">
       <option value="">All Statuses</option>
-      <option value="true">Active</option>
-      <option value="false">Inactive</option>
+      <option value="true">Active (نشط)</option>
+      <option value="false">Inactive (غير نشط)</option>
     </select>
+
+    <div class="flex gap-2 ml-auto sm:ml-0">
+      <button (click)="resetFilters()" class="btn-secondary">Reset</button>
+    </div>
   </div>
 
   <!-- Table -->
