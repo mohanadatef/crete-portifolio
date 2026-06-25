@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
         // Leads detailed access permissions
         $permissions[] = 'view-all-leads';
         $permissions[] = 'view-unassigned-leads';
+        $permissions[] = 'export-leads';
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'sanctum']);

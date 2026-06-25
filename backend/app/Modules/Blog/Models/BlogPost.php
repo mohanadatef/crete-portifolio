@@ -27,7 +27,8 @@ class BlogPost extends Model
         'excerpt_en',
         'image',
         'blog_category_id',
-        'status'
+        'status',
+        'views_count'
     ];
 
     public function category()

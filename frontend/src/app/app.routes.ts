@@ -24,10 +24,12 @@ export const routes: Routes = [
         children: [
             { path: '', component: HomeComponent },
             { path: 'projects', loadComponent: () => import('./public/projects/projects.component').then(m => m.ProjectsComponent) },
+            { path: 'projects/:slug', loadComponent: () => import('./public/projects/project-details/project-details.component').then(m => m.ProjectDetailsComponent) },
             { path: 'blog', component: BlogComponent },
             { path: 'blog/:slug', loadComponent: () => import('./public/blog/post-details/post-details.component').then(m => m.BlogPostDetailsComponent) },
             { path: 'about', loadComponent: () => import('./public/about/about.component').then(m => m.AboutComponent) },
             { path: 'contact', component: ContactComponent },
+            { path: 'pages/:slug', loadComponent: () => import('./public/page/page.component').then(m => m.PublicPageComponent) },
             {
                 path: 'landing/:slug/thank-you',
                 loadComponent: () => import('./public/landing-page/thank-you.component').then(m => m.ThankYouComponent)

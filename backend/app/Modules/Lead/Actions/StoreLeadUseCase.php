@@ -32,12 +32,6 @@ class StoreLeadUseCase
 
         $lead = $this->leadService->createLead($dto->data);
 
-        try {
-            Mail::to(config('mail.sales_inbox', 'sales@crete.com'))->send(new NewLeadNotification($lead));
-        } catch (Exception $e) {
-            Log::error('Failed to send lead notification email: ' . $e->getMessage());
-        }
-
         return $lead;
     }
 }

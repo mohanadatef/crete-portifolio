@@ -26,6 +26,7 @@ use App\Modules\User\Controllers\RoleController;
 
 Route::prefix('v1')->group(function () {
     // Public APIs
+    Route::get('/public/pages', [PageController::class, 'indexPublic']);
     Route::get('/public/pages/{slug}', [PageController::class, 'showPublic']);
     Route::get('/public/settings', [SettingController::class, 'indexPublic']);
     Route::get('/public/projects', [ProjectController::class, 'indexPublic']);

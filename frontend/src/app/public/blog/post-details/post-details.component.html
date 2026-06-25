@@ -59,8 +59,12 @@
           <span class="bg-crete-gold text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">
             {{ translate.currentLang() === 'ar' ? (post()?.category?.name_ar || post()?.category?.name_en || 'عام') : (post()?.category?.name_en || post()?.category?.name_ar || 'General') }}
           </span>
-          <p class="text-sm opacity-90 mt-1">
-            {{ 'BLOG.PUBLISHED_ON' | translate }} {{ post()?.created_at | date:'longDate' }}
+          <p class="text-sm opacity-90 mt-1 flex flex-wrap items-center gap-4">
+            <span>{{ 'BLOG.PUBLISHED_ON' | translate }} {{ post()?.created_at | date:'longDate' }}</span>
+            <span class="flex items-center gap-1.5">
+              <i class="fi fi-rr-eye"></i>
+              {{ post()?.views_count || 0 }} {{ 'BLOG.VIEWS' | translate }}
+            </span>
           </p>
         </div>
       </div>

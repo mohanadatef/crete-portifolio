@@ -5,13 +5,13 @@ namespace App\Modules\User\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
-
 use App\Modules\User\Services\UserService;
 use App\Modules\User\DTOs\UserDTO;
 use App\Modules\User\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
-
 use App\Modules\User\DTOs\UserFilterDTO;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 
 class UserController extends Controller
 {
@@ -44,17 +44,8 @@ class UserController extends Controller
         );
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreUserRequest $request): JsonResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6|confirmed',
-            'roles' => 'nullable|array',
-            'roles.*' => 'string|exists:roles,name',
-            'is_active' => 'boolean',
-        ]);
-
         $dto = UserDTO::fromRequest($request);
         $user = $this->userService->createUser($dto);
 
@@ -65,17 +56,8 @@ class UserController extends Controller
         );
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update(UpdateUserRequest $request, int $id): JsonResponse
     {
-        $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:users,email,' . $id,
-            'password' => 'nullable|min:6|confirmed',
-            'roles' => 'nullable|array',
-            'roles.*' => 'string|exists:roles,name',
-            'is_active' => 'boolean',
-        ]);
-
         $dto = UserDTO::fromRequest($request);
         
         try {

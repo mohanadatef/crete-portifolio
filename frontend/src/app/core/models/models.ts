@@ -49,11 +49,14 @@ export interface Project {
   description_ar?: string;
   description_en?: string;
   location?: string;
+  location_ar?: string;
   status: boolean;
   featured: boolean;
   price?: number;
   area?: number;
+  area_sqm?: number;
   bedrooms?: number;
+  bathrooms?: number;
   delivery_date?: string;
   developer?: string;
   project_type_id?: number;
@@ -117,6 +120,7 @@ export interface BlogPost {
   blog_category_id?: number;
   blog_category?: BlogCategory;
   category?: BlogCategory;
+  views_count?: number;
   created_at?: string;
   updated_at?: string;
 }

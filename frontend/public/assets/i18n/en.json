@@ -64,6 +64,12 @@
     "NOT_FOUND": "No blog posts found",
     "CHECK_BACK": "Check back later for new updates.",
     "CATEGORY": "Category",
-    "PUBLISHED_ON": "Published on"
+    "PUBLISHED_ON": "Published on",
+    "VIEWS": "views"
+  },
+  "THANK_YOU": {
+    "TITLE": "Thank You!",
+    "SUBTITLE": "Your application has been successfully submitted. Our team will review your information and get back to you shortly.",
+    "RETURN_HOME": "Return to Homepage"
   }
 }

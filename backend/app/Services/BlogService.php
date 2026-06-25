@@ -95,19 +95,34 @@ class BlogService
     {
         $query = BlogPost::with('category')->latest();
         if ($onlyPublished) {
-            $query->where('status', 1);
+            $query->where('status', 1)
+                  ->where(function($q) {
+                      $q->whereNull('blog_category_id')
+                        ->orWhereHas('category', function($subQuery) {
+                            $subQuery->where('status', true);
+                        });
+                  });
         }
         return $query->paginate($perPage);
     }
 
     public function getPostBySlug(string $slug): BlogPost
     {
-        return BlogPost::where('slug', $slug)->where('status', 1)->firstOrFail();
+        return BlogPost::with('category')
+            ->where('slug', $slug)
+            ->where('status', 1)
+            ->where(function($q) {
+                $q->whereNull('blog_category_id')
+                  ->orWhereHas('category', function($subQuery) {
+                      $subQuery->where('status', true);
+                  });
+            })
+            ->firstOrFail();
     }
 
     public function getPostById(int $id): BlogPost
     {
-        return BlogPost::findOrFail($id);
+        return BlogPost::with('category')->findOrFail($id);
     }
 
     public function createPost(array $data): BlogPost

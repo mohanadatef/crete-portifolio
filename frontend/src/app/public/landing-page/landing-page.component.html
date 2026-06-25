@@ -39,10 +39,13 @@
         </span>
         
         <h1 class="text-5xl md:text-7xl font-black tracking-tight mb-6 drop-shadow-lg leading-tight">
-          {{ pageData()?.title_en }}
+          {{ translate.currentLang() === 'ar' ? (pageData()?.title_ar || pageData()?.title_en) : (pageData()?.title_en || pageData()?.title_ar) }}
         </h1>
         
-        <p *ngIf="pageData()?.title_ar" class="text-2xl md:text-3xl font-light text-white/90 drop-shadow-md" dir="rtl">
+        <p *ngIf="translate.currentLang() === 'ar' && pageData()?.title_en" class="text-xl md:text-2xl font-light text-white/80 drop-shadow-md" dir="ltr">
+          {{ pageData()?.title_en }}
+        </p>
+        <p *ngIf="translate.currentLang() === 'en' && pageData()?.title_ar" class="text-xl md:text-2xl font-light text-white/80 drop-shadow-md" dir="rtl">
           {{ pageData()?.title_ar }}
         </p>
       </div>
@@ -93,23 +96,26 @@
             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-indigo-500 to-purple-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out"></div>
             
             <div class="text-center mb-10">
-              <h3 class="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Register Your Interest</h3>
-              <p class="text-slate-500 text-base">Leave your details below and our luxury property consultants will contact you shortly.</p>
+              <h3 class="text-3xl font-bold text-slate-900 mb-3 tracking-tight">
+                {{ translate.currentLang() === 'ar' ? 'سجل اهتمامك' : 'Register Your Interest' }}
+              </h3>
+              <p class="text-slate-500 text-base">
+                {{ translate.currentLang() === 'ar' ? 'اترك بياناتك أدناه وسيتواصل معك مستشارونا العقاريون قريباً.' : 'Leave your details below and our luxury property consultants will contact you shortly.' }}
+              </p>
             </div>
 
             <!-- Error Message -->
             <div *ngIf="submitStatus() === 'error'" class="bg-red-50 text-red-600 p-4 rounded-xl mb-8 text-sm flex items-start gap-3 border border-red-100">
               <i class="fi fi-rr-exclamation mt-0.5 text-lg"></i>
-              <p>{{ errorMessage() || 'We couldn\\'t process your request. Please review your information and try again.' }}</p>
+              <p>{{ errorMessage() || (translate.currentLang() === 'ar' ? 'تعذر معالجة طلبك. يرجى مراجعة معلوماتك والمحاولة مرة أخرى.' : 'We couldn\'t process your request. Please review your information and try again.') }}</p>
             </div>
 
             <form *ngIf="dynamicForm" [formGroup]="dynamicForm" (ngSubmit)="submitForm()" class="space-y-6">
               
-              <div *ngFor="let field of formFields()" class="space-y-2 relative">
-                <label [for]="field.name" class="block text-sm font-semibold text-slate-700 ml-1">
-                  {{ field.label_en }} 
-                  <span *ngIf="field.label_ar" class="text-slate-400 font-normal ml-1">/ {{ field.label_ar }}</span>
-                  <span *ngIf="field.required" class="text-red-500 ml-1">*</span>
+              <div *ngFor="let field of formFields()" class="space-y-2 relative text-right" [attr.dir]="translate.currentLang() === 'ar' ? 'rtl' : 'ltr'">
+                <label [for]="field.name" class="block text-sm font-semibold text-slate-700 ml-1 rtl:mr-1 rtl:ml-0">
+                  {{ translate.currentLang() === 'ar' ? (field.label_ar || field.label_en) : field.label_en }} 
+                  <span *ngIf="field.required" class="text-red-500 ml-1 rtl:mr-1">*</span>
                 </label>
                 
                 <!-- Text / Email / Phone Input -->
@@ -118,7 +124,7 @@
                        [id]="field.name" 
                        [formControlName]="field.name" 
                        class="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-base bg-slate-50 focus:bg-white shadow-sm"
-                       [placeholder]="'Enter ' + field.label_en">
+                       [placeholder]="translate.currentLang() === 'ar' ? ('أدخل ' + (field.label_ar || field.label_en)) : ('Enter ' + field.label_en)">
                 
                 <!-- Textarea -->
                 <textarea *ngIf="field.type === 'textarea'" 
@@ -126,17 +132,17 @@
                           [formControlName]="field.name" 
                           rows="4"
                           class="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-base bg-slate-50 focus:bg-white shadow-sm resize-none"
-                          [placeholder]="'Enter ' + field.label_en"></textarea>
+                          [placeholder]="translate.currentLang() === 'ar' ? ('أدخل ' + (field.label_ar || field.label_en)) : ('Enter ' + field.label_en)"></textarea>
                 
                 <!-- Select -->
                 <div *ngIf="field.type === 'select'" class="relative">
                   <select [id]="field.name" 
                           [formControlName]="field.name" 
                           class="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-base bg-slate-50 focus:bg-white shadow-sm appearance-none font-medium text-slate-700">
-                    <option value="">Select an option</option>
+                    <option value="">{{ translate.currentLang() === 'ar' ? 'اختر خياراً' : 'Select an option' }}</option>
                     <option *ngFor="let opt of getOptions(field.options)" [value]="opt">{{ opt }}</option>
                   </select>
-                  <i class="fi fi-rr-angle-small-down absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xl"></i>
+                  <i class="fi fi-rr-angle-small-down absolute right-5 rtl:left-5 rtl:right-auto top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xl"></i>
                 </div>
 
                 <!-- Radio -->
@@ -148,10 +154,14 @@
                 </div>
 
                 <!-- Validation Errors -->
-                <div *ngIf="dynamicForm.get(field.name)?.invalid && (dynamicForm.get(field.name)?.dirty || dynamicForm.get(field.name)?.touched)" class="text-red-500 text-xs font-medium mt-1 ml-1 flex items-center gap-1">
+                <div *ngIf="dynamicForm.get(field.name)?.invalid && (dynamicForm.get(field.name)?.dirty || dynamicForm.get(field.name)?.touched)" class="text-red-500 text-xs font-medium mt-1 ml-1 rtl:mr-1 flex items-center gap-1">
                   <i class="fi fi-rr-info"></i>
-                  <span *ngIf="dynamicForm.get(field.name)?.errors?.['required']">This field is required.</span>
-                  <span *ngIf="dynamicForm.get(field.name)?.errors?.['email']">Please enter a valid email address.</span>
+                  <span *ngIf="dynamicForm.get(field.name)?.errors?.['required']">
+                    {{ translate.currentLang() === 'ar' ? 'هذا الحقل مطلوب.' : 'This field is required.' }}
+                  </span>
+                  <span *ngIf="dynamicForm.get(field.name)?.errors?.['email']">
+                    {{ translate.currentLang() === 'ar' ? 'يرجى إدخال بريد إلكتروني صحيح.' : 'Please enter a valid email address.' }}
+                  </span>
                 </div>
               </div>
 
@@ -159,8 +169,10 @@
                 <button type="submit" 
                         [disabled]="submitStatus() === 'loading'"
                         class="w-full bg-slate-900 text-white font-bold py-4 px-8 rounded-xl hover:bg-primary transition-all shadow-[0_10px_20px_rgb(0,0,0,0.15)] hover:shadow-[0_10px_25px_rgb(var(--color-primary),0.3)] hover:-translate-y-1 flex items-center justify-center gap-3 disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:shadow-none duration-300">
-                  <span *ngIf="submitStatus() !== 'loading'" class="tracking-wide">Submit Application</span>
-                  <i *ngIf="submitStatus() !== 'loading'" class="fi fi-rr-arrow-right mt-1"></i>
+                  <span *ngIf="submitStatus() !== 'loading'" class="tracking-wide">
+                    {{ translate.currentLang() === 'ar' ? 'إرسال الطلب' : 'Submit Application' }}
+                  </span>
+                  <i *ngIf="submitStatus() !== 'loading'" class="fi mt-1" [ngClass]="translate.currentLang() === 'ar' ? 'fi-rr-arrow-left' : 'fi-rr-arrow-right'"></i>
                   <div *ngIf="submitStatus() === 'loading'" class="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                 </button>
               </div>

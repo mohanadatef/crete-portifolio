@@ -5,6 +5,7 @@ import { BlogPostService } from '../../../core/services/blog-post.service';
 import { BlogPost } from '../../../core/models/models';
 import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { SeoService } from '../../../services/seo.service';
+import { SettingService } from '../../../services/setting.service';
 import { environment } from '../../../../environments/environment';
 import { Subscription } from 'rxjs';
 
@@ -21,6 +22,7 @@ export class BlogPostDetailsComponent implements OnInit, OnDestroy {
   private postService = inject(BlogPostService);
   public translate = inject(TranslateService);
   private seoService = inject(SeoService);
+  private settingService = inject(SettingService);
 
   post = signal<BlogPost | null>(null);
   status = signal<'loading' | 'success' | 'error'>('loading');
@@ -80,7 +82,8 @@ export class BlogPostDetailsComponent implements OnInit, OnDestroy {
     // Strip HTML tags for meta description and take first 150 characters
     const cleanDesc = content ? content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : '';
 
-    this.seoService.updateTitle(title);
+    const siteName = this.settingService.getSetting('site_name') || 'CRETE Developments';
+    this.seoService.updateTitle(`${title} | ${siteName}`);
     if (cleanDesc) {
       this.seoService.updateMeta('description', cleanDesc);
     }

@@ -1,0 +1,193 @@
+<div class="py-12 bg-gray-50 min-h-screen font-sans">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Navigation & Breadcrumbs -->
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+      <nav class="flex text-sm text-gray-500" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3 rtl:space-x-reverse">
+          <li class="inline-flex items-center">
+            <a routerLink="/" class="hover:text-crete-gold transition-colors">{{ 'NAV.HOME' | translate }}</a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <span class="mx-2 text-gray-400">/</span>
+              <a routerLink="/projects" class="hover:text-crete-gold transition-colors">{{ 'NAV.PROJECTS' | translate }}</a>
+            </div>
+          </li>
+          <li aria-current="page" *ngIf="project()">
+            <div class="flex items-center max-w-[200px] md:max-w-xs">
+              <span class="mx-2 text-gray-400">/</span>
+              <span class="text-gray-900 font-medium truncate">
+                {{ translate.currentLang() === 'ar' ? (project()?.title_ar || project()?.title_en) : (project()?.title_en || project()?.title_ar) }}
+              </span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+
+      <a routerLink="/projects" class="inline-flex items-center text-sm font-semibold text-crete-blue hover:text-crete-gold transition-colors gap-1">
+        <span class="inline-block transition-transform duration-300 rtl:rotate-180 hover:-translate-x-1">&larr;</span>
+        {{ 'Back to Projects' }}
+      </a>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="status() === 'loading'" class="flex justify-center items-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-crete-gold"></div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="status() === 'error'" class="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
+      <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+      </svg>
+      <h3 class="text-xl font-medium text-red-600 mt-4">{{ 'PROJECTS.ERROR' | translate }}</h3>
+      <button routerLink="/projects" class="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-crete-blue hover:bg-crete-gold transition-colors">
+        {{ 'Back to Projects' }}
+      </button>
+    </div>
+
+    <!-- Project Details Content -->
+    <div *ngIf="status() === 'success' && project() as p" class="space-y-8">
+      
+      <!-- Top Title and Location Info -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div>
+          <span class="bg-crete-gold text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">
+            {{ translate.currentLang() === 'ar' ? p.project_type?.name_ar : p.project_type?.name_en || 'General' }}
+          </span>
+          <h1 class="text-3xl font-extrabold text-gray-900 leading-tight">
+            {{ translate.currentLang() === 'ar' ? (p.title_ar || p.title_en) : (p.title_en || p.title_ar) }}
+          </h1>
+          <p class="flex items-center text-gray-500 text-sm mt-2 font-medium">
+            <svg class="h-5 w-5 mr-1.5 rtl:ml-1.5 rtl:mr-0 text-crete-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            {{ translate.currentLang() === 'ar' ? (p.location_ar || p.location) : p.location }}
+          </p>
+        </div>
+        <div class="text-left md:text-right">
+          <p class="text-sm text-gray-400 font-medium uppercase tracking-wider">Starting Price</p>
+          <p class="text-4xl font-extrabold text-crete-gold">${{ p.price | number }}</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left: Image Gallery & Description -->
+        <div class="lg:col-span-2 space-y-8">
+          
+          <!-- Image Gallery component -->
+          <div class="bg-white p-4 rounded-3xl shadow-lg border border-gray-100 space-y-4">
+            <!-- Active Image View -->
+            <div class="h-96 sm:h-[480px] w-full rounded-2xl overflow-hidden bg-gray-100 relative">
+              <img [src]="getImageUrl(activeImage())" class="w-full h-full object-cover transition-all duration-300" [alt]="p.title_en">
+              <div *ngIf="p.status !== true" class="absolute top-4 left-4 bg-red-600 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow uppercase">
+                {{ 'PROJECTS.SOLD_OUT' | translate }}
+              </div>
+            </div>
+            
+            <!-- Gallery Thumbnails -->
+            <div *ngIf="p.images && p.images.length > 1" class="flex gap-3 overflow-x-auto py-2 shrink-0">
+              <button *ngFor="let img of p.images" (click)="activeImage.set(img.image_path)" 
+                      [class.border-crete-gold]="activeImage() === img.image_path" 
+                      class="h-20 w-28 rounded-lg overflow-hidden border-2 border-transparent transition-all hover:opacity-90 shrink-0">
+                <img [src]="getImageUrl(img.image_path)" class="w-full h-full object-cover" [alt]="p.title_en">
+              </button>
+            </div>
+          </div>
+
+          <!-- Description and Rich Text Details -->
+          <div class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+            <h2 class="text-2xl font-bold text-crete-blue mb-6 border-b pb-4">
+              {{ translate.currentLang() === 'ar' ? 'الوصف والتفاصيل' : 'Description & Details' }}
+            </h2>
+            <div class="project-rich-content prose max-w-none text-gray-700 leading-relaxed" 
+                 [innerHTML]="translate.currentLang() === 'ar' ? (p.description_ar || p.description_en) : (p.description_en || p.description_ar)">
+            </div>
+          </div>
+
+          <!-- Project Units List -->
+          <div *ngIf="p.units && p.units.length > 0" class="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+            <h2 class="text-2xl font-bold text-crete-blue mb-6 border-b pb-4">
+              {{ translate.currentLang() === 'ar' ? 'الوحدات المتاحة ونماذج الطوابق' : 'Available Units & Floor Plans' }}
+            </h2>
+            <div class="space-y-6">
+              <div *ngFor="let unit of p.units" class="p-6 bg-gray-50 rounded-2xl border border-gray-100 hover:border-crete-gold transition-colors flex flex-col md:flex-row gap-6">
+                <!-- Unit image if available -->
+                <div *ngIf="unit.image_paths && unit.image_paths.length > 0" class="w-full md:w-44 h-32 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                  <img [src]="getImageUrl(unit.image_paths[0])" class="w-full h-full object-cover" [alt]="unit.title_en || 'Unit Image'">
+                </div>
+                <!-- Unit info -->
+                <div class="flex-grow space-y-2">
+                  <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-bold text-gray-900">
+                      {{ translate.currentLang() === 'ar' ? (unit.title_ar || unit.title_en || 'وحدة عقارية') : (unit.title_en || unit.title_ar || 'Property Unit') }}
+                    </h3>
+                    <span *ngIf="unit.price" class="text-lg font-extrabold text-crete-gold">${{ unit.price | number }}</span>
+                  </div>
+                  <p class="text-sm text-gray-500">
+                    {{ translate.currentLang() === 'ar' ? (unit.description_ar || unit.description_en) : (unit.description_en || unit.description_ar) }}
+                  </p>
+                  <div class="flex flex-wrap gap-4 text-xs font-semibold text-gray-500 pt-2">
+                    <span class="flex items-center gap-1 bg-white px-2.5 py-1 rounded-md border border-gray-100">🛏️ {{ unit.bedrooms || 0 }} {{ 'PROJECTS.BEDS' | translate }}</span>
+                    <span class="flex items-center gap-1 bg-white px-2.5 py-1 rounded-md border border-gray-100">🚿 {{ unit.bathrooms || 0 }} {{ 'PROJECTS.BATHS' | translate }}</span>
+                    <span class="flex items-center gap-1 bg-white px-2.5 py-1 rounded-md border border-gray-100">📐 {{ unit.area || 0 }} {{ 'PROJECTS.SQM' | translate }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Specifications & Inquire Form CTA -->
+        <div class="space-y-6">
+          
+          <!-- Key Specs Card -->
+          <div class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 space-y-6">
+            <h3 class="text-lg font-bold text-crete-blue border-b pb-3">Project Specifications</h3>
+            
+            <div class="space-y-4">
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-400">Total Area</span>
+                <span class="font-bold text-gray-800">{{ p.area || p.area_sqm }} {{ 'PROJECTS.SQM' | translate }}</span>
+              </div>
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-400">Bedrooms</span>
+                <span class="font-bold text-gray-800">{{ p.bedrooms || 0 }}</span>
+              </div>
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-400">Developer</span>
+                <span class="font-bold text-gray-800">{{ p.developer || 'CRETE Developments' }}</span>
+              </div>
+              <div class="flex justify-between items-center text-sm" *ngIf="p.delivery_date">
+                <span class="text-gray-400">Delivery Date</span>
+                <span class="font-bold text-gray-800">{{ p.delivery_date }}</span>
+              </div>
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-400">Page Views</span>
+                <span class="font-bold text-gray-800 flex items-center gap-1"><i class="fi fi-rr-eye text-crete-gold"></i> {{ p.views_count || 0 }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inquiry Call to Action -->
+          <div class="bg-crete-blue text-white p-8 rounded-3xl shadow-lg relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-crete-gold/10 rounded-full blur-2xl"></div>
+            <h3 class="text-xl font-bold mb-2">Interested in this project?</h3>
+            <p class="text-sm text-gray-300 mb-6 leading-relaxed">
+              Get in touch with our luxury real estate consultants for layout plans, pricing plans, and booking reservations.
+            </p>
+            <a routerLink="/contact" [queryParams]="{ project: p.id }" 
+               class="block w-full text-center bg-crete-gold hover:bg-yellow-600 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-yellow-600/20">
+              {{ 'PROJECTS.INQUIRE' | translate }}
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

@@ -112,6 +112,13 @@ export class BlogPostFormComponent implements OnInit {
           status: !!p.status
         });
 
+        if (p.category) {
+          const catExists = this.categories().some(c => c.id === p.category!.id);
+          if (!catExists) {
+            this.categories.update(cats => [...cats, p.category!]);
+          }
+        }
+
         if (p.image) {
           this.existingImage = p.image;
         }

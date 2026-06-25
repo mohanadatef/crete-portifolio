@@ -76,6 +76,7 @@ class BlogPostController extends Controller
     {
         try {
             $post = $this->blogService->getPostBySlug($slug);
+            $post->increment('views_count');
             return $this->successResponse(new BlogPostResource($post), 'Post retrieved successfully');
         } catch (Exception $e) {
             return $this->errorResponse('Blog post not found', 404);

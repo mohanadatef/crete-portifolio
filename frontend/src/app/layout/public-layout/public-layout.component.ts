@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { TranslateService, TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { DOCUMENT, CommonModule } from '@angular/common';
@@ -31,15 +31,33 @@ export class PublicLayoutComponent implements OnInit {
   showAbout = signal<boolean>(true);
   availableLangs = signal<string[]>(['en', 'ar']);
 
+  // Settings-driven visibility flags (loaded from settings API)
+  private settingsShowContact = signal<boolean>(true);
+  private settingsShowAbout = signal<boolean>(true);
+
+  pages = signal<any[]>([]);
+  customPages = computed(() => {
+    return this.pages().filter(p => p.slug !== 'about-us' && p.slug !== 'contact-us');
+  });
+
   constructor() {
     this.translate.addLangs(['en', 'ar']);
-    const browserLang = this.translate.getBrowserLang();
-    const defaultLang = browserLang?.match(/en|ar/) ? browserLang : 'en';
+    let defaultLang = 'en';
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('lang');
+      if (savedLang && (savedLang === 'en' || savedLang === 'ar')) {
+        defaultLang = savedLang;
+      } else {
+        const browserLang = this.translate.getBrowserLang();
+        defaultLang = browserLang?.match(/en|ar/) ? browserLang : 'en';
+      }
+    }
     this.setLanguage(defaultLang);
   }
 
   ngOnInit() {
     this.loadPublicSettings();
+    this.loadPublicPages();
   }
 
   loadPublicSettings() {
@@ -55,10 +73,11 @@ export class PublicLayoutComponent implements OnInit {
           }
           if (settings.site_logo) this.siteLogo.set(settings.site_logo);
           
-          this.showProjects.set(settings.show_projects !== '0');
-          this.showBlog.set(settings.show_blog !== '0');
-          this.showContact.set(settings.show_contact !== '0');
-          this.showAbout.set(settings.show_about !== '0');
+          this.showProjects.set(settings.show_projects == '1');
+          this.showBlog.set(settings.show_blog == '1');
+          // Store settings-level visibility flags (combined with page existence in loadPublicPages)
+          this.settingsShowContact.set(settings.show_contact !== '0');
+          this.settingsShowAbout.set(settings.show_about !== '0');
 
           if (settings.available_languages) {
             const list = settings.available_languages.split(',').filter((l: string) => l);
@@ -82,6 +101,25 @@ export class PublicLayoutComponent implements OnInit {
     });
   }
 
+  loadPublicPages() {
+    this.http.get<any>(`${environment.apiUrl}/public/pages`).subscribe({
+      next: (res) => {
+        const pages = res.data || res || [];
+        if (Array.isArray(pages)) {
+          const activePages = pages.filter(p => p.status === true || p.status == 1);
+          this.pages.set(activePages);
+          
+          const hasAbout = activePages.some(p => p.slug === 'about-us');
+          const hasContact = activePages.some(p => p.slug === 'contact-us');
+          // Show About/Contact only if both: settings allow it AND the page exists in DB
+          this.showAbout.set(hasAbout && this.settingsShowAbout());
+          this.showContact.set(hasContact && this.settingsShowContact());
+        }
+      },
+      error: (err) => console.error('Error loading public pages', err)
+    });
+  }
+
   toggleLanguage() {
     const currentLang = this.translate.currentLang();
     const nextLang = currentLang === 'en' ? 'ar' : 'en';
@@ -94,6 +132,9 @@ export class PublicLayoutComponent implements OnInit {
 
   setLanguage(lang: string) {
     this.translate.use(lang);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('lang', lang);
+    }
     if (lang === 'ar') {
       this.document.documentElement.dir = 'rtl';
       this.document.documentElement.lang = 'ar';

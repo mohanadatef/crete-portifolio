@@ -103,7 +103,7 @@ class LeadController extends Controller
 
     public function export(Request $request)
     {
-        $this->authorize('export-leads');
+        abort_unless(auth()->user()?->can('export-leads'), 403, 'You do not have permission to export leads.');
         try {
             $filters = $request->only(['search', 'status', 'assigned_to', 'landing_page_id', 'project_id', 'source']);
             

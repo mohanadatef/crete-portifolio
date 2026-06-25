@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
+import { SeoService } from '../../services/seo.service';
+import { SettingService } from '../../services/setting.service';
 
 @Component({
   selector: 'app-projects',
@@ -16,6 +18,8 @@ import { environment } from '../../../environments/environment';
 export class ProjectsComponent implements OnInit {
   private http = inject(HttpClient);
   public translate = inject(TranslateService);
+  private seoService = inject(SeoService);
+  private settingService = inject(SettingService);
   
   backendUrl = environment.backendUrl;
   projects: any[] = [];
@@ -37,6 +41,8 @@ export class ProjectsComponent implements OnInit {
   };
 
   ngOnInit() {
+    const siteName = this.settingService.getSetting('site_name') || 'CRETE Developments';
+    this.seoService.updateTitle(`Projects | ${siteName}`);
     this.loadProjectTypes();
     this.loadProjects();
   }
@@ -72,5 +78,10 @@ export class ProjectsComponent implements OnInit {
 
   applyFilters() {
     this.loadProjects();
+  }
+
+  stripHtml(html: string | undefined): string {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '').trim();
   }
 }

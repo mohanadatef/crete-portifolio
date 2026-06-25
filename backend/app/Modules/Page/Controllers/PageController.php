@@ -38,6 +38,16 @@ class PageController extends Controller
         }
     }
 
+    public function indexPublic(): JsonResponse
+    {
+        try {
+            $pages = \App\Modules\Page\Models\Page::where('status', 1)->get();
+            return $this->successResponse(PageResource::collection($pages), 'Pages retrieved successfully');
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
     #[OA\Get(
         path: "/public/pages/{slug}",
         summary: "Get a specific page by slug",

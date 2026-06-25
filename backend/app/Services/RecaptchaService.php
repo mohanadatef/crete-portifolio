@@ -16,7 +16,10 @@ class RecaptchaService
      */
     public function validateToken(?string $token): bool
     {
-        $secretKey = config('services.recaptcha.secret');
+        $secretKey = \App\Modules\Setting\Models\Setting::where('key', 'recaptcha_secret_key')->value('value');
+        if (!$secretKey) {
+            $secretKey = config('services.recaptcha.secret');
+        }
         
         // If the backend has no real secret key configured, bypass verification
         if (!$secretKey || $secretKey === 'dummy_secret_key') {

@@ -66,13 +66,13 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
           <input type="text" formControlName="slug" class="input-premium">
         </div>
-        <div>
+        <div dir="rtl">
           <label class="block text-sm font-medium text-gray-700 mb-1">Content Ar</label>
-          <input type="text" formControlName="content_ar" class="input-premium">
+          <quill-editor formControlName="content_ar" [styles]="{height: '150px'}" placeholder="اكتب محتوى الصفحة هنا..."></quill-editor>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Content En</label>
-          <input type="text" formControlName="content_en" class="input-premium">
+          <quill-editor formControlName="content_en" [styles]="{height: '150px'}" placeholder="Enter page content here..."></quill-editor>
         </div>
         <div>
           <label class="flex items-center gap-2">

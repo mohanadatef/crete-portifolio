@@ -4,11 +4,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } 
 import { PageService } from '../../core/services/page.service';
 import { Page } from '../../core/models/models';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
+import { QuillModule } from 'ngx-quill';
 
 @Component({
   selector: 'app-pages',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, HasPermissionDirective],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, HasPermissionDirective, QuillModule],
   templateUrl: './pages.component.html'
 })
 export class PagesComponent implements OnInit {
@@ -90,19 +91,31 @@ export class PagesComponent implements OnInit {
     // For simplicity, always create or update based on if slug is present in edit, but let's assume create for now 
     // since we don't track ID in the form. Let's add id to form or track it.
     // Actually, backend usually requires PUT for update. We need to track ID.
-    const isEditing = !!data.id; // wait, id is not in form. 
+    const isEditing = !!data.id;
 
-    // Better implementation:
-    this.dataService.create(data).subscribe({
-      next: () => {
-        this.closeModal();
-        this.loadData();
-      },
-      error: (err) => {
-        console.error(err);
-        alert('Error saving data.');
-      }
-    });
+    if (isEditing) {
+      this.dataService.update(data.id, data).subscribe({
+        next: () => {
+          this.closeModal();
+          this.loadData();
+        },
+        error: (err) => {
+          console.error(err);
+          alert('Error updating page.');
+        }
+      });
+    } else {
+      this.dataService.create(data).subscribe({
+        next: () => {
+          this.closeModal();
+          this.loadData();
+        },
+        error: (err) => {
+          console.error(err);
+          alert('Error creating page.');
+        }
+      });
+    }
   }
 
   deleteData(id: number) {

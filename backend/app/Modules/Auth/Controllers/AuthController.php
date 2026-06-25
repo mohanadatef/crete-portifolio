@@ -11,6 +11,7 @@ use App\Modules\Auth\Resources\AuthResource;
 use Illuminate\Http\JsonResponse;
 use Exception;
 use OpenApi\Attributes as OA;
+use App\Http\Requests\LoginRequest;
 
 class AuthController extends Controller
 {
@@ -40,13 +41,8 @@ class AuthController extends Controller
             new OA\Response(response: 401, description: "Invalid credentials")
         ]
     )]
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
-
         try {
             $dto = LoginDTO::fromRequest($request);
             $authData = $this->authService->login($dto);

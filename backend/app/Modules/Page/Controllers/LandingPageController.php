@@ -175,7 +175,7 @@ class LandingPageController extends Controller
             $this->pageService->deleteLandingPage($id);
             return $this->successResponse(null, 'Landing Page deleted successfully');
         } catch (Exception $e) {
-            return $this->errorResponse('Failed to delete landing page', 500);
+            return $this->errorResponse($e->getMessage(), 400);
         }
     }
 

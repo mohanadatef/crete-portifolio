@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-thank-you',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslatePipe],
   template: `
     <div class="py-24 bg-gray-50 flex flex-col items-center justify-center font-sans p-6">
       <div class="bg-white p-10 rounded-3xl shadow-xl text-center max-w-lg w-full border border-gray-100 relative overflow-hidden">
@@ -18,15 +19,17 @@ import { RouterModule } from '@angular/router';
             <i class="fi fi-rr-check-circle"></i>
           </div>
           
-          <h1 class="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">Thank You!</h1>
+          <h1 class="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
+            {{ 'THANK_YOU.TITLE' | translate }}
+          </h1>
           
           <p class="text-gray-500 text-lg mb-10 leading-relaxed">
-            Your application has been successfully submitted. Our team will review your information and get back to you shortly.
+            {{ 'THANK_YOU.SUBTITLE' | translate }}
           </p>
           
           <div class="space-y-4">
             <a routerLink="/" class="block w-full bg-slate-900 text-white font-medium py-3.5 px-6 rounded-xl hover:bg-slate-700 transition-all shadow-lg shadow-slate-900/20">
-              Return to Homepage
+              {{ 'THANK_YOU.RETURN_HOME' | translate }}
             </a>
           </div>
         </div>

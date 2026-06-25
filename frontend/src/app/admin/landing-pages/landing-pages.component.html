@@ -203,9 +203,15 @@
           </button>
         </div>
 
-        <div *ngFor="let row of layoutRows(); let i = index" class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm relative group">
-          <div class="absolute -top-3 -right-3 hidden group-hover:flex">
-             <button (click)="removeRow(i)" class="bg-red-100 text-red-600 rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-sm">
+        <div *ngFor="let row of layoutRows(); let i = index; let first = first; let last = last" class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm relative group">
+          <div class="absolute -top-3 -right-3 hidden group-hover:flex gap-1">
+             <button type="button" (click)="moveRowUp(i)" [disabled]="first" class="bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-30 rounded-full w-8 h-8 flex items-center justify-center transition-colors shadow-sm border border-gray-200" title="Move Up">
+                <i class="fi fi-rr-angle-up text-xs"></i>
+             </button>
+             <button type="button" (click)="moveRowDown(i)" [disabled]="last" class="bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-30 rounded-full w-8 h-8 flex items-center justify-center transition-colors shadow-sm border border-gray-200" title="Move Down">
+                <i class="fi fi-rr-angle-down text-xs"></i>
+             </button>
+             <button type="button" (click)="removeRow(i)" class="bg-red-100 text-red-600 rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-sm border border-red-200" title="Remove">
                 <i class="fi fi-rr-trash text-xs"></i>
              </button>
           </div>

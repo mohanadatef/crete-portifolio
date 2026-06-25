@@ -14,11 +14,11 @@ class LeadPermissionsSeeder extends Seeder
     {
         $permissions = ['export-leads', 'view-all-leads', 'view-unassigned-leads'];
         foreach ($permissions as $p) {
-            \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $p, 'guard_name' => 'api']);
+            \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $p, 'guard_name' => 'sanctum']);
         }
         
         // Let's also give these permissions to the 'admin' role if it exists
-        $adminRole = \Spatie\Permission\Models\Role::where('name', 'admin')->where('guard_name', 'api')->first();
+        $adminRole = \Spatie\Permission\Models\Role::where('name', 'admin')->where('guard_name', 'sanctum')->first();
         if ($adminRole) {
             $adminRole->givePermissionTo($permissions);
         }

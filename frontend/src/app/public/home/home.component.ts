@@ -4,6 +4,8 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
+import { SeoService } from '../../services/seo.service';
+import { SettingService } from '../../services/setting.service';
 
 @Component({
   selector: 'app-home',
@@ -15,6 +17,8 @@ import { environment } from '../../../environments/environment';
 export class HomeComponent implements OnInit {
   private http = inject(HttpClient);
   public translate = inject(TranslateService);
+  private seoService = inject(SeoService);
+  private settingService = inject(SettingService);
   backendUrl = environment.backendUrl;
   projects: any[] = [];
   status: 'loading' | 'success' | 'error' = 'loading';
@@ -26,6 +30,9 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
+    const siteName = this.settingService.getSetting('site_name') || 'CRETE Developments';
+    this.seoService.updateTitle(`Home | ${siteName}`);
+
     this.http.get<any>(`${environment.apiUrl}/public/projects`).subscribe({
       next: (response) => {
         // Handle paginated response structure from Laravel Resource collection
@@ -37,5 +44,10 @@ export class HomeComponent implements OnInit {
       },
       error: () => this.status = 'error'
     });
+  }
+
+  stripHtml(html: string | undefined): string {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '').trim();
   }
 }

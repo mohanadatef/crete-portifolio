@@ -14,22 +14,84 @@ export class SeoService {
 
   initSettings() {
     this.settingService.getPublicSettings().subscribe(settings => {
-      // Set Default SEO Title
-      if (settings['seo_title']) {
-        this.titleService.setTitle(settings['seo_title']);
-      }
-      
-      // Inject Google Tag Dynamic Script
-      if (settings['google_tag']) {
-        const head = this.document.getElementsByTagName('head')[0];
-        // We parse the string to inject it. A safer way for GTM is creating a script element.
-        // But since the admin provides raw HTML/script string:
-        const range = this.document.createRange();
-        range.selectNode(head);
-        const documentFragment = range.createContextualFragment(settings['google_tag']);
-        head.appendChild(documentFragment);
+      const data = settings?.data || settings;
+      if (data) {
+        // Set Default SEO Title
+        const title = data['seo_title'] || data['site_name'] || 'CRETE Developments';
+        this.titleService.setTitle(title);
+        
+        // Update Favicon
+        if (data['site_logo']) {
+          this.updateFavicon(data['site_logo']);
+        }
+        
+        // Inject Google Tag
+        if (data['google_tag']) {
+          this.injectGoogleTag(data['google_tag']);
+        }
       }
     });
+  }
+
+  updateFavicon(url: string) {
+    if (!url || typeof window === 'undefined') return;
+    let link: HTMLLinkElement | null = this.document.querySelector("link[rel*='icon']");
+    if (!link) {
+      link = this.document.createElement('link');
+      link.setAttribute('rel', 'icon');
+      this.document.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
+    if (url.endsWith('.svg')) {
+      link.setAttribute('type', 'image/svg+xml');
+    } else if (url.endsWith('.png')) {
+      link.setAttribute('type', 'image/png');
+    } else if (url.endsWith('.ico')) {
+      link.setAttribute('type', 'image/x-icon');
+    } else if (url.endsWith('.webp')) {
+      link.setAttribute('type', 'image/webp');
+    } else {
+      link.removeAttribute('type');
+    }
+  }
+
+  injectGoogleTag(googleTag: string) {
+    if (!googleTag || typeof window === 'undefined') return;
+    
+    // Check if already injected
+    if (this.document.getElementById('google-tag-injected')) return;
+
+    const head = this.document.getElementsByTagName('head')[0];
+    const isMeasurementId = /^[A-Z0-9]-[A-Z0-9]+$/i.test(googleTag.trim());
+    
+    if (isMeasurementId) {
+      const id = googleTag.trim();
+      
+      const script1 = this.document.createElement('script');
+      script1.async = true;
+      script1.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
+      script1.id = 'google-tag-injected';
+      head.appendChild(script1);
+      
+      const script2 = this.document.createElement('script');
+      script2.text = `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${id}');
+      `;
+      head.appendChild(script2);
+    } else {
+      const container = this.document.createElement('div');
+      container.id = 'google-tag-injected';
+      container.style.display = 'none';
+      
+      const range = this.document.createRange();
+      range.selectNode(head);
+      const fragment = range.createContextualFragment(googleTag);
+      container.appendChild(fragment);
+      this.document.body.appendChild(container);
+    }
   }
 
   updateTitle(title: string) {

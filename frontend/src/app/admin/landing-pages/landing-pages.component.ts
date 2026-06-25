@@ -238,6 +238,26 @@ export class LandingPagesComponent implements OnInit {
     this.showModal.set(false);
   }
 
+  // Layout Row Reordering
+  moveRowUp(index: number) {
+    if (index <= 0) return;
+    this.layoutRows.update(rows => {
+      const newRows = [...rows];
+      [newRows[index - 1], newRows[index]] = [newRows[index], newRows[index - 1]];
+      return newRows;
+    });
+  }
+
+  moveRowDown(index: number) {
+    const rows = this.layoutRows();
+    if (index >= rows.length - 1) return;
+    this.layoutRows.update(r => {
+      const newRows = [...r];
+      [newRows[index], newRows[index + 1]] = [newRows[index + 1], newRows[index]];
+      return newRows;
+    });
+  }
+
   // Form Field Reordering
   moveFieldUp(index: number) {
     if (index <= 0) return;

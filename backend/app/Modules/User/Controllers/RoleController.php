@@ -5,11 +5,12 @@ namespace App\Modules\User\Controllers;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
-
 use App\Modules\User\Services\RoleService;
 use App\Modules\User\DTOs\RoleDTO;
 use App\Modules\User\Resources\RoleResource;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\StoreRoleRequest;
+use App\Http\Requests\UpdateRoleRequest;
 
 class RoleController extends Controller
 {
@@ -51,14 +52,8 @@ class RoleController extends Controller
         );
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreRoleRequest $request): JsonResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name',
-            'permissions' => 'nullable|array',
-            'permissions.*' => 'string|exists:permissions,name'
-        ]);
-
         $dto = RoleDTO::fromRequest($request);
         $role = $this->roleService->createRole($dto);
 
@@ -69,14 +64,8 @@ class RoleController extends Controller
         );
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update(UpdateRoleRequest $request, int $id): JsonResponse
     {
-        $request->validate([
-            'name' => 'sometimes|required|string|max:255|unique:roles,name,' . $id,
-            'permissions' => 'nullable|array',
-            'permissions.*' => 'string|exists:permissions,name'
-        ]);
-
         $dto = RoleDTO::fromRequest($request);
         $role = $this->roleService->updateRole($id, $dto);
 

@@ -5,11 +5,12 @@ import { SettingService } from '../../core/services/setting.service';
 import { MediaService } from '../../core/services/media.service';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
 import { AuthService } from '../../services/auth.service';
+import { QuillModule } from 'ngx-quill';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, HasPermissionDirective],
+  imports: [CommonModule, FormsModule, HasPermissionDirective, QuillModule],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss'
 })
@@ -18,7 +19,18 @@ export class SettingsComponent implements OnInit {
   private mediaService = inject(MediaService);
   public authService = inject(AuthService);
 
-  activeTab: 'general' | 'appearance' | 'languages' | 'navigation' = 'general';
+  quillModules = {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'header': [1, 2, 3, false] }],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      ['link', 'image'],
+      ['clean']
+    ]
+  };
+
+  activeTab: 'general' | 'appearance' | 'languages' | 'navigation' | 'security' | 'email' = 'general';
   
   settings: { [key: string]: string } = {
     site_name: 'CRETE Developments',
@@ -32,7 +44,21 @@ export class SettingsComponent implements OnInit {
     show_projects: '1',
     show_blog: '1',
     show_contact: '1',
-    show_about: '1'
+    show_about: '1',
+    recaptcha_site_key: '',
+    recaptcha_secret_key: '',
+    mail_host: '',
+    mail_port: '',
+    mail_username: '',
+    mail_password: '',
+    mail_encryption: '',
+    mail_from_address: '',
+    mail_from_name: '',
+    mail_to_address: '',
+    client_thank_you_subject: '',
+    client_thank_you_body: '',
+    mail_client_enabled: '1',
+    mail_agent_enabled: '1'
   };
 
   status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
@@ -118,7 +144,7 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  setTab(tab: 'general' | 'appearance' | 'languages' | 'navigation') {
+  setTab(tab: 'general' | 'appearance' | 'languages' | 'navigation' | 'security' | 'email') {
     this.activeTab = tab;
   }
 

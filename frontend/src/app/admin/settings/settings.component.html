@@ -51,6 +51,20 @@
         </svg>
         <span>Navbar & Visibility</span>
       </button>
+
+      <button (click)="setTab('security')" [ngClass]="{'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600': activeTab === 'security', 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent': activeTab !== 'security'}" class="w-full text-left px-4 py-3 rounded-lg text-sm transition-all duration-150 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+        <span>Security & reCAPTCHA</span>
+      </button>
+
+      <button (click)="setTab('email')" [ngClass]="{'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600': activeTab === 'email', 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent': activeTab !== 'email'}" class="w-full text-left px-4 py-3 rounded-lg text-sm transition-all duration-150 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        <span>Email Settings</span>
+      </button>
     </div>
 
     <!-- Right Configuration Panels Column (Col Span 3) -->
@@ -259,6 +273,144 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Tab 5: Security / reCAPTCHA settings -->
+      <div *ngIf="activeTab === 'security'" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Security & Integration</h2>
+          <p class="text-xs text-gray-500 mt-1">Configure spam protection keys (Google reCAPTCHA v3) to protect inquiry forms.</p>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <div class="space-y-6">
+          <!-- reCAPTCHA Site Key -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Google reCAPTCHA v3 Site Key</label>
+            <input type="text" [(ngModel)]="settings['recaptcha_site_key']" placeholder="e.g. 6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+            <p class="text-[10px] text-gray-400 mt-1">This key is exposed to the frontend to load and render the Google reCAPTCHA script.</p>
+          </div>
+
+          <!-- reCAPTCHA Secret Key -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Google reCAPTCHA v3 Secret Key</label>
+            <input type="password" [(ngModel)]="settings['recaptcha_secret_key']" placeholder="e.g. 6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+            <p class="text-[10px] text-gray-400 mt-1">This key is stored securely in the database and is used on the backend to verify the captcha tokens.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 6: Email settings -->
+      <div *ngIf="activeTab === 'email'" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Email Configuration</h2>
+          <p class="text-xs text-gray-500 mt-1">Configure SMTP credentials and notification parameters. These settings are used to send email alerts to the sales team when new leads are registered.</p>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- SMTP Host -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">SMTP Host</label>
+            <input type="text" [(ngModel)]="settings['mail_host']" placeholder="e.g. smtp.mailgun.org or smtp.gmail.com" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+          </div>
+
+          <!-- SMTP Port -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">SMTP Port</label>
+            <input type="text" [(ngModel)]="settings['mail_port']" placeholder="e.g. 587 or 465" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+          </div>
+
+          <!-- SMTP Encryption -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Encryption</label>
+            <select [(ngModel)]="settings['mail_encryption']" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow bg-white">
+              <option value="">None</option>
+              <option value="tls">TLS (Standard)</option>
+              <option value="ssl">SSL</option>
+            </select>
+          </div>
+
+          <!-- SMTP Username -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">SMTP Username</label>
+            <input type="text" [(ngModel)]="settings['mail_username']" placeholder="e.g. postmaster@yourdomain.com" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+          </div>
+
+          <!-- SMTP Password -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">SMTP Password</label>
+            <input type="password" [(ngModel)]="settings['mail_password']" placeholder="SMTP Password" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+          </div>
+
+          <!-- From Email Address -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">From Email Address</label>
+            <input type="email" [(ngModel)]="settings['mail_from_address']" placeholder="e.g. info@crete.com" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+          </div>
+
+          <!-- From Name -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">From Name</label>
+            <input type="text" [(ngModel)]="settings['mail_from_name']" placeholder="e.g. CRETE Developments" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+          </div>
+
+          <!-- Send Lead Notification To -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Notification Inbox (Receiver Email Address)</label>
+            <input type="email" [(ngModel)]="settings['mail_to_address']" placeholder="e.g. sales@crete.com" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+            <p class="text-[10px] text-gray-400 mt-1">This email address will receive alert notifications whenever a new lead is registered via public forms or landing pages.</p>
+          </div>
+
+          <!-- Divider -->
+          <div class="md:col-span-2 border-t border-gray-100 my-4 pt-4">
+            <h3 class="text-sm font-bold text-gray-800">Email Feature Toggles</h3>
+            <p class="text-[10px] text-gray-500 mt-0.5">Turn email notifications on or off globally for clients and internal agents.</p>
+          </div>
+
+          <!-- Client Email Toggle -->
+          <div class="md:col-span-2 flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <div>
+              <span class="block text-sm font-bold text-gray-700">Send Auto-Response to Clients</span>
+              <span class="text-[10px] text-gray-400">If enabled, clients submitting forms with an email address will receive the thank you email.</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" [ngModel]="settings['mail_client_enabled'] !== '0'" (ngModelChange)="settings['mail_client_enabled'] = $event ? '1' : '0'" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          <!-- Agent Assignment Email Toggle -->
+          <div class="md:col-span-2 flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <div>
+              <span class="block text-sm font-bold text-gray-700">Send Email Alerts to Assigned Agents</span>
+              <span class="text-[10px] text-gray-400">If enabled, agents will receive an email alert whenever a lead is assigned to them.</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" [ngModel]="settings['mail_agent_enabled'] !== '0'" (ngModelChange)="settings['mail_agent_enabled'] = $event ? '1' : '0'" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          <!-- Divider -->
+          <div class="md:col-span-2 border-t border-gray-100 my-4 pt-4">
+            <h3 class="text-sm font-bold text-gray-800">Client Auto-Response Configuration</h3>
+            <p class="text-[10px] text-gray-500 mt-0.5">When a client registers with an email address, send them an automated thank you email. Customize the subject and message body below.</p>
+          </div>
+          <!-- Thank You Email Subject -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Thank You Email Subject</label>
+            <input type="text" [(ngModel)]="settings['client_thank_you_subject']" [placeholder]="'e.g. Thank you for your inquiry - CRETE Developments'" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+          </div>
+
+          <!-- Thank You Email Body -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Thank You Email Body Template</label>
+            <quill-editor [(ngModel)]="settings['client_thank_you_body']" [modules]="quillModules" class="block bg-white rounded-xl border border-gray-200 overflow-hidden min-h-[250px]"></quill-editor>
+            <p class="text-[10px] text-gray-400 mt-1">Available placeholders: <strong class="text-gray-600">&#123;name&#125;</strong> (Client\'s name) and <strong class="text-gray-600">&#123;project&#125;</strong> (Assigned project title).</p>
+          </div>
       </div>
 
     </div>

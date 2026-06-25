@@ -80,6 +80,19 @@ export class PublicLandingPageComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.layoutService.showHeaderFooter.set(false); // Hide by default while loading
+    
+    this.route.queryParams.subscribe(params => {
+      const lang = params['lang'];
+      if (lang && (lang === 'en' || lang === 'ar')) {
+        this.translate.use(lang);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('lang', lang);
+          document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+          document.documentElement.lang = lang;
+        }
+      }
+    });
+
     this.route.paramMap.subscribe(params => {
       this.slug = params.get('slug') || '';
       if (this.slug) {

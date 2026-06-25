@@ -5,6 +5,8 @@ import { BlogPostService } from '../../core/services/blog-post.service';
 import { BlogPost } from '../../core/models/models';
 import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
+import { SeoService } from '../../services/seo.service';
+import { SettingService } from '../../services/setting.service';
 
 @Component({
   selector: 'app-blog',
@@ -16,12 +18,17 @@ import { environment } from '../../../environments/environment';
 export class BlogComponent implements OnInit {
   private postService = inject(BlogPostService);
   public translate = inject(TranslateService);
+  private seoService = inject(SeoService);
+  private settingService = inject(SettingService);
   backendUrl = environment.backendUrl;
   
   posts = signal<BlogPost[]>([]);
   status = signal<'loading' | 'success' | 'error'>('loading');
 
   ngOnInit() {
+    const siteName = this.settingService.getSetting('site_name') || 'CRETE Developments';
+    this.seoService.updateTitle(`Blog | ${siteName}`);
+    
     this.status.set('loading');
     this.postService.getPublic({ status: 1 }).subscribe({
       next: (res) => {
