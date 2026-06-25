@@ -53,6 +53,37 @@ class LeadService
             }
         }
 
+        // Apply range and date filters
+        if (!empty($filters['range'])) {
+            $startDate = null;
+            $endDate = \Carbon\Carbon::today();
+
+            if ($filters['range'] === 'today') {
+                $startDate = \Carbon\Carbon::today();
+                $endDate = \Carbon\Carbon::today();
+            } elseif ($filters['range'] === 'yesterday') {
+                $startDate = \Carbon\Carbon::yesterday();
+                $endDate = \Carbon\Carbon::yesterday();
+            } elseif ($filters['range'] === 'week') {
+                $startDate = \Carbon\Carbon::today()->subDays(6);
+                $endDate = \Carbon\Carbon::today();
+            } elseif ($filters['range'] === 'month') {
+                $startDate = \Carbon\Carbon::today()->subDays(29);
+                $endDate = \Carbon\Carbon::today();
+            } elseif ($filters['range'] === 'custom') {
+                if (!empty($filters['start_date'])) {
+                    $startDate = \Carbon\Carbon::parse($filters['start_date'])->startOfDay();
+                }
+                if (!empty($filters['end_date'])) {
+                    $endDate = \Carbon\Carbon::parse($filters['end_date'])->endOfDay();
+                }
+            }
+
+            if ($startDate && $endDate) {
+                $query->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()]);
+            }
+        }
+
         return $query->paginate($perPage);
     }
 

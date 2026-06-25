@@ -27,7 +27,7 @@ class LeadController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $filters = $request->only(['search', 'status', 'assigned_to', 'landing_page_id', 'project_id', 'source']);
+            $filters = $request->only(['search', 'status', 'assigned_to', 'landing_page_id', 'project_id', 'source', 'range', 'start_date', 'end_date']);
             $perPage = $request->integer('per_page', 15);
             if ($perPage < 1 || $perPage > 100) {
                 $perPage = 15;

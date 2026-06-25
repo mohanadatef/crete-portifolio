@@ -58,15 +58,21 @@ export class LeadsComponent implements OnInit {
     status: '',
     assigned_to: '',
     landing_page_id: '',
-    project_id: ''
+    project_id: '',
+    range: '',
+    start_date: '',
+    end_date: ''
   };
 
   ngOnInit() {
     // Read query params from dashboard navigation (range, project_id, landing_page_id, etc.)
     const qp = this.route.snapshot.queryParams;
-    if (qp['project_id'])     this.filters.project_id = qp['project_id'];
-    if (qp['landing_page_id']) this.filters.landing_page_id = qp['landing_page_id'];
-    // Note: 'range' is a dashboard filter, leads table uses date columns — just pre-filter by project/page
+    if (qp['project_id'])        this.filters.project_id = qp['project_id'];
+    if (qp['landing_page_id'])    this.filters.landing_page_id = qp['landing_page_id'];
+    if (qp['range'])             this.filters.range = qp['range'];
+    if (qp['start_date'])        this.filters.start_date = qp['start_date'];
+    if (qp['end_date'])          this.filters.end_date = qp['end_date'];
+    
     this.loadFiltersData();
     this.loadLeads();
   }
@@ -128,7 +134,16 @@ export class LeadsComponent implements OnInit {
   }
 
   resetFilters() {
-    this.filters = { search: '', status: '', assigned_to: '', landing_page_id: '', project_id: '' };
+    this.filters = {
+      search: '',
+      status: '',
+      assigned_to: '',
+      landing_page_id: '',
+      project_id: '',
+      range: '',
+      start_date: '',
+      end_date: ''
+    };
     this.loadLeads(1);
   }
 

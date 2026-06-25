@@ -1,6 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { BlogCategoryService } from '../../../core/services/blog-category.service';
 import { BlogCategory } from '../../../core/models/models';
 import { HasPermissionDirective } from '../../../directives/has-permission.directive';
@@ -49,6 +51,23 @@ export class CategoriesComponent implements OnInit {
   lastPage = 1;
   perPage = 10;
   totalRecords = 0;
+
+  searchSubject = new Subject<string>();
+
+  constructor() {
+    this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe((searchValue) => {
+      this.filters.search = searchValue;
+      this.loadData(1);
+    });
+  }
+
+  onSearch(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value);
+  }
 
   ngOnInit() {
     this.loadData();
