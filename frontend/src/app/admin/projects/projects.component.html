@@ -15,16 +15,19 @@
 
   <!-- Filters Panel -->
   <div class="p-6 bg-white/20 border-b border-gray-100 flex flex-wrap gap-4 items-center">
-    <input type="text" (input)="onSearch($event)" placeholder="Search by title..." class="input-premium flex-1 min-w-[200px]">
+    <input type="text" [value]="filters.search" (input)="onSearch($event)" placeholder="Search by title..." class="input-premium flex-1 min-w-[200px]">
     <select [(ngModel)]="filters.project_type_id" (change)="loadProjects(1)" class="input-premium w-full sm:w-48 bg-white text-gray-700">
-      <option value="">All Types</option>
+      <option value="">All Types (الكل)</option>
       <option *ngFor="let t of projectTypes()" [value]="t.id">{{ t.name_en }} ({{ t.name_ar }})</option>
     </select>
     <select [(ngModel)]="filters.status" (change)="loadProjects(1)" class="input-premium w-full sm:w-48 bg-white text-gray-700">
       <option value="">All Statuses</option>
-      <option value="1">Published</option>
-      <option value="0">Draft</option>
+      <option value="1">Published (مستمر)</option>
+      <option value="0">Draft (مسودة)</option>
     </select>
+    <div class="flex gap-2 ml-auto sm:ml-0">
+      <button (click)="resetFilters()" class="btn-secondary">Reset</button>
+    </div>
   </div>
 
   <!-- Table -->

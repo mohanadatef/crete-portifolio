@@ -105,6 +105,15 @@ export class ProjectsComponent implements OnInit {
     this.loadProjects(1);
   }
 
+  resetFilters() {
+    this.filters = {
+      search: '',
+      project_type_id: '',
+      status: ''
+    };
+    this.loadProjects(1);
+  }
+
   isVideoUrl(url: string): boolean {
     if (!url) return false;
     const cleanUrl = url.split('?')[0].toLowerCase();
