@@ -9,7 +9,7 @@
 
   <!-- Filters Section -->
   <div class="p-6 bg-white/20 border-b border-gray-100 flex flex-wrap gap-4 items-center">
-    <input type="text" [(ngModel)]="filters.search" (keyup.enter)="applyFilters()" placeholder="Name, Email, Phone..." class="input-premium flex-1 min-w-[200px]">
+    <input type="text" (input)="onSearch($event)" placeholder="Name, Email, Phone..." class="input-premium flex-1 min-w-[200px]">
     
     <select [(ngModel)]="filters.status" (change)="applyFilters()" class="input-premium w-full sm:w-48 bg-white text-gray-700">
       <option value="">All Statuses</option>
@@ -46,7 +46,6 @@
       </button>
       <div class="flex gap-2">
         <button (click)="resetFilters()" class="btn-secondary">Reset</button>
-        <button (click)="applyFilters()" class="btn-primary">Apply Filters</button>
       </div>
     </div>
   </div>
