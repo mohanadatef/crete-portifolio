@@ -1,98 +1,384 @@
-<div class="min-h-screen bg-gray-50 flex flex-col font-sans transition-all duration-300">
-  <header *ngIf="layoutService.showHeaderFooter()" class="bg-white shadow-sm sticky top-0 z-50">
+<div class="min-h-screen bg-gray-50 flex flex-col font-sans">
+
+  <!-- ═══════════════════════════════════════════════════════════ HEADER -->
+  <header
+    *ngIf="layoutService.showHeaderFooter()"
+    class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100/80 transition-all duration-300">
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-20">
-        
-        <!-- Brand Logo / Title Section -->
-        <div class="flex-shrink-0 flex items-center">
-          <a routerLink="/" dir="ltr" class="flex items-center gap-2">
-            <img *ngIf="siteLogo() as logoUrl; else textLogo" [src]="logoUrl" [alt]="siteName()" class="h-10 max-w-[180px] object-contain">
+
+        <!-- ── Brand ──────────────────────────────────────────────────── -->
+        <div class="flex-shrink-0">
+          <a routerLink="/" dir="ltr" class="flex items-center gap-3 group">
+            <img
+              *ngIf="siteLogo() as logoUrl; else textLogo"
+              [src]="logoUrl"
+              [alt]="siteName()"
+              class="h-10 max-w-[180px] object-contain transition-opacity duration-200 group-hover:opacity-80">
             <ng-template #textLogo>
-              <span class="text-2xl font-extrabold tracking-tighter text-crete-blue uppercase">
-                {{ siteName() }}<span class="text-crete-gold">.</span>
+              <span class="flex items-end gap-0.5 select-none">
+                <span class="text-[1.6rem] font-black tracking-tight text-[#0d1f4a] uppercase leading-none group-hover:text-crete-gold transition-colors duration-300">
+                  {{ siteName() }}
+                </span>
+                <span class="text-crete-gold text-[2rem] font-black leading-none mb-[-2px]">.</span>
               </span>
             </ng-template>
           </a>
         </div>
-        
-        <!-- Desktop Nav -->
-        <nav class="hidden md:flex space-x-8 rtl:space-x-reverse items-center">
-          <a routerLink="/" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.HOME' | translate }}</a>
-          <a *ngIf="showProjects()" routerLink="/projects" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.PROJECTS' | translate }}</a>
-          <a *ngIf="showBlog()" routerLink="/blog" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.BLOG' | translate }}</a>
-          <a *ngIf="showAbout()" routerLink="/about" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.ABOUT' | translate }}</a>
-          
-          <!-- Dynamic Pages -->
-          <a *ngFor="let page of customPages()" [routerLink]="['/pages', page.slug]" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">
+
+        <!-- ── Desktop Nav ────────────────────────────────────────────── -->
+        <nav class="hidden md:flex items-center gap-1">
+          <a
+            routerLink="/"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{exact: true}"
+            class="nav-link">
+            {{ 'NAV.HOME' | translate }}
+          </a>
+          <a
+            *ngIf="showProjects()"
+            routerLink="/projects"
+            routerLinkActive="active"
+            class="nav-link">
+            {{ 'NAV.PROJECTS' | translate }}
+          </a>
+          <a
+            *ngIf="showBlog()"
+            routerLink="/blog"
+            routerLinkActive="active"
+            class="nav-link">
+            {{ 'NAV.BLOG' | translate }}
+          </a>
+          <a
+            *ngIf="showAbout()"
+            routerLink="/about"
+            routerLinkActive="active"
+            class="nav-link">
+            {{ 'NAV.ABOUT' | translate }}
+          </a>
+
+          <!-- Dynamic custom pages -->
+          <a
+            *ngFor="let page of customPages()"
+            [routerLink]="['/pages', page.slug]"
+            routerLinkActive="active"
+            class="nav-link">
             {{ translate.currentLang() === 'ar' ? (page.title_ar || page.title_en) : page.title_en }}
           </a>
-          
-          <a *ngIf="showContact()" routerLink="/contact" class="text-gray-600 hover:text-crete-gold font-medium transition-colors">{{ 'NAV.CONTACT' | translate }}</a>
-          
-          <button *ngIf="availableLangs().length > 1" (click)="toggleLanguage()" class="ml-4 rtl:mr-4 rtl:ml-0 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-bold transition-colors">
+
+          <a
+            *ngIf="showContact()"
+            routerLink="/contact"
+            routerLinkActive="active"
+            class="nav-link">
+            {{ 'NAV.CONTACT' | translate }}
+          </a>
+        </nav>
+
+        <!-- ── Desktop Right Actions ──────────────────────────────────── -->
+        <div class="hidden md:flex items-center gap-3">
+          <!-- Language pill -->
+          <button
+            *ngIf="availableLangs().length > 1"
+            (click)="toggleLanguage()"
+            class="flex items-center gap-1.5 bg-gray-100 hover:bg-crete-gold/10 border border-gray-200 hover:border-crete-gold/40 text-gray-700 hover:text-crete-gold px-3.5 py-1.5 rounded-full text-[0.75rem] font-bold tracking-wide transition-all duration-200">
+            <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+            </svg>
             {{ translate.currentLang() === 'en' ? 'العربية' : 'English' }}
           </button>
-        </nav>
-        
-        <div class="hidden md:flex items-center">
-          <a routerLink="/contact" class="bg-crete-gold text-white px-5 py-2.5 rounded-md text-sm font-bold hover:bg-yellow-600 transition shadow-sm">
+
+          <!-- Get Started CTA -->
+          <a
+            routerLink="/contact"
+            class="inline-flex items-center gap-2 bg-crete-gold hover:bg-yellow-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold tracking-wide shadow-md shadow-amber-200/50 hover:shadow-amber-300/60 transition-all duration-200 hover:-translate-y-px">
             {{ 'NAV.GET_STARTED' | translate }}
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
           </a>
         </div>
 
-        <!-- Mobile Menu Button -->
-        <div class="md:hidden flex items-center">
-          <button *ngIf="availableLangs().length > 1" (click)="toggleLanguage()" class="mr-4 rtl:ml-4 rtl:mr-0 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-bold transition-colors">
-            {{ translate.currentLang() === 'en' ? 'العربية' : 'EN' }}
+        <!-- ── Mobile Controls ────────────────────────────────────────── -->
+        <div class="md:hidden flex items-center gap-2">
+          <button
+            *ngIf="availableLangs().length > 1"
+            (click)="toggleLanguage()"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full text-xs font-bold transition-colors duration-200">
+            {{ translate.currentLang() === 'en' ? 'AR' : 'EN' }}
           </button>
-          <button (click)="isMobileMenuOpen = !isMobileMenuOpen" class="text-gray-600 hover:text-crete-blue focus:outline-none">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path *ngIf="!isMobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-              <path *ngIf="isMobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+
+          <button
+            (click)="isMobileMenuOpen = !isMobileMenuOpen"
+            class="relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-700 hover:text-crete-gold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-crete-gold/30"
+            aria-label="Toggle navigation">
+            <svg
+              *ngIf="!isMobileMenuOpen"
+              class="h-6 w-6 transition-all duration-200"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <svg
+              *ngIf="isMobileMenuOpen"
+              class="h-6 w-6 transition-all duration-200"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
+
       </div>
     </div>
 
-    <!-- Mobile Nav Menu Drawer -->
-    <div *ngIf="isMobileMenuOpen" class="md:hidden bg-white border-t border-gray-100 px-4 pt-2 pb-4 space-y-1 shadow-lg absolute w-full z-40">
-      <a routerLink="/" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.HOME' | translate }}</a>
-      <a *ngIf="showProjects()" routerLink="/projects" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.PROJECTS' | translate }}</a>
-      <a *ngIf="showBlog()" routerLink="/blog" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.BLOG' | translate }}</a>
-      <a *ngIf="showAbout()" routerLink="/about" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.ABOUT' | translate }}</a>
-      
-      <!-- Dynamic Pages -->
-      <a *ngFor="let page of customPages()" [routerLink]="['/pages', page.slug]" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">
-        {{ translate.currentLang() === 'ar' ? (page.title_ar || page.title_en) : page.title_en }}
-      </a>
-      
-      <a *ngIf="showContact()" routerLink="/contact" (click)="isMobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-crete-gold hover:bg-gray-50">{{ 'NAV.CONTACT' | translate }}</a>
-      <a routerLink="/contact" (click)="isMobileMenuOpen = false" class="block mt-4 px-3 py-2 rounded-md text-base font-bold text-white bg-crete-gold hover:bg-yellow-600 text-center">
-        {{ 'NAV.GET_STARTED' | translate }}
-      </a>
+    <!-- ── Mobile Slide-Down Menu ─────────────────────────────────────── -->
+    <div
+      *ngIf="isMobileMenuOpen"
+      class="md:hidden absolute w-full bg-white border-t border-gray-100 shadow-2xl z-40">
+      <nav class="max-w-7xl mx-auto px-4 pt-3 pb-5 flex flex-col gap-1">
+
+        <a routerLink="/"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{exact: true}"
+          (click)="isMobileMenuOpen = false"
+          class="mobile-nav-link">
+          {{ 'NAV.HOME' | translate }}
+        </a>
+        <a *ngIf="showProjects()"
+          routerLink="/projects"
+          routerLinkActive="active"
+          (click)="isMobileMenuOpen = false"
+          class="mobile-nav-link">
+          {{ 'NAV.PROJECTS' | translate }}
+        </a>
+        <a *ngIf="showBlog()"
+          routerLink="/blog"
+          routerLinkActive="active"
+          (click)="isMobileMenuOpen = false"
+          class="mobile-nav-link">
+          {{ 'NAV.BLOG' | translate }}
+        </a>
+        <a *ngIf="showAbout()"
+          routerLink="/about"
+          routerLinkActive="active"
+          (click)="isMobileMenuOpen = false"
+          class="mobile-nav-link">
+          {{ 'NAV.ABOUT' | translate }}
+        </a>
+
+        <!-- Dynamic custom pages -->
+        <a *ngFor="let page of customPages()"
+          [routerLink]="['/pages', page.slug]"
+          routerLinkActive="active"
+          (click)="isMobileMenuOpen = false"
+          class="mobile-nav-link">
+          {{ translate.currentLang() === 'ar' ? (page.title_ar || page.title_en) : page.title_en }}
+        </a>
+
+        <a *ngIf="showContact()"
+          routerLink="/contact"
+          routerLinkActive="active"
+          (click)="isMobileMenuOpen = false"
+          class="mobile-nav-link">
+          {{ 'NAV.CONTACT' | translate }}
+        </a>
+
+        <!-- Get Started mobile CTA -->
+        <a routerLink="/contact"
+          (click)="isMobileMenuOpen = false"
+          class="mt-3 flex items-center justify-center gap-2 bg-crete-gold hover:bg-yellow-500 text-white px-5 py-3 rounded-lg text-base font-bold tracking-wide shadow-lg transition-all duration-200">
+          {{ 'NAV.GET_STARTED' | translate }}
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </a>
+      </nav>
     </div>
+
   </header>
 
-  <!-- Route view container -->
+
+  <!-- ══════════════════════════════════════════════════ MAIN CONTENT -->
   <main class="flex-grow bg-gray-50">
     <router-outlet></router-outlet>
   </main>
 
-  <!-- Public Footer Section -->
-  <footer *ngIf="layoutService.showHeaderFooter()" class="bg-crete-blue text-white py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <div class="mb-6 flex flex-col items-center justify-center">
-        <!-- Render Logo in footer as well if set -->
-        <img *ngIf="siteLogo() as logoUrl; else footerTextLogo" [src]="logoUrl" [alt]="siteName()" class="h-10 max-w-[180px] object-contain mb-2 brightness-0 invert">
-        <ng-template #footerTextLogo>
-          <span dir="ltr" class="text-3xl font-extrabold tracking-wider flex items-center uppercase">
-            {{ siteName() }}
-          </span>
-        </ng-template>
-        <span dir="ltr" class="text-[10px] tracking-[0.3em] uppercase text-gray-300">Developments</span>
+
+  <!-- ═══════════════════════════════════════════════════════════ FOOTER -->
+  <footer *ngIf="layoutService.showHeaderFooter()" class="bg-[#0d1f4a] text-gray-300">
+
+    <!-- Top footer grid -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
+
+        <!-- ── Col 1: Brand ─────────────────────────────────────────── -->
+        <div class="flex flex-col gap-4">
+          <a routerLink="/" dir="ltr" class="flex items-center gap-2 w-fit group">
+            <img
+              *ngIf="siteLogo() as logoUrl; else footerTextLogo"
+              [src]="logoUrl"
+              [alt]="siteName()"
+              class="h-10 max-w-[160px] object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition-opacity duration-200">
+            <ng-template #footerTextLogo>
+              <span class="flex items-end gap-0.5 select-none">
+                <span class="text-2xl font-black tracking-tight text-white uppercase group-hover:text-gray-200 transition-colors duration-200">
+                  {{ siteName() }}
+                </span>
+                <span class="text-crete-gold text-3xl font-black leading-none mb-[-2px]">.</span>
+              </span>
+            </ng-template>
+          </a>
+
+          <!-- Tagline -->
+          <p class="text-crete-gold text-xs font-bold tracking-[0.25em] uppercase">
+            Premium Real Estate Developments
+          </p>
+
+          <!-- Description -->
+          <p class="text-gray-400 text-sm leading-relaxed max-w-xs">
+            Crafting landmark residences and investment properties that define luxury living across the UAE and beyond.
+          </p>
+
+          <!-- Decorative divider -->
+          <div class="w-10 h-0.5 bg-crete-gold/60 rounded-full mt-1"></div>
+        </div>
+
+        <!-- ── Col 2: Quick Links ────────────────────────────────────── -->
+        <div class="flex flex-col gap-5">
+          <h3 class="text-crete-gold text-xs font-bold tracking-[0.25em] uppercase">
+            Quick Links
+          </h3>
+          <ul class="flex flex-col gap-3">
+            <li>
+              <a routerLink="/"
+                routerLinkActive="!text-crete-gold"
+                [routerLinkActiveOptions]="{exact: true}"
+                class="text-gray-400 hover:text-white text-sm font-medium transition-colors duration-200 flex items-center gap-2 group">
+                <span class="w-1.5 h-1.5 rounded-full bg-crete-gold/40 group-hover:bg-crete-gold transition-colors duration-200 flex-shrink-0"></span>
+                {{ 'NAV.HOME' | translate }}
+              </a>
+            </li>
+            <li *ngIf="showProjects()">
+              <a routerLink="/projects"
+                routerLinkActive="!text-crete-gold"
+                class="text-gray-400 hover:text-white text-sm font-medium transition-colors duration-200 flex items-center gap-2 group">
+                <span class="w-1.5 h-1.5 rounded-full bg-crete-gold/40 group-hover:bg-crete-gold transition-colors duration-200 flex-shrink-0"></span>
+                {{ 'NAV.PROJECTS' | translate }}
+              </a>
+            </li>
+            <li *ngIf="showBlog()">
+              <a routerLink="/blog"
+                routerLinkActive="!text-crete-gold"
+                class="text-gray-400 hover:text-white text-sm font-medium transition-colors duration-200 flex items-center gap-2 group">
+                <span class="w-1.5 h-1.5 rounded-full bg-crete-gold/40 group-hover:bg-crete-gold transition-colors duration-200 flex-shrink-0"></span>
+                {{ 'NAV.BLOG' | translate }}
+              </a>
+            </li>
+            <li *ngIf="showAbout()">
+              <a routerLink="/about"
+                routerLinkActive="!text-crete-gold"
+                class="text-gray-400 hover:text-white text-sm font-medium transition-colors duration-200 flex items-center gap-2 group">
+                <span class="w-1.5 h-1.5 rounded-full bg-crete-gold/40 group-hover:bg-crete-gold transition-colors duration-200 flex-shrink-0"></span>
+                {{ 'NAV.ABOUT' | translate }}
+              </a>
+            </li>
+            <li *ngIf="showContact()">
+              <a routerLink="/contact"
+                routerLinkActive="!text-crete-gold"
+                class="text-gray-400 hover:text-white text-sm font-medium transition-colors duration-200 flex items-center gap-2 group">
+                <span class="w-1.5 h-1.5 rounded-full bg-crete-gold/40 group-hover:bg-crete-gold transition-colors duration-200 flex-shrink-0"></span>
+                {{ 'NAV.CONTACT' | translate }}
+              </a>
+            </li>
+            <!-- Dynamic custom pages -->
+            <li *ngFor="let page of customPages()">
+              <a [routerLink]="['/pages', page.slug]"
+                routerLinkActive="!text-crete-gold"
+                class="text-gray-400 hover:text-white text-sm font-medium transition-colors duration-200 flex items-center gap-2 group">
+                <span class="w-1.5 h-1.5 rounded-full bg-crete-gold/40 group-hover:bg-crete-gold transition-colors duration-200 flex-shrink-0"></span>
+                {{ translate.currentLang() === 'ar' ? (page.title_ar || page.title_en) : page.title_en }}
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- ── Col 3: Contact Info ───────────────────────────────────── -->
+        <div class="flex flex-col gap-5">
+          <h3 class="text-crete-gold text-xs font-bold tracking-[0.25em] uppercase">
+            Get In Touch
+          </h3>
+          <ul class="flex flex-col gap-4">
+
+            <!-- Phone -->
+            <li>
+              <a href="tel:+971501234567"
+                class="flex items-start gap-3 group text-gray-400 hover:text-white transition-colors duration-200">
+                <span class="mt-0.5 flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 group-hover:bg-crete-gold/20 flex items-center justify-center transition-colors duration-200">
+                  <svg class="w-4 h-4 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                  </svg>
+                </span>
+                <div class="flex flex-col">
+                  <span class="text-xs text-gray-500 font-medium uppercase tracking-wide mb-0.5">Phone</span>
+                  <span class="text-sm font-medium" dir="ltr">+971 50 123 4567</span>
+                </div>
+              </a>
+            </li>
+
+            <!-- Email -->
+            <li>
+              <a href="mailto:info@crete.com"
+                class="flex items-start gap-3 group text-gray-400 hover:text-white transition-colors duration-200">
+                <span class="mt-0.5 flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 group-hover:bg-crete-gold/20 flex items-center justify-center transition-colors duration-200">
+                  <svg class="w-4 h-4 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                  </svg>
+                </span>
+                <div class="flex flex-col">
+                  <span class="text-xs text-gray-500 font-medium uppercase tracking-wide mb-0.5">Email</span>
+                  <span class="text-sm font-medium" dir="ltr">info&#64;crete.com</span>
+                </div>
+              </a>
+            </li>
+
+            <!-- Location -->
+            <li>
+              <div class="flex items-start gap-3 text-gray-400">
+                <span class="mt-0.5 flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </span>
+                <div class="flex flex-col">
+                  <span class="text-xs text-gray-500 font-medium uppercase tracking-wide mb-0.5">Location</span>
+                  <span class="text-sm font-medium text-gray-300">Dubai, UAE</span>
+                </div>
+              </div>
+            </li>
+
+          </ul>
+        </div>
       </div>
-      <p class="text-sm text-gray-400">&copy; 2026 {{ siteName() }} Developments. All rights reserved.</p>
     </div>
+
+    <!-- ── Bottom Bar ───────────────────────────────────────────────── -->
+    <div class="border-t border-white/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-gray-500 text-xs">
+          &copy; 2026 <span class="text-gray-400 font-semibold">{{ siteName() }}</span> Developments. All rights reserved.
+        </p>
+        <p class="text-gray-600 text-xs tracking-wide">
+          Crafted with precision &amp; excellence.
+        </p>
+      </div>
+    </div>
+
   </footer>
+
 </div>

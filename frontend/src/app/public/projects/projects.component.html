@@ -1,39 +1,60 @@
-<div class="py-12">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-12">
-      <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-        {{ 'NAV.PROJECTS' | translate }}
-      </h2>
-      <p class="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
-        {{ 'PROJECTS.TITLE' | translate }}
-      </p>
-    </div>
+<div class="min-h-screen bg-gray-50">
 
-    <!-- Filter Bar -->
-    <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+  <!-- ── Page Hero Banner ────────────────────────────────── -->
+  <div class="relative bg-[#0d1f4a] overflow-hidden">
+    <div class="absolute inset-0">
+      <img
+        src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1950&q=80"
+        alt="Projects"
+        class="w-full h-full object-cover opacity-20"
+      >
+    </div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+      <span class="inline-block badge-gold mb-4">{{ 'NAV.PROJECTS' | translate }}</span>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4" style="font-family:'Playfair Display',serif">
+        {{ 'PROJECTS.TITLE' | translate }}
+      </h1>
+      <div class="gold-divider"></div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- ── Filter Bar ──────────────────────────────────────── -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-10">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+        <!-- Location -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-          <input type="text" [(ngModel)]="filters.location" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-crete-gold focus:border-crete-gold" placeholder="e.g. Cairo">
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Location</label>
+          <input
+            type="text"
+            [(ngModel)]="filters.location"
+            placeholder="e.g. Cairo"
+            class="w-full border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm transition-all"
+          >
         </div>
+        <!-- Type -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'PROJECTS.TYPE' | translate }}</label>
-          <select [(ngModel)]="filters.project_type_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-crete-gold focus:border-crete-gold">
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'PROJECTS.TYPE' | translate }}</label>
+          <select [(ngModel)]="filters.project_type_id" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm transition-all">
             <option value="">{{ 'PROJECTS.ALL_TYPES' | translate }}</option>
             <option *ngFor="let t of projectTypes" [value]="t.id">{{ translate.currentLang() === 'ar' ? t.name_ar : t.name_en }}</option>
           </select>
         </div>
+        <!-- Min Price -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'PROJECTS.MIN_PRICE' | translate }}</label>
-          <input type="number" [(ngModel)]="filters.min_price" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-crete-gold focus:border-crete-gold" placeholder="0">
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'PROJECTS.MIN_PRICE' | translate }}</label>
+          <input type="number" [(ngModel)]="filters.min_price" placeholder="0" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm transition-all">
         </div>
+        <!-- Max Price -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'PROJECTS.MAX_PRICE' | translate }}</label>
-          <input type="number" [(ngModel)]="filters.max_price" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-crete-gold focus:border-crete-gold" placeholder="No limit">
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'PROJECTS.MAX_PRICE' | translate }}</label>
+          <input type="number" [(ngModel)]="filters.max_price" placeholder="No limit" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm transition-all">
         </div>
+        <!-- Bedrooms -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'PROJECTS.BEDROOMS' | translate }}</label>
-          <select [(ngModel)]="filters.bedrooms" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-crete-gold focus:border-crete-gold">
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'PROJECTS.BEDROOMS' | translate }}</label>
+          <select [(ngModel)]="filters.bedrooms" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm transition-all">
             <option [ngValue]="null">{{ 'PROJECTS.ANY' | translate }}</option>
             <option [ngValue]="1">1+</option>
             <option [ngValue]="2">2+</option>
@@ -42,59 +63,108 @@
           </select>
         </div>
       </div>
-      <div class="mt-4 flex justify-end">
-        <button (click)="applyFilters()" class="bg-crete-blue text-white px-6 py-2 rounded-md hover:bg-blue-900 transition">
+      <div class="mt-5 flex justify-end">
+        <button (click)="applyFilters()" class="btn-gold flex items-center gap-2 text-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+          </svg>
           {{ 'PROJECTS.FILTER_BTN' | translate }}
         </button>
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div *ngIf="status === 'loading'" class="flex justify-center items-center py-20">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-crete-gold"></div>
+    <!-- Loading -->
+    <div *ngIf="status === 'loading'" class="flex justify-center items-center py-24">
+      <div class="relative">
+        <div class="w-14 h-14 rounded-full border-4 border-gray-200 animate-spin border-t-crete-gold"></div>
+      </div>
     </div>
 
-    <!-- Error State -->
-    <div *ngIf="status === 'error'" class="text-center py-20 text-red-600">
-      {{ 'PROJECTS.ERROR' | translate }}
+    <!-- Error -->
+    <div *ngIf="status === 'error'" class="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
+      <svg class="mx-auto h-12 w-12 text-red-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+      </svg>
+      <p class="text-red-600 font-medium">{{ 'PROJECTS.ERROR' | translate }}</p>
     </div>
 
-    <!-- Empty State -->
-    <div *ngIf="status === 'success' && projects.length === 0" class="text-center py-20 text-gray-500">
-      {{ 'PROJECTS.NOT_FOUND' | translate }}
+    <!-- Empty -->
+    <div *ngIf="status === 'success' && projects.length === 0" class="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
+      <svg class="mx-auto h-14 w-14 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/>
+      </svg>
+      <p class="text-gray-500 font-medium">{{ 'PROJECTS.NOT_FOUND' | translate }}</p>
     </div>
 
-    <!-- Projects Grid -->
+    <!-- ── Projects Grid ───────────────────────────────────── -->
     <div *ngIf="status === 'success' && projects.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      <div *ngFor="let project of projects" class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 group">
-        <a [routerLink]="['/projects', project.slug]" class="block relative h-64 overflow-hidden">
-          <img loading="lazy" [src]="backendUrl + (getPrimaryImagePath(project) || '/placeholder.jpg')" 
-               [alt]="project.title_en" 
-               class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+      <div *ngFor="let project of projects" class="premium-card group">
 
-          <div class="absolute bottom-4 left-4 bg-black bg-opacity-50 px-3 py-1 rounded text-white text-sm">
-            {{ translate.currentLang() === 'ar' ? project.project_type?.name_ar : project.project_type?.name_en || 'N/A' }}
+        <!-- Image -->
+        <div class="project-img-wrap relative h-60">
+          <img
+            loading="lazy"
+            [src]="backendUrl + (getPrimaryImagePath(project) || '/placeholder.jpg')"
+            [alt]="project.title_en"
+            class="w-full h-full object-cover"
+          >
+          <!-- Dark gradient overlay -->
+          <div class="absolute inset-0 bg-gradient-to-t from-[#0d1f4a]/80 via-transparent to-transparent"></div>
+          <!-- Type badge bottom-left -->
+          <div class="absolute bottom-4 left-4 rtl:left-auto rtl:right-4">
+            <span class="badge-gold">
+              {{ translate.currentLang() === 'ar' ? project.project_type?.name_ar : project.project_type?.name_en || 'General' }}
+            </span>
           </div>
-        </a>
+        </div>
+
+        <!-- Card Body -->
         <div class="p-6">
-          <h3 class="text-xl font-bold text-gray-900 mb-2 hover:text-crete-gold transition-colors">
+          <h3 class="text-lg font-bold text-gray-900 mb-2 leading-snug group-hover:text-crete-gold transition-colors" style="font-family:'Playfair Display',serif">
             <a [routerLink]="['/projects', project.slug]">
               {{ translate.currentLang() === 'ar' ? (project.title_ar || project.title_en) : project.title_en }}
             </a>
           </h3>
-          <p class="text-gray-600 line-clamp-2 mb-4">{{ stripHtml(translate.currentLang() === 'ar' ? (project.description_ar || project.description_en) : project.description_en) }}</p>
-          <div class="flex justify-between items-center text-sm text-gray-500 mb-4">
-            <span class="flex items-center"><span class="mr-1">🛏️</span> {{ project.bedrooms }} {{ 'PROJECTS.BEDS' | translate }}</span>
-            <span class="flex items-center"><span class="mr-1">🚿</span> {{ project.bathrooms }} {{ 'PROJECTS.BATHS' | translate }}</span>
-            <span class="flex items-center"><span class="mr-1">📐</span> {{ project.area_sqm }} {{ 'PROJECTS.SQM' | translate }}</span>
+          <p class="text-gray-500 text-sm line-clamp-2 mb-4 leading-relaxed">
+            {{ stripHtml(translate.currentLang() === 'ar' ? (project.description_ar || project.description_en) : project.description_en) }}
+          </p>
+
+          <!-- Specs row -->
+          <div class="flex items-center gap-4 text-xs text-gray-500 font-medium mb-5 pb-4 border-b border-gray-100">
+            <!-- Beds -->
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-crete-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+              </svg>
+              {{ project.bedrooms }} {{ 'PROJECTS.BEDS' | translate }}
+            </span>
+            <!-- Baths -->
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-crete-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              {{ project.bathrooms }} {{ 'PROJECTS.BATHS' | translate }}
+            </span>
+            <!-- Area -->
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-crete-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+              </svg>
+              {{ project.area_sqm }} {{ 'PROJECTS.SQM' | translate }}
+            </span>
           </div>
-          <div class="flex justify-between items-center border-t pt-4">
-            <span class="text-2xl font-bold text-crete-gold">${{ project.price | number }}</span>
-            <div class="flex items-center gap-4">
-              <a [routerLink]="['/projects', project.slug]" class="text-gray-500 hover:text-crete-gold font-semibold text-sm transition">
+
+          <!-- Price + CTA -->
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Starting From</p>
+              <span class="text-xl font-extrabold text-crete-gold">${{ project.price | number }}</span>
+            </div>
+            <div class="flex gap-3">
+              <a [routerLink]="['/projects', project.slug]" class="text-xs font-bold text-crete-blue hover:text-crete-gold border border-gray-200 hover:border-crete-gold px-3 py-2 rounded-lg transition-all duration-200">
                 {{ 'HOME.DETAILS' | translate }}
               </a>
-              <a routerLink="/contact" [queryParams]="{ project: project.id }" class="text-crete-blue font-semibold hover:text-crete-gold text-sm transition">
+              <a routerLink="/contact" [queryParams]="{ project: project.id }" class="text-xs font-bold text-white bg-crete-blue hover:bg-crete-gold px-3 py-2 rounded-lg transition-all duration-200">
                 {{ 'PROJECTS.INQUIRE' | translate }}
               </a>
             </div>
@@ -102,5 +172,6 @@
         </div>
       </div>
     </div>
+
   </div>
 </div>

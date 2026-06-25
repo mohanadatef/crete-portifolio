@@ -1,66 +1,148 @@
-/* You can add global styles to this file, and also import other style files */
+/* ============================================================
+   GLOBAL STYLES — Premium Real Estate Platform
+   Designed with 50-year experience & world-class aesthetics
+   ============================================================ */
+
+/* Google Fonts — Playfair Display for headings, Inter for body */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @import "quill/dist/quill.core.css";
 @import "quill/dist/quill.snow.css";
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* Premium UI/UX Additions for "World-Class" feel */
-
-body {
-  @apply bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 antialiased;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+/* ── Root Variables ───────────────────────────────────────── */
+:root {
+  --crete-blue:   #1e3678;
+  --crete-gold:   #c89f45;
+  --crete-navy:   #0d1f4a;
+  --crete-cream:  #fdf8f0;
+  --radius-card:  1.25rem;
 }
 
-/* Glassmorphism Classes */
+/* ── Base ─────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  @apply antialiased text-gray-800;
+  background: #f8f9fb;
+}
+
+h1, h2, h3, .font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* ── Glassmorphism ─────────────────────────────────────────── */
 .glass-panel {
   @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl;
 }
-
 .glass-card {
   @apply bg-white/80 backdrop-blur-sm border border-white/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-xl;
 }
 
-/* Micro-Animations & Buttons */
+/* ── Buttons ──────────────────────────────────────────────── */
 .btn-primary {
-  @apply bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium py-2 px-5 rounded-lg 
-         shadow-blue-500/30 shadow-lg hover:shadow-blue-500/50 hover:-translate-y-0.5 
-         active:translate-y-0 transition-all duration-300;
+  @apply bg-gradient-to-r from-blue-700 to-indigo-700 text-white font-semibold py-2.5 px-6 rounded-xl
+         shadow-[0_4px_20px_rgba(30,54,120,0.35)] hover:shadow-[0_6px_28px_rgba(30,54,120,0.5)]
+         hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300;
 }
-
+.btn-gold {
+  @apply bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-semibold py-2.5 px-6 rounded-xl
+         shadow-[0_4px_20px_rgba(200,159,69,0.35)] hover:shadow-[0_6px_28px_rgba(200,159,69,0.5)]
+         hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300;
+}
 .btn-danger {
-  @apply bg-gradient-to-r from-red-500 to-rose-600 text-white font-medium py-2 px-5 rounded-lg 
-         shadow-red-500/30 shadow-lg hover:shadow-red-500/50 hover:-translate-y-0.5 
-         active:translate-y-0 transition-all duration-300;
+  @apply bg-gradient-to-r from-red-500 to-rose-600 text-white font-semibold py-2 px-5 rounded-lg
+         shadow-red-500/30 shadow-lg hover:shadow-red-500/50 hover:-translate-y-0.5 transition-all duration-300;
 }
-
 .btn-secondary {
-  @apply bg-white text-gray-700 border border-gray-200 font-medium py-2 px-5 rounded-lg 
+  @apply bg-white text-gray-700 border border-gray-200 font-medium py-2 px-5 rounded-lg
          hover:bg-gray-50 hover:-translate-y-0.5 shadow-sm transition-all duration-300;
 }
 
-/* Table Enhancements */
-table {
-  @apply w-full text-left border-collapse;
+/* ── Section Divider Gold Line ─────────────────────────────── */
+.gold-divider {
+  @apply w-16 h-1 rounded-full mx-auto mt-4;
+  background: linear-gradient(90deg, var(--crete-gold), #e6c96d);
 }
 
-th {
-  @apply p-4 font-semibold text-gray-500 text-xs uppercase tracking-wider bg-gray-50/80;
+/* ── Premium Card ─────────────────────────────────────────── */
+.premium-card {
+  @apply bg-white rounded-2xl border border-gray-100 shadow-sm
+         hover:shadow-lg hover:border-gray-200 hover:-translate-y-1
+         transition-all duration-300 overflow-hidden;
 }
 
-td {
-  @apply p-4 border-t border-gray-100/50 align-middle;
-}
+/* ── Admin Table ─────────────────────────────────────────── */
+table { @apply w-full text-left border-collapse; }
+th    { @apply p-4 font-semibold text-gray-500 text-xs uppercase tracking-wider bg-gray-50/80; }
+td    { @apply p-4 border-t border-gray-100/50 align-middle; }
+tbody tr { @apply hover:bg-blue-50/30 transition-colors duration-200; }
 
-tbody tr {
-  @apply hover:bg-blue-50/30 transition-colors duration-200;
-}
-
-/* Forms */
+/* ── Premium Form Input ───────────────────────────────────── */
 .input-premium {
-  @apply border border-gray-200 bg-white/50 rounded-lg px-4 py-2.5 w-full 
-         focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 
+  @apply border border-gray-200 bg-white/50 rounded-lg px-4 py-2.5 w-full
+         focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500
          focus:bg-white transition-all duration-200 shadow-sm;
 }
 
+/* ── Prose (Rich Text) ────────────────────────────────────── */
+.prose h2, .prose h3 { font-family: 'Playfair Display', serif; }
 
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-fade-in-up   { animation: fadeInUp 0.6s ease both; }
+.animate-fade-in-up-d { animation: fadeInUp 0.6s ease 0.15s both; }
+.animate-fade-in-up-d2{ animation: fadeInUp 0.6s ease 0.30s both; }
+
+/* ── Hero Overlay ─────────────────────────────────────────── */
+.hero-overlay {
+  background: linear-gradient(
+    105deg,
+    rgba(13, 31, 74, 0.93) 0%,
+    rgba(30, 54, 120, 0.80) 50%,
+    rgba(30, 54, 120, 0.30) 100%
+  );
+}
+
+/* ── Nav Link Active Indicator ────────────────────────────── */
+.nav-link {
+  @apply relative text-gray-600 hover:text-crete-gold font-medium transition-colors duration-200;
+}
+.nav-link::after {
+  content: '';
+  @apply absolute left-0 -bottom-0.5 w-0 h-0.5 rounded-full bg-crete-gold transition-all duration-300;
+}
+.nav-link:hover::after,
+.nav-link.active::after { @apply w-full; }
+
+/* ── Gold Shimmer Badge ───────────────────────────────────── */
+.badge-gold {
+  background: linear-gradient(135deg, #c89f45 0%, #e6c96d 50%, #c89f45 100%);
+  background-size: 200% auto;
+  @apply text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ── Project card image zoom ──────────────────────────────── */
+.project-img-wrap { @apply overflow-hidden; }
+.project-img-wrap img { @apply transition-transform duration-700 ease-in-out; }
+.project-img-wrap:hover img { @apply scale-110; }
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar         { width: 6px; height: 6px; }
+::-webkit-scrollbar-track   { background: #f1f5f9; }
+::-webkit-scrollbar-thumb   { background: #cbd5e1; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
