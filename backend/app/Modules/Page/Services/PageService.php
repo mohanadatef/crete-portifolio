@@ -16,6 +16,26 @@ class PageService
         return Page::latest()->get();
     }
 
+    public function getPagesPaginator(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        $query = Page::query();
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('title_en', 'like', "%{$search}%")
+                  ->orWhere('title_ar', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%");
+            });
+        }
+
+        if (isset($filters['status']) && $filters['status'] !== '') {
+            $query->where('status', filter_var($filters['status'], FILTER_VALIDATE_BOOLEAN));
+        }
+
+        return $query->latest()->paginate($perPage);
+    }
+
     public function getPageBySlug(string $slug): Page
     {
         return Page::where('slug', $slug)->where('status', 1)->firstOrFail();

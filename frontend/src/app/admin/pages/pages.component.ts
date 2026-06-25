@@ -22,6 +22,11 @@ export class PagesComponent implements OnInit {
   
   dataForm: FormGroup;
 
+  currentPage = 1;
+  lastPage = 1;
+  perPage = 15;
+  totalRecords = 0;
+
   filters = {
     search: '',
     status: ''
@@ -36,24 +41,42 @@ export class PagesComponent implements OnInit {
       content_ar: ['', Validators.required],
       content_en: ['', Validators.required],
       status: [true],
-
     });
   }
 
   ngOnInit() {
-    this.loadData();
+    this.loadData(1);
   }
 
-  loadData() {
+  loadData(page: number = 1) {
     this.status.set('loading');
-    this.dataService.getAll(this.filters).subscribe({
+    const params = {
+      ...this.filters,
+      page: page,
+      per_page: this.perPage
+    };
+    this.dataService.getAll(params).subscribe({
       next: (response) => {
         const paginatedData = response.data;
         this.pages.set(paginatedData.data || []);
+        this.currentPage = paginatedData.current_page || 1;
+        this.lastPage = paginatedData.last_page || 1;
+        this.totalRecords = paginatedData.total || 0;
         this.status.set('success');
       },
       error: () => this.status.set('error')
     });
+  }
+
+  changePage(page: number) {
+    if (page >= 1 && page <= this.lastPage) {
+      this.loadData(page);
+    }
+  }
+
+  changePerPage(event: any) {
+    this.perPage = parseInt(event.target.value, 10);
+    this.loadData(1);
   }
 
   openModal(item?: Page) {
@@ -88,16 +111,13 @@ export class PagesComponent implements OnInit {
       }
     });
     
-    // For simplicity, always create or update based on if slug is present in edit, but let's assume create for now 
-    // since we don't track ID in the form. Let's add id to form or track it.
-    // Actually, backend usually requires PUT for update. We need to track ID.
     const isEditing = !!data.id;
 
     if (isEditing) {
       this.dataService.update(data.id, data).subscribe({
         next: () => {
           this.closeModal();
-          this.loadData();
+          this.loadData(this.currentPage);
         },
         error: (err) => {
           console.error(err);
@@ -108,7 +128,7 @@ export class PagesComponent implements OnInit {
       this.dataService.create(data).subscribe({
         next: () => {
           this.closeModal();
-          this.loadData();
+          this.loadData(1);
         },
         error: (err) => {
           console.error(err);
@@ -121,7 +141,7 @@ export class PagesComponent implements OnInit {
   deleteData(id: number) {
     if (confirm('Are you sure you want to delete this item?')) {
       this.dataService.delete(id).subscribe({
-        next: () => this.loadData(),
+        next: () => this.loadData(this.currentPage),
         error: () => alert('Error deleting item')
       });
     }

@@ -25,12 +25,20 @@ class PageController extends Controller
         $this->middleware('permission:delete-pages')->only(['destroy']);
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $pages = $this->pageService->getAllPages();
+            $perPage = $request->integer('per_page', 15);
+            if ($perPage < 1 || $perPage > 100) {
+                $perPage = 15;
+            }
+            $filters = [
+                'search' => $request->input('search'),
+                'status' => $request->input('status'),
+            ];
+            $pages = $this->pageService->getPagesPaginator($filters, $perPage);
             return $this->successResponse(
-                PageResource::collection($pages),
+                PageResource::collection($pages)->response()->getData(true),
                 'Pages retrieved successfully'
             );
         } catch (Exception $e) {
