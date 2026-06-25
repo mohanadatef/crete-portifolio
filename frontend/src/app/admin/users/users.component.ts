@@ -143,14 +143,14 @@ export class UsersComponent implements OnInit {
     this.status.set('loading');
     this.dataService.getAll(this.filters).subscribe({
       next: (response) => {
-        const paginatedData = response.data;
+        const paginatedData = response.data as any;
         this.users.set(paginatedData.data || paginatedData || []);
-        if (paginatedData.current_page) {
+        if (paginatedData.current_page || paginatedData.meta?.current_page) {
           this.pagination.set({
-            current_page: paginatedData.current_page,
-            last_page: paginatedData.last_page,
-            per_page: paginatedData.per_page,
-            total: paginatedData.total
+            current_page: paginatedData.meta?.current_page || paginatedData.current_page,
+            last_page: paginatedData.meta?.last_page || paginatedData.last_page,
+            per_page: paginatedData.meta?.per_page || paginatedData.per_page,
+            total: paginatedData.meta?.total || paginatedData.total
           });
         }
         this.status.set('success');
