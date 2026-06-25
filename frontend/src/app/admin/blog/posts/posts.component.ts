@@ -18,31 +18,55 @@ export class PostsComponent implements OnInit {
   posts = signal<BlogPost[]>([]);
   status = signal<'loading' | 'success' | 'error'>('loading');
 
+  currentPage = 1;
+  lastPage = 1;
+  perPage = 15;
+  totalRecords = 0;
+
   filters = {
     search: '',
     status: ''
   };
 
   ngOnInit() {
-    this.loadData();
+    this.loadData(1);
   }
 
-  loadData() {
+  loadData(page: number = 1) {
     this.status.set('loading');
-    this.dataService.getAll(this.filters).subscribe({
+    const params = {
+      ...this.filters,
+      page: page,
+      per_page: this.perPage
+    };
+    this.dataService.getAll(params).subscribe({
       next: (response) => {
         const paginatedData = response.data;
         this.posts.set(paginatedData.data || []);
+        this.currentPage = paginatedData.current_page || 1;
+        this.lastPage = paginatedData.last_page || 1;
+        this.totalRecords = paginatedData.total || 0;
         this.status.set('success');
       },
       error: () => this.status.set('error')
     });
   }
 
+  changePage(page: number) {
+    if (page >= 1 && page <= this.lastPage) {
+      this.loadData(page);
+    }
+  }
+
+  changePerPage(event: any) {
+    this.perPage = parseInt(event.target.value, 10);
+    this.loadData(1);
+  }
+
   deleteData(id: number) {
     if (confirm('Are you sure you want to delete this blog post?')) {
       this.dataService.delete(id).subscribe({
-        next: () => this.loadData(),
+        next: () => this.loadData(this.currentPage),
         error: () => alert('Error deleting blog post')
       });
     }

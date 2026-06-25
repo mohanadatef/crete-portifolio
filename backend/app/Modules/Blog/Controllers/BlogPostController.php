@@ -25,10 +25,17 @@ class BlogPostController extends Controller
         $this->middleware('permission:delete-blog-posts')->only(['destroy']);
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $posts = $this->blogService->getPostsPaginator(15);
+            $perPage = $request->integer('per_page', 15);
+            if ($perPage < 1 || $perPage > 100) {
+                $perPage = 15;
+            }
+            $search = $request->input('search');
+            $status = $request->input('status');
+
+            $posts = $this->blogService->getPostsPaginator($perPage, false, $search, $status);
             return $this->successResponse(
                 BlogPostResource::collection($posts)->response()->getData(true),
                 'Posts retrieved successfully'
@@ -46,11 +53,16 @@ class BlogPostController extends Controller
             new OA\Response(response: 200, description: "Successful operation")
         ]
     )]
-    public function indexPublic(): JsonResponse
+    public function indexPublic(Request $request): JsonResponse
     {
         try {
-            // Pass onlyPublished = true
-            $posts = $this->blogService->getPostsPaginator(12, true);
+            $perPage = $request->integer('per_page', 12);
+            if ($perPage < 1 || $perPage > 100) {
+                $perPage = 12;
+            }
+            $search = $request->input('search');
+
+            $posts = $this->blogService->getPostsPaginator($perPage, true, $search);
             return $this->successResponse(
                 BlogPostResource::collection($posts)->response()->getData(true),
                 'Posts retrieved successfully'

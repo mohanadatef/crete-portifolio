@@ -91,7 +91,7 @@ class BlogService
 
     // --- Posts ---
 
-    public function getPostsPaginator(int $perPage = 15, bool $onlyPublished = false): LengthAwarePaginator
+    public function getPostsPaginator(int $perPage = 15, bool $onlyPublished = false, ?string $search = null, ?string $status = null): LengthAwarePaginator
     {
         $query = BlogPost::with('category')->latest();
         if ($onlyPublished) {
@@ -103,6 +103,21 @@ class BlogService
                         });
                   });
         }
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('title_ar', 'like', "%{$search}%")
+                  ->orWhere('title_en', 'like', "%{$search}%")
+                  ->orWhere('content_ar', 'like', "%{$search}%")
+                  ->orWhere('content_en', 'like', "%{$search}%")
+                  ->orWhere('tags', 'like', "%{$search}%");
+            });
+        }
+
+        if ($status !== null && $status !== '') {
+            $query->where('status', filter_var($status, FILTER_VALIDATE_BOOLEAN));
+        }
+
         return $query->paginate($perPage);
     }
 
