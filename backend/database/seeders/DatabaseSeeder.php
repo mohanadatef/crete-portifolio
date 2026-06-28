@@ -367,5 +367,37 @@ class DatabaseSeeder extends Seeder
             ['key' => 'company_branches'],
             ['value' => json_encode($branches)]
         );
+
+        $stats = [
+            [
+                'number' => '500',
+                'suffix' => '+',
+                'label_en' => 'Units Delivered',
+                'label_ar' => 'وحدة تم تسليمها'
+            ],
+            [
+                'number' => '15',
+                'suffix' => '+',
+                'label_en' => 'Elite Projects',
+                'label_ar' => 'مشروع متميز'
+            ],
+            [
+                'number' => '10',
+                'suffix' => '+',
+                'label_en' => 'Years of Excellence',
+                'label_ar' => 'سنوات من التميز'
+            ],
+            [
+                'number' => '100',
+                'suffix' => '%',
+                'label_en' => 'Client Satisfaction',
+                'label_ar' => 'رضا العملاء'
+            ]
+        ];
+
+        \App\Modules\Setting\Models\Setting::updateOrCreate(
+            ['key' => 'company_stats'],
+            ['value' => json_encode($stats)]
+        );
     }
 }

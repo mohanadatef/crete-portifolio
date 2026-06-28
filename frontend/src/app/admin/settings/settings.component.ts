@@ -30,7 +30,7 @@ export class SettingsComponent implements OnInit {
     ]
   };
 
-  activeTab: 'general' | 'appearance' | 'languages' | 'security' | 'email' | 'social' = 'general';
+  activeTab: any = 'general';
   
   socialLinks: Array<{ 
     icon: string; 
@@ -66,7 +66,8 @@ export class SettingsComponent implements OnInit {
     mail_client_enabled: '1',
     mail_agent_enabled: '1',
     social_links: '[]',
-    company_branches: '[]'
+    company_branches: '[]',
+    company_stats: '[]'
   };
 
   branchesList: Array<{
@@ -76,6 +77,13 @@ export class SettingsComponent implements OnInit {
     emails: string[];
     address_en: string;
     address_ar: string;
+  }> = [];
+
+  statsList: Array<{
+    number: string;
+    suffix: string;
+    label_en: string;
+    label_ar: string;
   }> = [];
 
   status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
@@ -118,6 +126,16 @@ export class SettingsComponent implements OnInit {
           }
         } else {
           this.branchesList = [];
+        }
+
+        if (this.settings['company_stats']) {
+          try {
+            this.statsList = JSON.parse(this.settings['company_stats']);
+          } catch (e) {
+            this.statsList = [];
+          }
+        } else {
+          this.statsList = [];
         }
         
         this.status = 'idle';
@@ -164,6 +182,7 @@ export class SettingsComponent implements OnInit {
   saveSettings() {
     this.settings['social_links'] = JSON.stringify(this.socialLinks);
     this.settings['company_branches'] = JSON.stringify(this.branchesList);
+    this.settings['company_stats'] = JSON.stringify(this.statsList);
     this.status = 'loading';
     
     // Call bulk update setting endpoint
@@ -184,7 +203,7 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  setTab(tab: 'general' | 'appearance' | 'languages' | 'security' | 'email' | 'social') {
+  setTab(tab: string) {
     this.activeTab = tab;
   }
 
@@ -256,6 +275,19 @@ export class SettingsComponent implements OnInit {
 
   removeBranchEmail(bIdx: number, eIdx: number) {
     this.branchesList[bIdx].emails.splice(eIdx, 1);
+  }
+
+  addStat() {
+    this.statsList.push({
+      number: '100',
+      suffix: '+',
+      label_en: 'New Stat',
+      label_ar: 'إحصائية جديدة'
+    });
+  }
+
+  removeStat(index: number) {
+    this.statsList.splice(index, 1);
   }
 
   trackByFn(index: any, item: any) {

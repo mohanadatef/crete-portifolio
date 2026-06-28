@@ -207,7 +207,52 @@
                 </div>
               </div>
             </div>
+          <!-- Divider for dynamic stats counters -->
+          <div class="border-t border-gray-100 pt-6 mt-6 flex justify-between items-center">
+            <div>
+              <h3 class="text-sm font-bold text-gray-800">Company Stats & Counters</h3>
+              <p class="text-[10px] text-gray-400 mt-0.5">Manage animated numbers (e.g. Clients, Projects) displayed on the homepage.</p>
+            </div>
+            <button type="button" (click)="addStat()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-all">
+              + Add Stat Counter
+            </button>
           </div>
+
+          <div *ngIf="statsList.length === 0" class="border border-dashed border-gray-200 rounded-xl p-6 text-center bg-gray-50">
+            <span class="text-xs text-gray-500">No stats added. Click "+ Add Stat Counter" to configure homepage counters.</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div *ngFor="let stat of statsList; let sIdx = index" class="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3 relative animate-fade-in">
+              <button type="button" (click)="removeStat(sIdx)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold">
+                Remove
+              </button>
+              <span class="text-xs font-bold text-gray-400">Stat #{{ sIdx + 1 }}</span>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-1">Number (Target)</label>
+                  <input type="text" [(ngModel)]="stat.number" [name]="'stat-num-' + sIdx" placeholder="e.g. 500" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-1">Suffix (Unit)</label>
+                  <input type="text" [(ngModel)]="stat.suffix" [name]="'stat-suff-' + sIdx" placeholder="e.g. +, %, m3" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 gap-2">
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-1">Label (English)</label>
+                  <input type="text" [(ngModel)]="stat.label_en" [name]="'stat-lbl-en-' + sIdx" placeholder="e.g. Units Delivered" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div dir="rtl">
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-1 text-right">المسمى (العربية)</label>
+                  <input type="text" [(ngModel)]="stat.label_ar" [name]="'stat-lbl-ar-' + sIdx" placeholder="مثال: وحدة تم تسليمها" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs bg-white text-right focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
