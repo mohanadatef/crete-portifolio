@@ -30,14 +30,38 @@ export class PublicLayoutComponent implements OnInit {
   showContact = signal<boolean>(true);
   showAbout = signal<boolean>(true);
   availableLangs = signal<string[]>(['en', 'ar']);
+  companyBranches = signal<any[]>([
+    {
+      name_en: 'Main Office',
+      name_ar: 'المكتب الرئيسي',
+      phones: ['+971 50 123 4567'],
+      emails: ['info@crete.com'],
+      address_en: 'Dubai, UAE',
+      address_ar: 'دبي، الإمارات العربية المتحدة'
+    }
+  ]);
 
-  // Settings-driven visibility flags (loaded from settings API)
-  private settingsShowContact = signal<boolean>(true);
-  private settingsShowAbout = signal<boolean>(true);
+  socialLinks = signal<any[]>([]);
+  isChatWidgetExpanded = false;
+  
+  chatLinks = computed(() => this.socialLinks().filter(link => link.show_in_chat && link.url));
+  footerLinks = computed(() => this.socialLinks().filter(link => link.show_in_footer && link.url));
 
+  // Settings-driven visibility flags (loaded from settings API) - No longer needed, links are active if page exists
   pages = signal<any[]>([]);
-  customPages = computed(() => {
-    return this.pages().filter(p => p.slug !== 'about-us' && p.slug !== 'contact-us');
+
+  getMeta(page: any, key: string, defaultValue: any): any {
+    if (!page || !page.meta_fields) return defaultValue;
+    const val = page.meta_fields[key];
+    return val !== undefined && val !== null ? val : defaultValue;
+  }
+
+  navbarPages = computed(() => {
+    return this.pages().filter(p => p.slug !== 'home' && p.slug !== 'about-us' && p.slug !== 'contact-us' && this.getMeta(p, 'show_in_navbar', true));
+  });
+
+  footerPages = computed(() => {
+    return this.pages().filter(p => p.slug !== 'home' && p.slug !== 'about-us' && p.slug !== 'contact-us' && this.getMeta(p, 'show_in_footer', true));
   });
 
   constructor() {
@@ -72,12 +96,16 @@ export class PublicLayoutComponent implements OnInit {
             this.titleService.setTitle(seoTitle);
           }
           if (settings.site_logo) this.siteLogo.set(settings.site_logo);
-          
-          this.showProjects.set(settings.show_projects == '1');
-          this.showBlog.set(settings.show_blog == '1');
-          // Store settings-level visibility flags (combined with page existence in loadPublicPages)
-          this.settingsShowContact.set(settings.show_contact !== '0');
-          this.settingsShowAbout.set(settings.show_about !== '0');
+          if (settings.company_branches) {
+            try {
+              const list = JSON.parse(settings.company_branches);
+              if (Array.isArray(list) && list.length > 0) {
+                this.companyBranches.set(list);
+              }
+            } catch (e) {
+              console.error('Error parsing company_branches', e);
+            }
+          }
 
           if (settings.available_languages) {
             const list = settings.available_languages.split(',').filter((l: string) => l);
@@ -95,6 +123,17 @@ export class PublicLayoutComponent implements OnInit {
           const secondary = settings.web_secondary_color || '#1e3678';
           this.document.documentElement.style.setProperty('--crete-gold', primary);
           this.document.documentElement.style.setProperty('--crete-blue', secondary);
+
+          if (settings.social_links) {
+            try {
+              this.socialLinks.set(JSON.parse(settings.social_links));
+            } catch (e) {
+              console.error('Error parsing social_links', e);
+              this.socialLinks.set([]);
+            }
+          } else {
+            this.socialLinks.set([]);
+          }
         }
       },
       error: (err) => console.error('Error loading public settings', err)
@@ -111,9 +150,9 @@ export class PublicLayoutComponent implements OnInit {
           
           const hasAbout = activePages.some(p => p.slug === 'about-us');
           const hasContact = activePages.some(p => p.slug === 'contact-us');
-          // Show About/Contact only if both: settings allow it AND the page exists in DB
-          this.showAbout.set(hasAbout && this.settingsShowAbout());
-          this.showContact.set(hasContact && this.settingsShowContact());
+          // Show About/Contact if the page exists in DB
+          this.showAbout.set(hasAbout);
+          this.showContact.set(hasContact);
         }
       },
       error: (err) => console.error('Error loading public pages', err)
@@ -141,6 +180,60 @@ export class PublicLayoutComponent implements OnInit {
     } else {
       this.document.documentElement.dir = 'ltr';
       this.document.documentElement.lang = 'en';
+    }
+  }
+
+  toggleChatWidget() {
+    const activeChatLinks = this.chatLinks();
+    if (activeChatLinks.length === 1) {
+      window.open(activeChatLinks[0].url, '_blank', 'noopener,noreferrer');
+    } else {
+      this.isChatWidgetExpanded = !this.isChatWidgetExpanded;
+    }
+  }
+
+  getSocialColorClass(icon: string): string {
+    switch (icon.toLowerCase()) {
+      case 'whatsapp':
+        return 'bg-[#25D366] hover:bg-[#20ba59] text-white hover:shadow-green-500/30';
+      case 'facebook':
+        return 'bg-[#1877F2] hover:bg-[#166fe5] text-white hover:shadow-blue-600/30';
+      case 'instagram':
+        return 'bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white hover:shadow-pink-500/30';
+      case 'telegram':
+        return 'bg-[#26A5E4] hover:bg-[#2294cd] text-white hover:shadow-sky-400/30';
+      case 'linkedin':
+        return 'bg-[#0A66C2] hover:bg-[#095baf] text-white hover:shadow-blue-700/30';
+      case 'youtube':
+        return 'bg-[#FF0000] hover:bg-[#cc0000] text-white hover:shadow-red-600/30';
+      case 'twitter':
+      case 'x':
+        return 'bg-[#000000] hover:bg-[#222222] text-white hover:shadow-black/30';
+      case 'tiktok':
+        return 'bg-[#010101] hover:bg-[#222222] text-white hover:shadow-black/30';
+      case 'phone':
+        return 'bg-[#10B981] hover:bg-[#059669] text-white hover:shadow-emerald-500/30';
+      case 'email':
+        return 'bg-[#EF4444] hover:bg-[#DC2626] text-white hover:shadow-red-500/30';
+      default:
+        return 'bg-crete-gold hover:bg-yellow-500 text-white hover:shadow-amber-500/30';
+    }
+  }
+
+  getSocialLabel(icon: string): string {
+    switch (icon.toLowerCase()) {
+      case 'whatsapp': return 'WhatsApp';
+      case 'facebook': return 'Facebook';
+      case 'instagram': return 'Instagram';
+      case 'telegram': return 'Telegram';
+      case 'linkedin': return 'LinkedIn';
+      case 'youtube': return 'YouTube';
+      case 'twitter': return 'X (Twitter)';
+      case 'x': return 'X';
+      case 'tiktok': return 'TikTok';
+      case 'phone': return this.translate.currentLang() === 'ar' ? 'اتصل بنا' : 'Call Us';
+      case 'email': return this.translate.currentLang() === 'ar' ? 'راسلنا عبر البريد' : 'Email Us';
+      default: return icon.toUpperCase();
     }
   }
 }

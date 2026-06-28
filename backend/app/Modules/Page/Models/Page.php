@@ -26,4 +26,9 @@ class Page extends Model
         'meta_fields',
         'status'
     ];
+
+    protected $casts = [
+        'meta_fields' => 'array',
+        'status' => 'boolean'
+    ];
 }

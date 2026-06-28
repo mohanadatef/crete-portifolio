@@ -45,12 +45,7 @@
         <span>Languages & Translation</span>
       </button>
 
-      <button (click)="setTab('navigation')" [ngClass]="{'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600': activeTab === 'navigation', 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent': activeTab !== 'navigation'}" class="w-full text-left px-4 py-3 rounded-lg text-sm transition-all duration-150 flex items-center gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-        <span>Navbar & Visibility</span>
-      </button>
+
 
       <button (click)="setTab('security')" [ngClass]="{'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600': activeTab === 'security', 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent': activeTab !== 'security'}" class="w-full text-left px-4 py-3 rounded-lg text-sm transition-all duration-150 flex items-center gap-3">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -64,6 +59,13 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
         <span>Email Settings</span>
+      </button>
+
+      <button (click)="setTab('social')" [ngClass]="{'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600': activeTab === 'social', 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent': activeTab !== 'social'}" class="w-full text-left px-4 py-3 rounded-lg text-sm transition-all duration-150 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+        </svg>
+        <span>Social & Chat Links</span>
       </button>
     </div>
 
@@ -128,10 +130,83 @@
             <input type="text" [(ngModel)]="settings['seo_title']" placeholder="e.g. Crete - Premium Real Estate Developer" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
           </div>
 
-          <!-- Google Tag -->
+          <!-- Google Analytics Tag -->
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Google Analytics Tag (G-XXXXX)</label>
             <input type="text" [(ngModel)]="settings['google_tag']" placeholder="e.g. G-123456" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+          </div>
+
+          <!-- Divider for contact details -->
+          <div class="border-t border-gray-100 pt-6 mt-6 flex justify-between items-center">
+            <div>
+              <h3 class="text-sm font-bold text-gray-800">Company Branches & Locations</h3>
+              <p class="text-[10px] text-gray-400 mt-0.5">Manage multiple offices, show multiple contact numbers and emails on the footer.</p>
+            </div>
+            <button type="button" (click)="addBranch()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-all">
+              + Add Branch
+            </button>
+          </div>
+
+          <div *ngIf="branchesList.length === 0" class="border border-dashed border-gray-200 rounded-xl p-6 text-center bg-gray-50">
+            <span class="text-xs text-gray-500">No branches added. Click "+ Add Branch" to configure your office contact details.</span>
+          </div>
+
+          <div *ngFor="let branch of branchesList; let bIdx = index" class="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-4 relative animate-fade-in">
+            <button type="button" (click)="removeBranch(bIdx)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold">
+              Remove
+            </button>
+            <span class="text-xs font-bold text-gray-400">Branch Office #{{ bIdx + 1 }}</span>
+
+            <!-- Branch Names -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Branch Name (English)</label>
+                <input type="text" [(ngModel)]="branch.name_en" [name]="'b-name-en-' + bIdx" placeholder="e.g. Dubai Office" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+              <div dir="rtl">
+                <label class="block text-xs font-semibold text-gray-600 mb-1 text-right">اسم الفرع (العربية)</label>
+                <input type="text" [(ngModel)]="branch.name_ar" [name]="'b-name-ar-' + bIdx" placeholder="مثال: مكتب دبي" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white text-right focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+            </div>
+
+            <!-- Addresses -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Address (English)</label>
+                <input type="text" [(ngModel)]="branch.address_en" [name]="'b-addr-en-' + bIdx" placeholder="e.g. Marina Dubai, UAE" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+              <div dir="rtl">
+                <label class="block text-xs font-semibold text-gray-600 mb-1 text-right">العنوان (العربية)</label>
+                <input type="text" [(ngModel)]="branch.address_ar" [name]="'b-addr-ar-' + bIdx" placeholder="مثال: دبي مارينا، الإمارات" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white text-right focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+            </div>
+
+            <!-- Phones & Emails -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Phones List -->
+              <div class="space-y-2">
+                <label class="block text-xs font-semibold text-gray-600 flex justify-between items-center">
+                  Phone Numbers
+                  <button type="button" (click)="addBranchPhone(bIdx)" class="text-[10px] text-blue-600 hover:underline">+ Add Phone</button>
+                </label>
+                <div *ngFor="let phone of branch.phones; let pIdx = index; trackBy: trackByFn" class="flex gap-2">
+                  <input type="text" [(ngModel)]="branch.phones[pIdx]" [name]="'b-phone-' + bIdx + '-' + pIdx" placeholder="e.g. +971 50 123 4567" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  <button type="button" (click)="removeBranchPhone(bIdx, pIdx)" class="text-red-500 hover:text-red-700 text-xs">Remove</button>
+                </div>
+              </div>
+
+              <!-- Emails List -->
+              <div class="space-y-2">
+                <label class="block text-xs font-semibold text-gray-600 flex justify-between items-center">
+                  Emails
+                  <button type="button" (click)="addBranchEmail(bIdx)" class="text-[10px] text-blue-600 hover:underline">+ Add Email</button>
+                </label>
+                <div *ngFor="let email of branch.emails; let eIdx = index; trackBy: trackByFn" class="flex gap-2">
+                  <input type="email" [(ngModel)]="branch.emails[eIdx]" [name]="'b-email-' + bIdx + '-' + eIdx" placeholder="e.g. sales@crete.com" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  <button type="button" (click)="removeBranchEmail(bIdx, eIdx)" class="text-red-500 hover:text-red-700 text-xs">Remove</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -212,68 +287,7 @@
         </div>
       </div>
 
-      <!-- Tab 4: Navigation / Visibility settings -->
-      <div *ngIf="activeTab === 'navigation'" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
-        <div>
-          <h2 class="text-xl font-bold text-gray-800">Navbar & Visibility Settings</h2>
-          <p class="text-xs text-gray-500 mt-1">Toggle visibility of specific pages or categories in the public client website navigation header.</p>
-        </div>
 
-        <hr class="border-gray-100">
-
-        <div class="space-y-4">
-          <label class="block text-sm font-semibold text-gray-700 mb-2">Toggle Public Navbar Links</label>
-              <div class="space-y-4">
-            <!-- Projects link -->
-            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <div>
-                <span class="block text-sm font-bold text-gray-700">Show Projects Page Link</span>
-                <span class="text-[10px] text-gray-400">Display the "Projects" directory tab in the main header navbar.</span>
-              </div>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" [ngModel]="settings['show_projects'] === '1'" (ngModelChange)="settings['show_projects'] = $event ? '1' : '0'" class="sr-only peer">
-                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <!-- Blog link -->
-            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <div>
-                <span class="block text-sm font-bold text-gray-700">Show Blog Articles Link</span>
-                <span class="text-[10px] text-gray-400">Display the "Blog" tab in the main header navbar.</span>
-              </div>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" [ngModel]="settings['show_blog'] === '1'" (ngModelChange)="settings['show_blog'] = $event ? '1' : '0'" class="sr-only peer">
-                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <!-- Contact link -->
-            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <div>
-                <span class="block text-sm font-bold text-gray-700">Show Contact Us Link</span>
-                <span class="text-[10px] text-gray-400">Display the "Contact Us" tab in the main header navbar.</span>
-              </div>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" [ngModel]="settings['show_contact'] === '1'" (ngModelChange)="settings['show_contact'] = $event ? '1' : '0'" class="sr-only peer">
-                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <!-- About link -->
-            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <div>
-                <span class="block text-sm font-bold text-gray-700">Show About Us Link</span>
-                <span class="text-[10px] text-gray-400">Display the "About Us" tab linking to dynamic pages in the main header navbar.</span>
-              </div>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" [ngModel]="settings['show_about'] === '1'" (ngModelChange)="settings['show_about'] = $event ? '1' : '0'" class="sr-only peer">
-                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Tab 5: Security / reCAPTCHA settings -->
       <div *ngIf="activeTab === 'security'" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
@@ -411,6 +425,121 @@
             <quill-editor [(ngModel)]="settings['client_thank_you_body']" [modules]="quillModules" class="block bg-white rounded-xl border border-gray-200 overflow-hidden min-h-[250px]"></quill-editor>
             <p class="text-[10px] text-gray-400 mt-1">Available placeholders: <strong class="text-gray-600">&#123;name&#125;</strong> (Client\'s name) and <strong class="text-gray-600">&#123;project&#125;</strong> (Assigned project title).</p>
           </div>
+        </div>
+      </div>
+
+      <!-- Tab 7: Social Media & Floating Chat Widget settings -->
+      <div *ngIf="activeTab === 'social'" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6 animate-fade-in-up">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Social Media & Chat Widget</h2>
+          <p class="text-xs text-gray-500 mt-1">Configure social media channels, WhatsApp links, and active floating side chat widget options.</p>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <!-- Social links list -->
+        <div class="space-y-6">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="text-sm font-bold text-gray-800">Configure Social Channels</h3>
+              <p class="text-[10px] text-gray-400 mt-0.5">These links will be displayed in the footer and/or as float options in the side chat bubble.</p>
+            </div>
+            <button type="button" (click)="addSocialLink()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Channel
+            </button>
+          </div>
+
+          <div *ngIf="socialLinks.length === 0" class="border border-dashed border-gray-200 rounded-xl p-10 text-center bg-gray-50/50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            <p class="text-sm font-medium text-gray-500">No social media or chat channels configured yet.</p>
+            <p class="text-xs text-gray-400 mt-1">Click "Add Channel" to set up your WhatsApp, Facebook, or Instagram links.</p>
+          </div>
+
+          <div *ngIf="socialLinks.length > 0" class="space-y-4">
+            <div *ngFor="let link of socialLinks; let idx = index" class="p-4 bg-gray-50 rounded-2xl border border-gray-150 flex flex-col gap-4">
+              <!-- Main configurations row -->
+              <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
+                <!-- Channel Selector -->
+                <div class="w-full lg:w-1/4">
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">Platform / Icon</label>
+                  <select [(ngModel)]="link.icon" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 bg-white">
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="telegram">Telegram</option>
+                    <option value="linkedin">LinkedIn</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="twitter">X (Twitter)</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="phone">Phone Call</option>
+                    <option value="email">Email Address</option>
+                    <option value="link">Custom URL</option>
+                  </select>
+                </div>
+
+                <!-- Channel URL -->
+                <div class="w-full lg:flex-grow">
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">Link URL</label>
+                  <input type="text" [(ngModel)]="link.url" placeholder="e.g. https://wa.me/971501234567" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500">
+                </div>
+
+                <!-- Visibility Controls -->
+                <div class="flex sm:gap-6 gap-4 items-center pt-2 lg:pt-4">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="link.show_in_footer" class="h-4.5 w-4.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                    <span class="text-xs text-gray-700 font-medium select-none">Show in Footer</span>
+                  </label>
+                  
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="link.show_in_chat" class="h-4.5 w-4.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                    <span class="text-xs text-gray-700 font-medium select-none">Show in Side Chat</span>
+                  </label>
+                </div>
+
+                <!-- Delete Button -->
+                <button type="button" (click)="removeSocialLink(idx)" class="p-2.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all self-end lg:self-auto lg:mt-4 shadow-sm border border-transparent hover:border-red-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Custom Link configuration fields (visible only if platform is set to 'link') -->
+              <div *ngIf="link.icon === 'link'" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-2xl border border-gray-200 border-dashed animate-fade-in-up">
+                <!-- Custom SVG Path -->
+                <div class="md:col-span-2">
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">Custom Icon SVG Path ('d' attribute only)</label>
+                  <input type="text" [(ngModel)]="link.custom_icon_svg" placeholder="e.g. M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500">
+                  <p class="text-[9px] text-gray-400 mt-1">Paste only the 'd' attribute values from any standard SVG icon path (such as Heroicons or FontAwesome).</p>
+                </div>
+                
+                <!-- Custom Color Picker & Style -->
+                <div class="flex gap-4">
+                  <div class="w-1/2">
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">Button Color</label>
+                    <div class="flex items-center gap-2">
+                      <input type="color" [(ngModel)]="link.custom_color" class="h-8.5 w-12 border rounded-xl cursor-pointer p-0 bg-transparent">
+                      <input type="text" [(ngModel)]="link.custom_color" placeholder="#c89f45" class="w-full border border-gray-300 rounded-xl px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500">
+                    </div>
+                  </div>
+                  <div class="w-1/2">
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">Icon SVG Mode</label>
+                    <select [(ngModel)]="link.icon_style" class="w-full border border-gray-300 rounded-xl px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 bg-white">
+                      <option value="stroke">Outline (Stroke)</option>
+                      <option value="fill">Solid (Fill)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>

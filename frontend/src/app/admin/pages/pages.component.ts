@@ -1,28 +1,25 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { PageService } from '../../core/services/page.service';
 import { Page } from '../../core/models/models';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
-import { QuillModule } from 'ngx-quill';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-pages',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, HasPermissionDirective, QuillModule],
+  imports: [CommonModule, RouterModule, FormsModule, HasPermissionDirective],
   templateUrl: './pages.component.html'
 })
 export class PagesComponent implements OnInit {
   private dataService = inject(PageService);
-  private fb = inject(FormBuilder);
+  private router = inject(Router);
 
   pages = signal<Page[]>([]);
   status = signal<'loading' | 'success' | 'error'>('loading');
-  showModal = signal(false);
-  
-  dataForm: FormGroup;
 
   currentPage = 1;
   lastPage = 1;
@@ -37,16 +34,6 @@ export class PagesComponent implements OnInit {
   searchSubject = new Subject<string>();
 
   constructor() {
-    this.dataForm = this.fb.group({
-      id: [null],
-      title_ar: ['', Validators.required],
-      title_en: ['', Validators.required],
-      slug: ['', Validators.required],
-      content_ar: ['', Validators.required],
-      content_en: ['', Validators.required],
-      status: [true],
-    });
-
     this.searchSubject.pipe(
       debounceTime(400),
       distinctUntilChanged()
@@ -104,63 +91,12 @@ export class PagesComponent implements OnInit {
     this.loadData(1);
   }
 
-  openModal(item?: Page) {
-    if (item) {
-      this.dataForm.patchValue({
-        ...item,
-        status: !!item.status
-      });
-    } else {
-      this.dataForm.reset({
-        status: true
-      });
-    }
-    this.showModal.set(true);
+  openCreatePage() {
+    this.router.navigate(['/admin/pages/create']);
   }
 
-  closeModal() {
-    this.showModal.set(false);
-  }
-
-  saveData() {
-    if (this.dataForm.invalid) {
-      this.dataForm.markAllAsTouched();
-      return;
-    }
-
-    const formValues = this.dataForm.value;
-    const data: any = {};
-    Object.keys(formValues).forEach(key => {
-      if (formValues[key] !== null && formValues[key] !== undefined) {
-        data[key] = formValues[key];
-      }
-    });
-    
-    const isEditing = !!data.id;
-
-    if (isEditing) {
-      this.dataService.update(data.id, data).subscribe({
-        next: () => {
-          this.closeModal();
-          this.loadData(this.currentPage);
-        },
-        error: (err) => {
-          console.error(err);
-          alert('Error updating page.');
-        }
-      });
-    } else {
-      this.dataService.create(data).subscribe({
-        next: () => {
-          this.closeModal();
-          this.loadData(1);
-        },
-        error: (err) => {
-          console.error(err);
-          alert('Error creating page.');
-        }
-      });
-    }
+  openEditPage(id: number) {
+    this.router.navigate(['/admin/pages/edit', id]);
   }
 
   deleteData(id: number) {

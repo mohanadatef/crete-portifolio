@@ -41,6 +41,14 @@ export interface ProjectType {
   status: boolean;
 }
 
+export interface Feature {
+  id: number;
+  slug: string;
+  name_ar: string;
+  name_en: string;
+  is_active: boolean;
+}
+
 export interface Project {
   id: number;
   slug: string;
@@ -64,6 +72,7 @@ export interface Project {
   images?: ProjectImage[];
   views_count?: number;
   units?: ProjectUnit[];
+  features?: Feature[];
 }
 
 export interface ProjectImage {
@@ -134,6 +143,7 @@ export interface Page {
   content_ar?: string;
   content_en?: string;
   status: boolean;
+  meta_fields?: any;
 }
 
 export interface LandingPage {

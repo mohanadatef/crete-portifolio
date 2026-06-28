@@ -30,7 +30,25 @@ class StoreLeadUseCase
     {
         $this->recaptchaService->validateToken($dto->recaptchaToken);
 
-        $lead = $this->leadService->createLead($dto->data);
+        $data = $dto->data;
+        $standardKeys = [
+            'name', 'email', 'phone', 'message', 'project_id', 'status', 
+            'assigned_to', 'utm_source', 'utm_medium', 'utm_campaign', 
+            'utm_content', 'landing_page_id'
+        ];
+
+        $customFields = array_diff_key($data, array_flip($standardKeys));
+        if (!empty($customFields)) {
+            $data['form_data'] = array_merge(
+                is_array($data['form_data'] ?? null) ? $data['form_data'] : [],
+                $customFields
+            );
+            foreach ($customFields as $key => $val) {
+                unset($data[$key]);
+            }
+        }
+
+        $lead = $this->leadService->createLead($data);
 
         return $lead;
     }

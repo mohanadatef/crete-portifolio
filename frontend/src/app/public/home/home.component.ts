@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -6,6 +6,8 @@ import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-transl
 import { environment } from '../../../environments/environment';
 import { SeoService } from '../../services/seo.service';
 import { SettingService } from '../../services/setting.service';
+import { PageService } from '../../core/services/page.service';
+import { Page } from '../../core/models/models';
 
 @Component({
   selector: 'app-home',
@@ -19,9 +21,12 @@ export class HomeComponent implements OnInit {
   public translate = inject(TranslateService);
   private seoService = inject(SeoService);
   private settingService = inject(SettingService);
+  private pageService = inject(PageService);
+
   backendUrl = environment.backendUrl;
   projects: any[] = [];
   status: 'loading' | 'success' | 'error' = 'loading';
+  homePage = signal<Page | null>(null);
 
   getPrimaryImagePath(project: any): string | null {
     if (!project.images || project.images.length === 0) return null;
@@ -32,6 +37,23 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     const siteName = this.settingService.getSetting('site_name') || 'CRETE Developments';
     this.seoService.updateTitle(`Home | ${siteName}`);
+
+    // Load custom home page content if it exists and is active
+    this.pageService.getPublicBySlug('home').subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          const p = res.data;
+          this.homePage.set(p);
+          
+          // Use page title for SEO
+          const title = this.translate.currentLang() === 'ar' ? p.title_ar : p.title_en;
+          this.seoService.updateTitle(`${title} | ${siteName}`);
+        }
+      },
+      error: (err) => {
+        console.log('No custom home page override active, using default template.');
+      }
+    });
 
     this.http.get<any>(`${environment.apiUrl}/public/projects`).subscribe({
       next: (response) => {

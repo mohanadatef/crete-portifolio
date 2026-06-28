@@ -66,6 +66,7 @@ class ProjectResource extends JsonResource
                     ];
                 });
             }),
+            'features' => \App\Modules\Feature\Resources\FeatureResource::collection($this->whenLoaded('features')),
         ];
     }
 }

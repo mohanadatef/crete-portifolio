@@ -22,6 +22,7 @@ class PageResource extends JsonResource
             'content_ar' => $this->content_ar,
             'content_en' => $this->content_en,
             'status' => (bool)$this->status,
+            'meta_fields' => $this->meta_fields,
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
             'created_at' => $this->created_at,

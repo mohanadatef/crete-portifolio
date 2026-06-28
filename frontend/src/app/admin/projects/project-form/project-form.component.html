@@ -388,6 +388,48 @@
           </div>
         </div>
 
+        <!-- Project Features Card -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+          <div class="border-b border-gray-100 pb-4">
+            <h2 class="text-lg font-bold text-gray-800">Project Features</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Select amenities and features available in this project.</p>
+          </div>
+
+          <div *ngIf="features().length > 0" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+            <label
+              *ngFor="let feature of features()"
+              class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 hover:bg-blue-50/50"
+              [ngClass]="isFeatureSelected(feature.id) ? 'border-blue-300 bg-blue-50/70' : 'border-gray-100 bg-gray-50/50'"
+            >
+              <input
+                type="checkbox"
+                [checked]="isFeatureSelected(feature.id)"
+                (change)="toggleFeature(feature.id, $event)"
+                class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors"
+              >
+              <div class="flex-1 min-w-0">
+                <span class="block text-sm font-semibold text-gray-800 truncate">{{ feature.name_en }}</span>
+                <span class="block text-xs text-gray-400 truncate" dir="rtl">{{ feature.name_ar }}</span>
+              </div>
+              <svg *ngIf="isFeatureSelected(feature.id)" class="h-5 w-5 text-blue-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+            </label>
+          </div>
+
+          <div *ngIf="features().length === 0" class="text-center py-6 text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto mb-2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <p class="text-xs font-medium">No features available.</p>
+            <p class="text-[10px] mt-0.5">Create features in the Features Management section first.</p>
+          </div>
+
+          <p *ngIf="selectedFeatureIds().length > 0" class="text-xs text-blue-600 font-semibold pt-2 border-t border-gray-100">
+            {{ selectedFeatureIds().length }} feature{{ selectedFeatureIds().length > 1 ? 's' : '' }} selected
+          </p>
+        </div>
+
       </div>
 
     </div>

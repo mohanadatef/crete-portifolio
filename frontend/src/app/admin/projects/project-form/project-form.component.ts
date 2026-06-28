@@ -4,7 +4,8 @@ import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } fr
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProjectService } from '../../../core/services/project.service';
 import { ProjectTypeService } from '../../../core/services/project-type.service';
-import { ProjectType, Project } from '../../../core/models/models';
+import { FeatureService } from '../../../core/services/feature.service';
+import { ProjectType, Project, Feature } from '../../../core/models/models';
 import { QuillModule } from 'ngx-quill';
 import { environment } from '../../../../environments/environment';
 
@@ -19,6 +20,7 @@ export class ProjectFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private projectService = inject(ProjectService);
   private projectTypeService = inject(ProjectTypeService);
+  private featureService = inject(FeatureService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -30,6 +32,8 @@ export class ProjectFormComponent implements OnInit {
   isLoading = false;
   isSaving = false;
   projectTypes = signal<ProjectType[]>([]);
+  features = signal<Feature[]>([]);
+  selectedFeatureIds = signal<number[]>([]);
   slugManuallyEdited = false;
 
   // Main media tracking
@@ -58,6 +62,7 @@ export class ProjectFormComponent implements OnInit {
   ngOnInit() {
     this.initForm();
     this.loadProjectTypes();
+    this.loadFeatures();
     
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
@@ -173,6 +178,15 @@ export class ProjectFormComponent implements OnInit {
     });
   }
 
+  private loadFeatures() {
+    this.featureService.getActive().subscribe({
+      next: (res) => {
+        this.features.set(res.data || []);
+      },
+      error: (err) => console.error('Error loading active features', err)
+    });
+  }
+
   private loadProject(id: number) {
     this.isLoading = true;
     this.projectService.getById(id).subscribe({
@@ -215,6 +229,11 @@ export class ProjectFormComponent implements OnInit {
           });
         }
 
+        // Features
+        if (p.features && Array.isArray(p.features)) {
+          this.selectedFeatureIds.set(p.features.map((f: any) => f.id));
+        }
+
         this.isLoading = false;
       },
       error: (err) => {
@@ -223,6 +242,19 @@ export class ProjectFormComponent implements OnInit {
         this.router.navigate(['/admin/projects']);
       }
     });
+  }
+
+  isFeatureSelected(id: number): boolean {
+    return this.selectedFeatureIds().includes(id);
+  }
+
+  toggleFeature(id: number, event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    if (checked) {
+      this.selectedFeatureIds.update(ids => [...ids, id]);
+    } else {
+      this.selectedFeatureIds.update(ids => ids.filter(x => x !== id));
+    }
   }
 
   private generateSlug(text: string): string {
@@ -355,6 +387,11 @@ export class ProjectFormComponent implements OnInit {
     // Append main files
     this.mainFiles.forEach(file => {
       formData.append('images[]', file);
+    });
+
+    // Append features
+    this.selectedFeatureIds().forEach(id => {
+      formData.append('feature_ids[]', id.toString());
     });
 
     // Primary image indices or ID

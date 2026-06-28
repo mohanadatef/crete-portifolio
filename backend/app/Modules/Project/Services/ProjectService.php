@@ -10,7 +10,7 @@ class ProjectService
 {
     public function getProjects(ProjectFilterDTO $filter, int $perPage = 15, bool $onlyPublished = false): LengthAwarePaginator
     {
-        $query = Project::with(['projectImages', 'projectType']);
+        $query = Project::with(['projectImages', 'projectType', 'features']);
 
         if ($onlyPublished) {
             $query->where('status', 1);
@@ -50,12 +50,12 @@ class ProjectService
 
     public function getProjectBySlug(string $slug): Project
     {
-        return Project::with(['projectImages', 'projectType'])->where('slug', $slug)->where('status', 1)->firstOrFail();
+        return Project::with(['projectImages', 'projectType', 'features'])->where('slug', $slug)->where('status', 1)->firstOrFail();
     }
 
     public function getProjectById(int $id): Project
     {
-        return Project::with(['projectImages', 'projectType'])->findOrFail($id);
+        return Project::with(['projectImages', 'projectType', 'features'])->findOrFail($id);
     }
 
     public function createProject(array $data): Project

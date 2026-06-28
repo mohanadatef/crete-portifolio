@@ -91,9 +91,13 @@ class UpdateProjectUseCase
             // Delete units that were not sent in the update
             $project->projectUnits()->whereNotIn('id', $sentUnitIds)->delete();
 
+            if ($dto->featureIds !== null) {
+                $project->features()->sync($dto->featureIds);
+            }
+
             DB::commit();
 
-            return $project->load(['projectImages', 'projectUnits']);
+            return $project->load(['projectImages', 'projectUnits', 'features']);
         } catch (Exception $e) {
             DB::rollBack();
             throw $e;

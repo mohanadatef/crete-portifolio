@@ -58,4 +58,9 @@ class Project extends Model
     {
         return $this->belongsTo(\App\Modules\ProjectType\Models\ProjectType::class, 'project_type_id');
     }
+
+    public function features()
+    {
+        return $this->belongsToMany(\App\Modules\Feature\Models\Feature::class, 'project_feature');
+    }
 }

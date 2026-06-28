@@ -87,10 +87,28 @@ export const routes: Routes = [
                 data: { permission: 'view-project-types' }
             },
             { 
+                path: 'features', 
+                loadComponent: () => import('./admin/features/features.component').then(m => m.FeaturesComponent),
+                canActivate: [permissionGuard],
+                data: { permission: 'view-features' }
+            },
+            { 
                 path: 'pages', 
                 component: PagesComponent,
                 canActivate: [permissionGuard],
                 data: { permission: 'view-pages' }
+            },
+            {
+                path: 'pages/create',
+                loadComponent: () => import('./admin/pages/page-form/page-form.component').then(m => m.PageFormComponent),
+                canActivate: [permissionGuard],
+                data: { permission: 'create-pages' }
+            },
+            {
+                path: 'pages/edit/:id',
+                loadComponent: () => import('./admin/pages/page-form/page-form.component').then(m => m.PageFormComponent),
+                canActivate: [permissionGuard],
+                data: { permission: 'edit-pages' }
             },
             { 
                 path: 'settings', 

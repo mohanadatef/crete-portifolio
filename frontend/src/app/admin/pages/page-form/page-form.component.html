@@ -1,0 +1,662 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
+  <!-- Header -->
+  <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">{{ isEditMode ? 'Edit Page' : 'Create New Page' }}</h1>
+      <p class="text-sm text-gray-500 mt-1">Configure page details, content translations, and design layouts.</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a routerLink="/admin/pages" class="btn-secondary py-2.5 px-5 text-sm">Cancel</a>
+      <button type="submit" (click)="onSubmit()" [disabled]="isSaving" class="btn-primary py-2.5 px-6 text-sm flex items-center gap-2">
+        <span *ngIf="isSaving" class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
+        {{ isSaving ? 'Saving...' : 'Save Page' }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="glass-panel py-20 flex flex-col items-center justify-center gap-4">
+    <div class="w-12 h-12 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+    <span class="text-gray-500 text-sm">Loading page configurations...</span>
+  </div>
+
+  <form *ngIf="!isLoading" [formGroup]="pageForm" (ngSubmit)="onSubmit()" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left Column (Content & Translations) -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Titles & Slug Card -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <h3 class="text-lg font-bold text-gray-800 border-b border-gray-50 pb-3">Basic Information</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Title (English) <span class="text-red-500">*</span></label>
+            <input type="text" formControlName="title_en" placeholder="e.g. About Us" class="input-premium">
+            <div *ngIf="pageForm.get('title_en')?.touched && pageForm.get('title_en')?.invalid" class="text-red-500 text-xs mt-1">
+              English Title is required.
+            </div>
+          </div>
+          
+          <div dir="rtl">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">العنوان (العربية) <span class="text-red-500">*</span></label>
+            <input type="text" formControlName="title_ar" placeholder="مثال: من نحن" class="input-premium text-right">
+            <div *ngIf="pageForm.get('title_ar')?.touched && pageForm.get('title_ar')?.invalid" class="text-red-500 text-xs mt-1 text-right">
+              العنوان العربي مطلوب.
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Page Slug / URL Path <span class="text-red-500">*</span></label>
+          <div class="flex">
+            <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm">
+              /pages/
+            </span>
+            <input type="text" formControlName="slug" placeholder="about-us" class="input-premium rounded-l-none">
+          </div>
+          <p class="text-xs text-gray-400 mt-1">Use "home" as the slug if you want this page to override the main website home page.</p>
+          <p *ngIf="pageForm.get('slug')?.disabled" class="text-xs text-amber-600 mt-1.5 flex items-center gap-1 font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            This is a system page. The URL slug cannot be modified.
+          </p>
+          <div *ngIf="pageForm.get('slug')?.touched && pageForm.get('slug')?.invalid" class="text-red-500 text-xs mt-1">
+            Slug is required.
+          </div>
+        </div>
+      </div>
+
+      <!-- Rich Editors Card or Block Builder -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
+          <div>
+            <h3 class="text-lg font-bold text-gray-800">Page Content</h3>
+            <p class="text-xs text-gray-400">Build content with standard rich text or drag-and-drop block sections.</p>
+          </div>
+          <div class="flex bg-gray-100 p-1 rounded-xl">
+            <button type="button" (click)="setEditorMode('standard')" [class.bg-white]="editorMode === 'standard'" [class.shadow-sm]="editorMode === 'standard'" class="px-4 py-2 text-xs font-bold rounded-lg transition-all text-gray-700">
+              Standard Editor
+            </button>
+            <button type="button" (click)="setEditorMode('builder')" [class.bg-white]="editorMode === 'builder'" [class.shadow-sm]="editorMode === 'builder'" class="px-4 py-2 text-xs font-bold rounded-lg transition-all text-gray-700">
+              Block Builder
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Standard Editor View ────────────────────────────────────── -->
+        <div *ngIf="editorMode === 'standard'" class="space-y-6">
+          <!-- English Content -->
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">Content (English)</label>
+            <quill-editor formControlName="content_en" [modules]="quillModules" [styles]="{height: '250px'}" placeholder="Write English page content here..."></quill-editor>
+          </div>
+
+          <!-- Arabic Content -->
+          <div class="space-y-2" dir="rtl">
+            <label class="block text-sm font-semibold text-gray-700 text-right">المحتوى (العربية)</label>
+            <quill-editor formControlName="content_ar" [modules]="quillModules" [styles]="{height: '250px'}" placeholder="اكتب محتوى الصفحة باللغة العربية هنا..."></quill-editor>
+          </div>
+        </div>
+
+        <!-- ── Block Builder View ──────────────────────────────────────── -->
+        <div *ngIf="editorMode === 'builder'" class="space-y-4">
+          
+          <div *ngIf="blocks.length === 0" class="text-center py-12 text-gray-400 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <span class="text-sm font-semibold">No sections added yet</span>
+            <p class="text-xs text-gray-400 mt-1">Start building your page by adding a block below.</p>
+          </div>
+
+          <!-- Loop Blocks -->
+          <div *ngFor="let block of blocks; let i = index" class="border border-gray-100 rounded-xl overflow-hidden shadow-sm bg-white">
+            <!-- Block Header -->
+            <div class="bg-gray-50/50 px-4 py-3 flex items-center justify-between border-b border-gray-100">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 text-[0.65rem] font-bold uppercase rounded bg-slate-900 text-white tracking-wider">
+                  #{{ i + 1 }} {{ block.type }}
+                </span>
+                <span class="text-sm font-bold text-gray-700">
+                  {{ block.type === 'hero' ? 'Hero Banner' : 
+                     block.type === 'content' ? 'Rich Text Content' : 
+                     block.type === 'split' ? 'Split Media & Text' : 
+                     block.type === 'features' ? 'Values & Features' : 
+                     block.type === 'projects' ? 'Developments Feed' : 
+                     block.type === 'faq' ? 'FAQ Accordion' : 'Contact Section' }}
+                </span>
+              </div>
+              <div class="flex items-center gap-1">
+                <!-- Move Up -->
+                <button type="button" (click)="moveBlockUp(i)" [disabled]="i === 0" class="p-1.5 text-gray-500 hover:text-slate-800 disabled:opacity-30 rounded-lg hover:bg-gray-100">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
+                  </svg>
+                </button>
+                <!-- Move Down -->
+                <button type="button" (click)="moveBlockDown(i)" [disabled]="i === blocks.length - 1" class="p-1.5 text-gray-500 hover:text-slate-800 disabled:opacity-30 rounded-lg hover:bg-gray-100">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <!-- Toggle Collapse -->
+                <button type="button" (click)="toggleCollapse(i)" class="p-1.5 text-gray-500 hover:text-slate-800 rounded-lg hover:bg-gray-100">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform transition-transform" [class.rotate-180]="block.collapsed" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <!-- Delete -->
+                <button type="button" (click)="removeBlock(i)" class="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Block Body -->
+            <div *ngIf="!block.collapsed" class="p-5 space-y-4 border-t border-gray-50">
+              
+              <!-- ── HERO BLOCK FIELDS ── -->
+              <div *ngIf="block.type === 'hero'" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Title (EN)</label>
+                    <input type="text" [(ngModel)]="block.title_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" placeholder="e.g. Luxurious Spaces" class="input-premium py-2 text-sm">
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 text-right">العنوان (AR)</label>
+                    <input type="text" [(ngModel)]="block.title_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" placeholder="مثال: مساحات معيشة فاخرة" class="input-premium py-2 text-sm text-right">
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Subtitle (EN)</label>
+                    <input type="text" [(ngModel)]="block.subtitle_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" placeholder="e.g. Built for comfort" class="input-premium py-2 text-sm">
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 text-right">الوصف الفرعي (AR)</label>
+                    <input type="text" [(ngModel)]="block.subtitle_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" placeholder="مثال: مبنية لتوفير أقصى درجات الراحة" class="input-premium py-2 text-sm text-right">
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Background Image URL</label>
+                    <input type="text" [(ngModel)]="block.bg_image" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Overlay Opacity</label>
+                    <input type="number" step="0.1" min="0" max="1" [(ngModel)]="block.overlay_opacity" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-gray-50 pt-3">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Button Text (EN)</label>
+                    <input type="text" [(ngModel)]="block.btn_text_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" placeholder="e.g. Contact Us" class="input-premium py-2 text-sm">
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 text-right">نص الزر (AR)</label>
+                    <input type="text" [(ngModel)]="block.btn_text_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" placeholder="مثال: اتصل بنا" class="input-premium py-2 text-sm text-right">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Button Link URL</label>
+                    <input type="text" [(ngModel)]="block.btn_link" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" placeholder="e.g. /contact" class="input-premium py-2 text-sm">
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── CONTENT BLOCK FIELDS ── -->
+              <div *ngIf="block.type === 'content'" class="space-y-4">
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 uppercase mb-1">HTML Rich Content (English)</label>
+                  <quill-editor [(ngModel)]="block.content_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" [modules]="quillModules" [styles]="{height: '150px'}"></quill-editor>
+                </div>
+                <div dir="rtl">
+                  <label class="block text-xs font-bold text-gray-500 uppercase mb-1 text-right">المحتوى بالتنسيق الغني (العربية)</label>
+                  <quill-editor [(ngModel)]="block.content_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" [modules]="quillModules" [styles]="{height: '150px'}"></quill-editor>
+                </div>
+              </div>
+
+              <!-- ── SPLIT BLOCK FIELDS ── -->
+              <div *ngIf="block.type === 'split'" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Section Title (EN)</label>
+                    <input type="text" [(ngModel)]="block.title_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 text-right">عنوان القسم (AR)</label>
+                    <input type="text" [(ngModel)]="block.title_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm text-right">
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Description (EN)</label>
+                    <textarea rows="3" [(ngModel)]="block.text_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm resize-none"></textarea>
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 text-right">الوصف (AR)</label>
+                    <textarea rows="3" [(ngModel)]="block.text_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm text-right resize-none"></textarea>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-gray-50 pt-3">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Media Type</label>
+                    <select [(ngModel)]="block.media_type" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                      <option value="image">Image</option>
+                      <option value="video">Video Embed / URL</option>
+                    </select>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Media Path / Image URL</label>
+                    <input type="text" [(ngModel)]="block.media_url" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 border-t border-gray-50 pt-3">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Layout Alignment</label>
+                    <select [(ngModel)]="block.layout" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                      <option value="left">Media Left / Text Right</option>
+                      <option value="right">Media Right / Text Left</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Button Text (EN)</label>
+                    <input type="text" [(ngModel)]="block.btn_text_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 text-right">نص الزر (AR)</label>
+                    <input type="text" [(ngModel)]="block.btn_text_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm text-right">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Button Link</label>
+                    <input type="text" [(ngModel)]="block.btn_link" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── FEATURES BLOCK FIELDS ── -->
+              <div *ngIf="block.type === 'features'" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-gray-50 pb-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Section Main Title (EN)</label>
+                    <input type="text" [(ngModel)]="block.title_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 text-right">العنوان الرئيسي للقسم (AR)</label>
+                    <input type="text" [(ngModel)]="block.title_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm text-right">
+                  </div>
+                </div>
+
+                <!-- Features list items -->
+                <div class="space-y-3">
+                  <span class="text-xs font-bold text-slate-800 flex items-center justify-between">
+                    Feature Grid Cards
+                    <button type="button" (click)="addFeatureItem(i)" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                      + Add Item
+                    </button>
+                  </span>
+
+                  <div *ngFor="let item of block.items; let j = index" class="p-4 bg-gray-50 rounded-xl space-y-3 border border-gray-100 relative">
+                    <button type="button" (click)="removeFeatureItem(i, j)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold">
+                      Remove
+                    </button>
+                    <span class="text-xs font-bold text-gray-400">Card #{{ j + 1 }}</span>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1">Title (EN)</label>
+                        <input type="text" [(ngModel)]="item.title_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs bg-white">
+                      </div>
+                      <div dir="rtl">
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1 text-right">العنوان (AR)</label>
+                        <input type="text" [(ngModel)]="item.title_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs text-right bg-white">
+                      </div>
+                      <div>
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1">Icon Type</label>
+                        <select [(ngModel)]="item.icon" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs bg-white">
+                          <option value="award">Gold Award / Badge</option>
+                          <option value="shield">Trust / Shield</option>
+                          <option value="star">Star Rating</option>
+                          <option value="map">Map / Location</option>
+                          <option value="phone">Contact Call</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1">Description (EN)</label>
+                        <input type="text" [(ngModel)]="item.desc_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs bg-white">
+                      </div>
+                      <div dir="rtl">
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1 text-right">الوصف (AR)</label>
+                        <input type="text" [(ngModel)]="item.desc_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs text-right bg-white">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── PROJECTS BLOCK FIELDS ── -->
+              <div *ngIf="block.type === 'projects'" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Section Title (EN)</label>
+                    <input type="text" [(ngModel)]="block.title_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 text-right">العنوان (AR)</label>
+                    <input type="text" [(ngModel)]="block.title_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm text-right">
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Max Units / Limit</label>
+                    <input type="number" [(ngModel)]="block.limit" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Layout Style</label>
+                    <select [(ngModel)]="block.style" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                      <option value="grid">Grid (Responsive Columns)</option>
+                      <option value="slider">Dynamic Swiper Slider</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── FAQ BLOCK FIELDS ── -->
+              <div *ngIf="block.type === 'faq'" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-gray-50 pb-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Accordion Main Title (EN)</label>
+                    <input type="text" [(ngModel)]="block.title_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 text-right">العنوان الرئيسي للقسم (AR)</label>
+                    <input type="text" [(ngModel)]="block.title_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm text-right">
+                  </div>
+                </div>
+
+                <div class="space-y-3">
+                  <span class="text-xs font-bold text-slate-800 flex items-center justify-between">
+                    FAQ Accordion Rows
+                    <button type="button" (click)="addFaqItem(i)" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                      + Add FAQ Card
+                    </button>
+                  </span>
+
+                  <div *ngFor="let item of block.items; let j = index" class="p-4 bg-gray-50 rounded-xl space-y-3 border border-gray-100 relative">
+                    <button type="button" (click)="removeFaqItem(i, j)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold">
+                      Remove
+                    </button>
+                    <span class="text-xs font-bold text-gray-400 font-mono">Q&A #{{ j + 1 }}</span>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1">Question (EN)</label>
+                        <input type="text" [(ngModel)]="item.q_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs bg-white">
+                      </div>
+                      <div dir="rtl">
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1 text-right">السؤال (AR)</label>
+                        <input type="text" [(ngModel)]="item.q_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs text-right bg-white">
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1">Answer (EN)</label>
+                        <textarea rows="2" [(ngModel)]="item.a_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs bg-white resize-none"></textarea>
+                      </div>
+                      <div dir="rtl">
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1 text-right">الإجابة (AR)</label>
+                        <textarea rows="2" [(ngModel)]="item.a_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs text-right bg-white resize-none"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── CONTACT BLOCK FIELDS ── -->
+              <div *ngIf="block.type === 'contact'" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Section Title (EN)</label>
+                    <input type="text" [(ngModel)]="block.title_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm">
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 text-right">العنوان (AR)</label>
+                    <input type="text" [(ngModel)]="block.title_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-2 text-sm text-right">
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Description (EN)</label>
+                    <textarea rows="3" [(ngModel)]="block.desc_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" placeholder="Enter English contact description..." class="input-premium py-2 text-sm resize-none"></textarea>
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 text-right">الوصف (AR)</label>
+                    <textarea rows="3" [(ngModel)]="block.desc_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" placeholder="اكتب الوصف العربي للاتصال..." class="input-premium py-2 text-sm text-right resize-none"></textarea>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                    <span class="text-xs font-bold text-gray-700">Display Contact Form</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" [(ngModel)]="block.show_form" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="sr-only peer">
+                      <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
+                    </label>
+                  </div>
+                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                    <span class="text-xs font-bold text-gray-700">Display Info Card Panel</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" [(ngModel)]="block.show_details" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="sr-only peer">
+                      <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Form Fields Manager -->
+                <div *ngIf="block.show_form" class="space-y-3 pt-4 border-t border-gray-100">
+                  <span class="text-xs font-bold text-slate-800 flex items-center justify-between">
+                    Form Questions / Fields
+                    <button type="button" (click)="addContactField(i)" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                      + Add Question
+                    </button>
+                  </span>
+
+                  <div *ngIf="!block.fields || block.fields.length === 0" class="text-center py-4 text-xs text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-100">
+                    No form questions defined. Add a field to let users input details.
+                  </div>
+
+                  <div *ngFor="let field of block.fields; let fIdx = index" class="p-4 bg-gray-50 rounded-xl space-y-3 border border-gray-100 relative animate-fade-in">
+                    <button type="button" (click)="removeContactField(i, fIdx)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold">
+                      Remove
+                    </button>
+                    <span class="text-xs font-bold text-gray-400">Question #{{ fIdx + 1 }}</span>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1">Label (English)</label>
+                        <input type="text" [(ngModel)]="field.label_en" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs bg-white">
+                      </div>
+                      <div dir="rtl">
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1 text-right">السؤال (العربية)</label>
+                        <input type="text" [(ngModel)]="field.label_ar" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs text-right bg-white">
+                      </div>
+                      <div>
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1">Field Type</label>
+                        <select [(ngModel)]="field.type" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs bg-white text-gray-900">
+                          <option value="text">Short Text (نص قصير)</option>
+                          <option value="email">Email Address (بريد إلكتروني)</option>
+                          <option value="tel">Phone Number (رقم هاتف)</option>
+                          <option value="number">Number (رقم)</option>
+                          <option value="textarea">Paragraph / Message (نص طويل)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-[0.65rem] font-bold text-gray-500 mb-1">Database Field Name (Unique identifier, e.g. "email", "beds")</label>
+                        <input type="text" [(ngModel)]="field.name" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" class="input-premium py-1.5 text-xs bg-white">
+                      </div>
+                      <div class="flex items-center gap-2 pt-4">
+                        <input type="checkbox" [(ngModel)]="field.required" (ngModelChange)="syncBlocks()" [ngModelOptions]="{standalone: true}" [id]="'req-' + i + '-' + fIdx" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <label [for]="'req-' + i + '-' + fIdx" class="text-xs font-semibold text-gray-700">Required (مطلوب)</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Add Section Buttons Stack -->
+          <div class="mt-6 flex flex-wrap gap-2 items-center justify-center p-6 border border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
+            <span class="text-[0.65rem] font-bold text-gray-400 uppercase tracking-widest block w-full text-center mb-2">Insert Layout Block / Section</span>
+            <button type="button" (click)="addBlock('hero')" class="btn-secondary py-2 px-4 text-xs font-bold bg-white shadow-sm flex items-center gap-1.5 hover:border-slate-800 hover:text-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Hero Header
+            </button>
+            <button type="button" (click)="addBlock('content')" class="btn-secondary py-2 px-4 text-xs font-bold bg-white shadow-sm flex items-center gap-1.5 hover:border-slate-800 hover:text-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Rich Text HTML
+            </button>
+            <button type="button" (click)="addBlock('split')" class="btn-secondary py-2 px-4 text-xs font-bold bg-white shadow-sm flex items-center gap-1.5 hover:border-slate-800 hover:text-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+              Split section
+            </button>
+            <button type="button" (click)="addBlock('features')" class="btn-secondary py-2 px-4 text-xs font-bold bg-white shadow-sm flex items-center gap-1.5 hover:border-slate-800 hover:text-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              Values Grid
+            </button>
+            <button type="button" (click)="addBlock('projects')" class="btn-secondary py-2 px-4 text-xs font-bold bg-white shadow-sm flex items-center gap-1.5 hover:border-slate-800 hover:text-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              Projects Feed
+            </button>
+            <button type="button" (click)="addBlock('faq')" class="btn-secondary py-2 px-4 text-xs font-bold bg-white shadow-sm flex items-center gap-1.5 hover:border-slate-800 hover:text-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              FAQ list
+            </button>
+            <button type="button" (click)="addBlock('contact')" class="btn-secondary py-2 px-4 text-xs font-bold bg-white shadow-sm flex items-center gap-1.5 hover:border-slate-800 hover:text-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Contact Block
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column (Settings & Layout Customization) -->
+    <div class="space-y-6">
+      <!-- Status & Publishing Card -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+        <h3 class="text-lg font-bold text-gray-800 border-b border-gray-50 pb-3">Status & Visibility</h3>
+        
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+          <span class="text-sm font-medium text-gray-700">Active status</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" formControlName="status" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
+          </label>
+        </div>
+        <p class="text-xs text-gray-400">If deactivated, the page returns a 404 response on the public website and falls back to default layout if it is the home page.</p>
+        <p *ngIf="pageForm.get('status')?.disabled" class="text-xs text-amber-600 mt-2 flex items-center gap-1 font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+          </svg>
+          This is a system page. The active status cannot be disabled.
+        </p>
+      </div>
+
+      <!-- Page Design & Styling Card -->
+      <div [formGroupName]="'meta_fields'" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <h3 class="text-lg font-bold text-gray-800 border-b border-gray-50 pb-3 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          Page Design Controls
+        </h3>
+
+        <!-- Layout Style -->
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-gray-700">Layout Structure</label>
+          <select formControlName="layout" class="input-premium">
+            <option value="default">Default Centered (White Card Box)</option>
+            <option value="modern-banner">Modern Luxury Banner Header</option>
+            <option value="full-width">Full Width Canvas</option>
+            <option value="blank">Blank Canvas (Completely Edge-to-Edge)</option>
+          </select>
+          <p class="text-xs text-gray-400">
+            Use "Blank Canvas" if you want full control over HTML grids, images, and videos (such as when designing a custom homepage).
+          </p>
+        </div>
+
+        <!-- Show Title Toggle -->
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+          <span class="text-sm font-medium text-gray-700">Show Page Title</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" formControlName="show_title" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
+          </label>
+        </div>
+
+        <!-- Show in Navbar Toggle -->
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+          <span class="text-sm font-medium text-gray-700">Show in Header Navbar</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" formControlName="show_in_navbar" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
+          </label>
+        </div>
+
+        <!-- Show in Footer Toggle -->
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+          <span class="text-sm font-medium text-gray-700">Show in Footer Quick Links</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" formControlName="show_in_footer" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
+          </label>
+        </div>
+
+        <!-- Padding Options -->
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-gray-700">Spacing / Padding</label>
+          <select formControlName="padding" class="input-premium">
+            <option value="small">Compact Spacing (py-8)</option>
+            <option value="medium">Standard Spacing (py-16)</option>
+            <option value="large">Generous Spacing (py-24)</option>
+          </select>
+        </div>
+
+        <!-- Background Color Customization -->
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-gray-700">Custom Background Color</label>
+          <div class="flex gap-2">
+            <input type="color" formControlName="bg_color" class="h-10 w-12 border border-gray-200 rounded-lg cursor-pointer bg-transparent">
+            <input type="text" formControlName="bg_color" placeholder="#ffffff" class="input-premium flex-1">
+          </div>
+          <p class="text-xs text-gray-400">Choose a HEX code or color picker value to override default page backgrounds.</p>
+        </div>
+      </div>
+
+      <!-- Action Panel Card -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-3">
+        <button type="button" (click)="onSubmit()" [disabled]="isSaving" class="btn-primary w-full py-3 text-sm flex items-center justify-center gap-2">
+          <span *ngIf="isSaving" class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
+          {{ isSaving ? 'Saving Configurations...' : 'Publish Page Changes' }}
+        </button>
+        <a routerLink="/admin/pages" class="btn-secondary w-full py-3 text-sm text-center">Back to Listing</a>
+      </div>
+    </div>
+  </form>
+</div>

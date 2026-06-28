@@ -54,12 +54,32 @@ class PageService
     public function updatePage(int $id, array $data): Page
     {
         $page = $this->getPageById($id);
+
+        // System page protection
+        if ($page->slug === 'contact-us' || $page->slug === 'about-us') {
+            if (isset($data['slug']) && $data['slug'] !== $page->slug) {
+                throw new \Exception("The slug of the {$page->slug} page cannot be changed.");
+            }
+            if (isset($data['status']) && !$data['status']) {
+                throw new \Exception("The {$page->slug} page cannot be deactivated.");
+            }
+        }
+        if ($page->slug === 'home') {
+            if (isset($data['slug']) && $data['slug'] !== 'home') {
+                throw new \Exception("The slug of the home page cannot be changed.");
+            }
+        }
+
         $page->update($data);
         return $page;
     }
 
     public function deletePage(int $id): bool
     {
+        $page = $this->getPageById($id);
+        if ($page->slug === 'contact-us' || $page->slug === 'home' || $page->slug === 'about-us') {
+            throw new \Exception("System pages (home, contact-us, about-us) cannot be deleted.");
+        }
         return Page::destroy($id) > 0;
     }
 

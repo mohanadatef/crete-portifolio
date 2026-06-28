@@ -26,131 +26,391 @@
     <div class="w-12 h-12 border-4 border-gray-200 border-t-crete-gold rounded-full animate-spin"></div>
   </div>
 
-  <div *ngIf="!isLoadingPage()" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-
-    <div class="bg-white rounded-3xl border border-gray-100 shadow-lg overflow-hidden">
-      <div class="grid grid-cols-1 md:grid-cols-5">
-
-        <!-- ── Left: Info Panel ──────────────────────────── -->
-        <div class="md:col-span-2 relative overflow-hidden p-10 text-white" style="background: linear-gradient(160deg, #1e3678 0%, #0d1f4a 100%)">
-          <!-- Decorative blobs -->
-          <div class="absolute -top-16 -left-16 w-48 h-48 rounded-full" style="background:rgba(200,159,69,0.10)"></div>
-          <div class="absolute -bottom-12 -right-12 w-36 h-36 rounded-full" style="background:rgba(200,159,69,0.07)"></div>
-
-          <div class="relative">
-            <ng-container *ngIf="page() as p; else staticInfo">
-              <div [innerHTML]="translate.currentLang() === 'ar' ? p.content_ar : p.content_en" class="prose prose-invert max-w-none text-gray-300 leading-relaxed"></div>
-            </ng-container>
-
-            <ng-template #staticInfo>
-              <h3 class="text-2xl font-bold mb-2 text-white" style="font-family:'Playfair Display',serif">
-                {{ 'CONTACT.GET_IN_TOUCH' | translate }}
-              </h3>
-              <p class="text-gray-300 text-sm mb-8 leading-relaxed">{{ 'CONTACT.GET_IN_TOUCH_DESC' | translate }}</p>
-
-              <div class="space-y-5">
-                <!-- Phone -->
-                <div class="flex items-center gap-4">
-                  <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                    <svg class="h-5 w-5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                    </svg>
-                  </div>
-                  <span dir="ltr" class="text-sm font-medium">+971 50 123 4567</span>
-                </div>
-                <!-- Email -->
-                <div class="flex items-center gap-4">
-                  <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                    <svg class="h-5 w-5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                  </div>
-                  <span class="text-sm font-medium">info&#64;crete-developments.com</span>
-                </div>
-                <!-- Location -->
-                <div class="flex items-center gap-4">
-                  <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                    <svg class="h-5 w-5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                  </div>
-                  <span class="text-sm font-medium">{{ 'CONTACT.ADDRESS' | translate }}</span>
-                </div>
-              </div>
-            </ng-template>
+  <div *ngIf="!isLoadingPage()">
+    
+    <!-- 0. BLOCK BUILDER DYNAMIC RENDERER -->
+    <div *ngIf="page() && getEditorMode(page()!) === 'builder'" class="w-full space-y-0 -my-16">
+      <div *ngFor="let block of getBlocks(page()!); let i = index" class="w-full">
+        
+        <!-- Hero Banner Block -->
+        <div *ngIf="block.type === 'hero'" class="relative min-h-[65vh] flex items-center justify-center bg-cover bg-center overflow-hidden py-24 text-center" [style.backgroundImage]="'url(' + block.bg_image + ')'">
+          <div class="absolute inset-0 bg-[#0d1f4a]" [style.opacity]="block.overlay_opacity || 0.4"></div>
+          <div class="relative z-10 max-w-4xl mx-auto px-4 text-white">
+            <span class="inline-block badge-gold mb-4">{{ translate.currentLang() === 'ar' ? 'تميز وفخامة' : 'LUXURY & STYLE' }}</span>
+            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-4" style="font-family: 'Playfair Display', Georgia, serif;">
+              {{ translate.currentLang() === 'ar' ? (block.title_ar || block.title_en) : block.title_en }}
+            </h1>
+            <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mb-8 font-light leading-relaxed">
+              {{ translate.currentLang() === 'ar' ? (block.subtitle_ar || block.subtitle_en) : block.subtitle_en }}
+            </p>
+            <a *ngIf="block.btn_text_en || block.btn_text_ar" [routerLink]="block.btn_link" class="inline-flex items-center gap-2 bg-crete-gold hover:bg-yellow-500 text-white font-bold px-6 py-3.5 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-px">
+              {{ translate.currentLang() === 'ar' ? (block.btn_text_ar || block.btn_text_en) : block.btn_text_en }}
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </a>
           </div>
         </div>
 
-        <!-- ── Right: Form ───────────────────────────────── -->
-        <div class="md:col-span-3 p-10">
-          <h2 class="text-2xl font-bold text-gray-900 mb-6" style="font-family:'Playfair Display',serif">Send us a Message</h2>
-
-          <form class="space-y-5" (ngSubmit)="onSubmit()" #contactForm="ngForm">
-            <!-- Success -->
-            <div *ngIf="status === 'success'" class="flex items-center gap-3 bg-green-50 text-green-800 p-4 rounded-xl border border-green-200 text-sm font-medium">
-              <svg class="w-5 h-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              {{ 'CONTACT.SUCCESS' | translate }}
-            </div>
-            <!-- Error -->
-            <div *ngIf="status === 'error'" class="flex items-center gap-3 bg-red-50 text-red-800 p-4 rounded-xl border border-red-200 text-sm font-medium">
-              <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              {{ 'CONTACT.ERROR' | translate }}
-            </div>
-
-            <!-- Name -->
-            <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'CONTACT.NAME' | translate }}</label>
-              <input type="text" name="name" [(ngModel)]="formData.name" required
-                class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all">
-            </div>
-            <!-- Email -->
-            <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'CONTACT.EMAIL' | translate }}</label>
-              <input type="email" name="email" [(ngModel)]="formData.email"
-                class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all">
-            </div>
-            <!-- Phone -->
-            <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'CONTACT.PHONE' | translate }}</label>
-              <input type="tel" name="phone" [(ngModel)]="formData.phone" required dir="ltr"
-                class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all">
-            </div>
-            <!-- Message -->
-            <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'CONTACT.MESSAGE' | translate }}</label>
-              <textarea rows="4" name="message" [(ngModel)]="formData.message"
-                class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all resize-none"></textarea>
-            </div>
-
-            <!-- Consent -->
-            <div class="flex items-start gap-3">
-              <input id="consent" name="consent" type="checkbox" [(ngModel)]="consentGiven" required class="mt-0.5 h-4 w-4 text-crete-gold border-gray-300 rounded focus:ring-crete-blue">
-              <label for="consent" class="text-sm text-gray-600">
-                {{ 'CONTACT.CONSENT_AGREE' | translate }}
-                <a href="/privacy-policy" target="_blank" class="text-crete-blue font-semibold hover:text-crete-gold underline underline-offset-2 transition-colors">
-                  {{ 'CONTACT.PRIVACY_POLICY' | translate }}
-                </a>
-              </label>
-            </div>
-
-            <!-- Submit -->
-            <button
-              type="submit"
-              [disabled]="contactForm.invalid || !consentGiven || status === 'loading'"
-              class="w-full font-bold py-3.5 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 flex items-center justify-center gap-2"
-              style="background: linear-gradient(135deg, #1e3678 0%, #0d1f4a 100%); color:white; box-shadow: 0 4px 20px rgba(30,54,120,0.3)"
-            >
-              <span *ngIf="status === 'loading'" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              {{ status === 'loading' ? ('CONTACT.SENDING' | translate) : ('CONTACT.SEND' | translate) }}
-            </button>
-          </form>
+        <!-- Rich Text / HTML Block -->
+        <div *ngIf="block.type === 'content'" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div class="prose max-w-none leading-relaxed" [innerHTML]="translate.currentLang() === 'ar' ? block.content_ar : block.content_en"></div>
         </div>
 
+        <!-- Split Media & Text Block -->
+        <div *ngIf="block.type === 'split'" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div [class.lg:order-2]="block.layout === 'right'" class="space-y-6">
+              <h2 class="text-3xl font-extrabold text-crete-blue" style="font-family: 'Playfair Display', Georgia, serif;">
+                {{ translate.currentLang() === 'ar' ? (block.title_ar || block.title_en) : block.title_en }}
+              </h2>
+              <p class="text-gray-600 leading-relaxed whitespace-pre-line text-lg">
+                {{ translate.currentLang() === 'ar' ? (block.text_ar || block.text_en) : block.text_en }}
+              </p>
+              <a *ngIf="block.btn_text_en || block.btn_text_ar" [routerLink]="block.btn_link" class="inline-flex items-center gap-2 text-crete-gold hover:text-yellow-600 font-bold border-b-2 border-crete-gold pb-1 transition-colors">
+                {{ translate.currentLang() === 'ar' ? (block.btn_text_ar || block.btn_text_en) : block.btn_text_en }}
+              </a>
+            </div>
+            <div [class.lg:order-1]="block.layout === 'right'" class="relative rounded-3xl overflow-hidden shadow-xl aspect-video border border-gray-100 bg-gray-50">
+              <img *ngIf="block.media_type === 'image'" [src]="block.media_url" class="w-full h-full object-cover">
+              <iframe *ngIf="block.media_type === 'video'" [src]="block.media_url" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+            </div>
+          </div>
+        </div>
+
+        <!-- Features & Values Grid Block -->
+        <div *ngIf="block.type === 'features'" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <h2 class="text-3xl font-extrabold text-crete-blue mb-2" style="font-family: 'Playfair Display', Georgia, serif;">
+            {{ translate.currentLang() === 'ar' ? (block.title_ar || block.title_en) : block.title_en }}
+          </h2>
+          <p class="text-gray-500 mb-12 max-w-xl mx-auto text-sm">
+            {{ translate.currentLang() === 'ar' ? (block.subtitle_ar || block.subtitle_en) : block.subtitle_en }}
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div *ngFor="let item of block.items" class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 text-center flex flex-col items-center">
+              <div class="w-14 h-14 rounded-2xl bg-crete-gold/10 flex items-center justify-center mb-6">
+                <svg *ngIf="item.icon === 'award'" class="h-6 w-6 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <svg *ngIf="item.icon === 'shield'" class="h-6 w-6 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <svg *ngIf="item.icon === 'star'" class="h-6 w-6 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.969 0 1.371 1.24.588 1.81l-3.97 2.883a1 1 0 00-.364 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.971-2.883a1 1 0 00-1.175 0l-3.97 2.883c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118l-3.97-2.883c-.783-.57-.38-1.81.588-1.81h4.906a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                <svg *ngIf="item.icon === 'map'" class="h-6 w-6 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <svg *ngIf="item.icon === 'phone'" class="h-6 w-6 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+              </div>
+              <h3 class="text-xl font-bold text-[#0d1f4a] mb-3">
+                {{ translate.currentLang() === 'ar' ? (item.title_ar || item.title_en) : item.title_en }}
+              </h3>
+              <p class="text-gray-500 text-sm leading-relaxed max-w-sm">
+                {{ translate.currentLang() === 'ar' ? (item.desc_ar || item.desc_en) : item.desc_en }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Projects Block -->
+        <div *ngIf="block.type === 'projects'" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <h2 class="text-3xl font-extrabold text-[#0d1f4a] mb-10 text-center" style="font-family: 'Playfair Display', Georgia, serif;">
+            {{ translate.currentLang() === 'ar' ? (block.title_ar || block.title_en) : block.title_en }}
+          </h2>
+          
+          <div *ngIf="projects().length === 0" class="text-center py-10 text-gray-400">
+            No projects available at this moment.
+          </div>
+
+          <div *ngIf="projects().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div *ngFor="let project of projects() | slice:0:(block.limit || 3)" class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
+              <div class="relative overflow-hidden aspect-[4/3]">
+                <img [src]="getPrimaryImagePath(project) || 'assets/placeholder-project.jpg'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                <span class="absolute top-4 left-4 bg-crete-gold text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                  {{ translate.currentLang() === 'ar' ? project.project_type?.name_ar : project.project_type?.name_en }}
+                </span>
+              </div>
+              <div class="p-6 space-y-4">
+                <h3 class="text-xl font-bold text-crete-blue">
+                  {{ translate.currentLang() === 'ar' ? project.title_ar : project.title_en }}
+                </h3>
+                <div class="flex justify-between items-center text-xs text-gray-400 font-bold border-t border-gray-50 pt-4">
+                  <span>{{ project.location }}</span>
+                  <a [routerLink]="['/projects', project.slug]" class="text-crete-gold hover:underline">VIEW DETAILS</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ Accordion Block -->
+        <div *ngIf="block.type === 'faq'" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <h2 class="text-3xl font-extrabold text-[#0d1f4a] mb-10 text-center" style="font-family: 'Playfair Display', Georgia, serif;">
+            {{ translate.currentLang() === 'ar' ? (block.title_ar || block.title_en) : block.title_en }}
+          </h2>
+          <div class="space-y-4">
+            <div *ngFor="let item of block.items; let idx = index" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all">
+              <button type="button" class="w-full px-6 py-5 text-left font-bold text-crete-blue flex justify-between items-center focus:outline-none" (click)="item.open = !item.open">
+                <span class="text-base font-semibold">{{ translate.currentLang() === 'ar' ? (item.q_ar || item.q_en) : item.q_en }}</span>
+                <svg class="h-5 w-5 text-crete-gold transform transition-transform" [class.rotate-180]="item.open" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div *ngIf="item.open" class="px-6 pb-6 text-gray-500 text-sm leading-relaxed border-t border-gray-50/50 pt-4">
+                {{ translate.currentLang() === 'ar' ? (item.a_ar || item.a_en) : item.a_en }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Section Block (Designed exactly like the premium split-card fallback) -->
+        <div *ngIf="block.type === 'contact'" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div class="bg-white rounded-3xl border border-gray-100 shadow-lg overflow-hidden">
+            <div class="grid grid-cols-1 md:grid-cols-5">
+
+              <!-- Info Panel -->
+              <div *ngIf="block.show_details" [class.md:col-span-2]="block.show_form" [class.md:col-span-5]="!block.show_form" class="relative overflow-hidden p-10 text-white flex flex-col justify-center animate-fade-in" style="background: linear-gradient(160deg, #1e3678 0%, #0d1f4a 100%)">
+                <!-- Decorative blobs -->
+                <div class="absolute -top-16 -left-16 w-48 h-48 rounded-full" style="background:rgba(200,159,69,0.10)"></div>
+                <div class="absolute -bottom-12 -right-12 w-36 h-36 rounded-full" style="background:rgba(200,159,69,0.07)"></div>
+
+                <div class="relative">
+                  <h3 class="text-2xl font-bold mb-3 text-white animate-fade-in-up" style="font-family:'Playfair Display',serif">
+                    {{ translate.currentLang() === 'ar' ? (block.title_ar || 'اتصل بنا') : (block.title_en || 'Contact Us') }}
+                  </h3>
+                  <div class="text-gray-300 text-sm leading-relaxed whitespace-pre-line animate-fade-in-up" style="animation-delay: 0.15s">
+                    {{ translate.currentLang() === 'ar' ? (block.desc_ar || block.desc_en) : (block.desc_en || block.desc_ar) }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form -->
+              <div *ngIf="block.show_form" [class.md:col-span-3]="block.show_details" [class.md:col-span-5]="!block.show_details" class="p-10">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6" style="font-family:'Playfair Display',serif">
+                  {{ 'CONTACT.SEND_MESSAGE' | translate }}
+                </h2>
+
+                <form class="space-y-5" (ngSubmit)="onSubmit()" #blockForm="ngForm">
+                  <!-- Success -->
+                  <div *ngIf="status === 'success'" class="flex items-center gap-3 bg-green-50 text-green-800 p-4 rounded-xl border border-green-200 text-sm font-medium">
+                    <svg class="w-5 h-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    {{ 'CONTACT.SUCCESS' | translate }}
+                  </div>
+                  <!-- Error -->
+                  <div *ngIf="status === 'error'" class="flex items-center gap-3 bg-red-50 text-red-800 p-4 rounded-xl border border-red-200 text-sm font-medium">
+                    <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    {{ 'CONTACT.ERROR' | translate }}
+                  </div>
+
+                  <!-- Render fields dynamically if block.fields exists -->
+                  <ng-container *ngIf="block.fields && block.fields.length > 0; else fallbackFields">
+                    <div *ngFor="let field of block.fields" class="space-y-1">
+                      <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+                        {{ translate.currentLang() === 'ar' ? (field.label_ar || field.label_en) : (field.label_en || field.label_ar) }}
+                        <span *ngIf="field.required" class="text-red-500">*</span>
+                      </label>
+                      
+                      <!-- Text/Email/Tel/Number Input -->
+                      <input *ngIf="field.type !== 'textarea'" 
+                        [type]="field.type" 
+                        [name]="field.name" 
+                        [(ngModel)]="formData[field.name]" 
+                        [required]="field.required"
+                        [attr.dir]="field.type === 'tel' || field.type === 'email' ? 'ltr' : null"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all">
+                      
+                      <!-- Textarea Paragraph Input -->
+                      <textarea *ngIf="field.type === 'textarea'"
+                        [name]="field.name"
+                        [(ngModel)]="formData[field.name]"
+                        [required]="field.required"
+                        rows="4"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all resize-none"></textarea>
+                    </div>
+                  </ng-container>
+
+                  <!-- Fallback to static standard form fields -->
+                  <ng-template #fallbackFields>
+                    <!-- Name -->
+                    <div>
+                      <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'CONTACT.NAME' | translate }}</label>
+                      <input type="text" name="name" [(ngModel)]="formData.name" required
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all">
+                    </div>
+                    <!-- Email -->
+                    <div>
+                      <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'CONTACT.EMAIL' | translate }}</label>
+                      <input type="email" name="email" [(ngModel)]="formData.email"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all">
+                    </div>
+                    <!-- Phone -->
+                    <div>
+                      <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'CONTACT.PHONE' | translate }}</label>
+                      <input type="tel" name="phone" [(ngModel)]="formData.phone" required dir="ltr"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all">
+                    </div>
+                    <!-- Message -->
+                    <div>
+                      <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'CONTACT.MESSAGE' | translate }}</label>
+                      <textarea rows="4" name="message" [(ngModel)]="formData.message"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all resize-none"></textarea>
+                    </div>
+                  </ng-template>
+
+                  <!-- Consent -->
+                  <div class="flex items-start gap-3">
+                    <input id="block-consent-{{i}}" name="consent" type="checkbox" [(ngModel)]="consentGiven" required class="mt-0.5 h-4 w-4 text-crete-gold border-gray-300 rounded focus:ring-crete-blue">
+                    <label [attr.for]="'block-consent-' + i" class="text-sm text-gray-600">
+                      {{ 'CONTACT.CONSENT_AGREE' | translate }}
+                      <a href="/privacy-policy" target="_blank" class="text-crete-blue font-semibold hover:text-crete-gold underline underline-offset-2 transition-colors">
+                        {{ 'CONTACT.PRIVACY_POLICY' | translate }}
+                      </a>
+                    </label>
+                  </div>
+
+                  <!-- Submit -->
+                  <button
+                    type="submit"
+                    [disabled]="blockForm.invalid || !consentGiven || status === 'loading'"
+                    class="w-full font-bold py-3.5 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                    style="background: linear-gradient(135deg, #1e3678 0%, #0d1f4a 100%); color:white; box-shadow: 0 4px 20px rgba(30,54,120,0.3)"
+                  >
+                    <span *ngIf="status === 'loading'" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    {{ status === 'loading' ? ('CONTACT.SENDING' | translate) : ('CONTACT.SEND' | translate) }}
+                  </button>
+                </form>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Standard Layout Fallback -->
+    <div *ngIf="!page() || getEditorMode(page()!) !== 'builder'" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="bg-white rounded-3xl border border-gray-100 shadow-lg overflow-hidden">
+        <div class="grid grid-cols-1 md:grid-cols-5">
+
+          <!-- ── Left: Info Panel ──────────────────────────── -->
+          <div class="md:col-span-2 relative overflow-hidden p-10 text-white" style="background: linear-gradient(160deg, #1e3678 0%, #0d1f4a 100%)">
+            <!-- Decorative blobs -->
+            <div class="absolute -top-16 -left-16 w-48 h-48 rounded-full" style="background:rgba(200,159,69,0.10)"></div>
+            <div class="absolute -bottom-12 -right-12 w-36 h-36 rounded-full" style="background:rgba(200,159,69,0.07)"></div>
+
+            <div class="relative">
+              <ng-container *ngIf="page() as p; else staticInfo">
+                <div [innerHTML]="translate.currentLang() === 'ar' ? p.content_ar : p.content_en" class="prose prose-invert max-w-none text-gray-300 leading-relaxed"></div>
+              </ng-container>
+
+              <ng-template #staticInfo>
+                <h3 class="text-2xl font-bold mb-2 text-white" style="font-family:'Playfair Display',serif">
+                  {{ 'CONTACT.GET_IN_TOUCH' | translate }}
+                </h3>
+                <p class="text-gray-300 text-sm mb-8 leading-relaxed">{{ 'CONTACT.GET_IN_TOUCH_DESC' | translate }}</p>
+
+                <div class="space-y-5">
+                  <!-- Phone -->
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                      <svg class="h-5 w-5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                      </svg>
+                    </div>
+                    <span dir="ltr" class="text-sm font-medium">+971 50 123 4567</span>
+                  </div>
+                  <!-- Email -->
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                      <svg class="h-5 w-5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                      </svg>
+                    </div>
+                    <span class="text-sm font-medium">info&#64;crete-developments.com</span>
+                  </div>
+                  <!-- Location -->
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                      <svg class="h-5 w-5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
+                    </div>
+                    <span class="text-sm font-medium">{{ 'CONTACT.ADDRESS' | translate }}</span>
+                  </div>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- ── Right: Form ───────────────────────────────── -->
+          <div class="md:col-span-3 p-10">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6" style="font-family:'Playfair Display',serif">{{ 'CONTACT.SEND_MESSAGE' | translate }}</h2>
+
+            <form class="space-y-5" (ngSubmit)="onSubmit()" #contactForm="ngForm">
+              <!-- Success -->
+              <div *ngIf="status === 'success'" class="flex items-center gap-3 bg-green-50 text-green-800 p-4 rounded-xl border border-green-200 text-sm font-medium">
+                <svg class="w-5 h-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {{ 'CONTACT.SUCCESS' | translate }}
+              </div>
+              <!-- Error -->
+              <div *ngIf="status === 'error'" class="flex items-center gap-3 bg-red-50 text-red-800 p-4 rounded-xl border border-red-200 text-sm font-medium">
+                <svg class="w-5 h-5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {{ 'CONTACT.ERROR' | translate }}
+              </div>
+
+              <!-- Name -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'CONTACT.NAME' | translate }}</label>
+                <input type="text" name="name" [(ngModel)]="formData.name" required
+                  class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all">
+              </div>
+              <!-- Email -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'CONTACT.EMAIL' | translate }}</label>
+                <input type="email" name="email" [(ngModel)]="formData.email"
+                  class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all">
+              </div>
+              <!-- Phone -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'CONTACT.PHONE' | translate }}</label>
+                <input type="tel" name="phone" [(ngModel)]="formData.phone" required dir="ltr"
+                  class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all">
+              </div>
+              <!-- Message -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">{{ 'CONTACT.MESSAGE' | translate }}</label>
+                <textarea rows="4" name="message" [(ngModel)]="formData.message"
+                  class="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-crete-blue/30 focus:border-crete-blue focus:bg-white text-sm transition-all resize-none"></textarea>
+              </div>
+
+              <!-- Consent -->
+              <div class="flex items-start gap-3">
+                <input id="consent" name="consent" type="checkbox" [(ngModel)]="consentGiven" required class="mt-0.5 h-4 w-4 text-crete-gold border-gray-300 rounded focus:ring-crete-blue">
+                <label for="consent" class="text-sm text-gray-600">
+                  {{ 'CONTACT.CONSENT_AGREE' | translate }}
+                  <a href="/privacy-policy" target="_blank" class="text-crete-blue font-semibold hover:text-crete-gold underline underline-offset-2 transition-colors">
+                    {{ 'CONTACT.PRIVACY_POLICY' | translate }}
+                  </a>
+                </label>
+              </div>
+
+              <!-- Submit -->
+              <button
+                type="submit"
+                [disabled]="contactForm.invalid || !consentGiven || status === 'loading'"
+                class="w-full font-bold py-3.5 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                style="background: linear-gradient(135deg, #1e3678 0%, #0d1f4a 100%); color:white; box-shadow: 0 4px 20px rgba(30,54,120,0.3)"
+              >
+                <span *ngIf="status === 'loading'" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                {{ status === 'loading' ? ('CONTACT.SENDING' | translate) : ('CONTACT.SEND' | translate) }}
+              </button>
+            </form>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>

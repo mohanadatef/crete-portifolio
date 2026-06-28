@@ -108,6 +108,28 @@
           ></div>
         </div>
 
+        <!-- Features & Amenities -->
+        <div *ngIf="p.features && p.features.length > 0" class="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-100" style="font-family:'Playfair Display',serif">
+            {{ translate.currentLang() === 'ar' ? 'المميزات والخدمات' : 'Features & Amenities' }}
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div
+              *ngFor="let feature of p.features"
+              class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-100 hover:border-crete-gold/30 hover:bg-amber-50/30 transition-all duration-200"
+            >
+              <div class="flex items-center justify-center h-9 w-9 rounded-xl shrink-0" style="background: linear-gradient(135deg, rgba(200,159,69,0.15) 0%, rgba(200,159,69,0.05) 100%)">
+                <svg class="h-5 w-5 text-crete-gold" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <span class="text-sm font-semibold text-gray-800">
+                {{ translate.currentLang() === 'ar' ? (feature.name_ar || feature.name_en) : (feature.name_en || feature.name_ar) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
         <!-- Units -->
         <div *ngIf="p.units && p.units.length > 0" class="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
           <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-100" style="font-family:'Playfair Display',serif">
