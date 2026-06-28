@@ -27,6 +27,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   projects: any[] = [];
   status: 'loading' | 'success' | 'error' = 'loading';
   homePage = signal<Page | null>(null);
+  hasIntersected = false;
 
   stats = signal<any[]>([
     { number: 500, current: 0, suffix: '+', label_en: 'Units Delivered', label_ar: 'وحدة تم تسليمها' },
@@ -42,28 +43,37 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    const siteName = this.settingService.getSetting('site_name') || 'CRETE Developments';
-    this.seoService.updateTitle(`Home | ${siteName}`);
+    this.settingService.getPublicSettings().subscribe(settings => {
+      const data = settings?.data || settings;
+      if (data) {
+        const siteName = data['site_name'] || 'CRETE Developments';
+        this.seoService.updateTitle(`Home | ${siteName}`);
 
-    // Load dynamic company stats if configured
-    const statsSetting = this.settingService.getSetting('company_stats');
-    if (statsSetting) {
-      try {
-        const parsed = JSON.parse(statsSetting);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const list = parsed.map(item => ({
-            number: parseInt(item.number, 10) || 0,
-            current: 0,
-            suffix: item.suffix || '',
-            label_en: item.label_en || '',
-            label_ar: item.label_ar || ''
-          }));
-          this.stats.set(list);
+        // Load dynamic company stats if configured
+        const statsSetting = data['company_stats'];
+        if (statsSetting) {
+          try {
+            const parsed = JSON.parse(statsSetting);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              const list = parsed.map(item => ({
+                number: parseInt(item.number, 10) || 0,
+                current: 0,
+                suffix: item.suffix || '',
+                label_en: item.label_en || '',
+                label_ar: item.label_ar || ''
+              }));
+              this.stats.set(list);
+              // Trigger immediately if viewport intersection already occurred
+              if (this.hasIntersected) {
+                this.animateCounters();
+              }
+            }
+          } catch (e) {
+            console.error('Failed to parse company_stats setting', e);
+          }
         }
-      } catch (e) {
-        console.error('Failed to parse company_stats setting', e);
       }
-    }
+    });
 
     // Load custom home page content if it exists and is active
     this.pageService.getPublicBySlug('home').subscribe({
@@ -74,6 +84,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
           
           // Use page title for SEO
           const title = this.translate.currentLang() === 'ar' ? p.title_ar : p.title_en;
+          const siteName = this.settingService.getSetting('site_name') || 'CRETE Developments';
           this.seoService.updateTitle(`${title} | ${siteName}`);
         }
       },
@@ -102,6 +113,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
         const observer = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
+              this.hasIntersected = true;
               this.animateCounters();
               observer.unobserve(statsSection);
             }
