@@ -78,6 +78,8 @@ Route::prefix('v1')->group(function () {
 
         Route::post('/admin/settings/bulk', [SettingController::class, 'updateBulk']);
         Route::apiResource('/admin/settings', SettingController::class);
+        Route::get('/admin/logs', [\App\Modules\Setting\Controllers\LogController::class, 'index']);
+        Route::get('/admin/logs/{filename}', [\App\Modules\Setting\Controllers\LogController::class, 'show']);
         
         // Phase 3 & 4
         Route::apiResource('/admin/landing-pages', LandingPageController::class);

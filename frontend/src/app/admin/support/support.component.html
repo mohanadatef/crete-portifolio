@@ -1,12 +1,14 @@
-<div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+<div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
   <!-- Page Header -->
-  <div class="mb-8">
-    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Technical Support</h1>
-    <p class="text-sm text-gray-500 mt-1">Need assistance? Contact our systems administrator or technical support team.</p>
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Technical Support</h1>
+      <p class="text-sm text-gray-500 mt-1">Contact your system administrator or inspect application logs.</p>
+    </div>
   </div>
 
   <!-- Support Card -->
-  <div class="bg-white rounded-3xl border border-gray-100 shadow-lg overflow-hidden grid grid-cols-1 md:grid-cols-5">
+  <div *ngIf="!selectedFile" class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-5">
     
     <!-- Left: Branding/Decorative Panel -->
     <div class="md:col-span-2 relative overflow-hidden p-8 text-white flex flex-col justify-between" style="background: linear-gradient(160deg, #1e3678 0%, #0d1f4a 100%)">
@@ -69,6 +71,177 @@
             <span class="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition-colors">mohanadatef17121995&#64;gmail.com</span>
           </div>
         </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Log Files List -->
+  <div *ngIf="!selectedFile" class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-6">
+    <div class="flex justify-between items-center">
+      <div>
+        <h2 class="text-xl font-bold text-gray-900">Application Daily Logs</h2>
+        <p class="text-xs text-gray-500 mt-1">Laravel system logs organized by day. Rotate cycle: 14 days.</p>
+      </div>
+      <button (click)="loadLogFiles()" [disabled]="loadingFiles" class="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-500 hover:text-gray-900 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" [class.animate-spin]="loadingFiles" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15.89M21 20v-5h-.581" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Log files table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <th class="pb-3 text-right pr-6">Date</th>
+            <th class="pb-3">File Name</th>
+            <th class="pb-3">Size</th>
+            <th class="pb-3">Last Modified</th>
+            <th class="pb-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50 text-sm">
+          <tr *ngFor="let file of logFiles" class="hover:bg-gray-50/50 transition-colors group">
+            <td class="py-4 pr-6 text-right font-semibold text-gray-900">{{ file.date }}</td>
+            <td class="py-4 text-gray-600 font-mono">{{ file.filename }}</td>
+            <td class="py-4 text-gray-500">{{ file.size }}</td>
+            <td class="py-4 text-gray-500">{{ file.last_modified }}</td>
+            <td class="py-4 text-right">
+              <button (click)="selectFile(file.filename)" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#1e3678] hover:bg-blue-700 text-white text-xs font-medium transition-all shadow-sm">
+                <span>View Details</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                </svg>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="logFiles.length === 0 && !loadingFiles">
+            <td colspan="5" class="py-8 text-center text-gray-400">
+              No daily log files found in storage/logs.
+            </td>
+          </tr>
+          <tr *ngIf="loadingFiles">
+            <td colspan="5" class="py-8 text-center">
+              <div class="flex items-center justify-center gap-2 text-[#1e3678] text-sm">
+                <span class="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                <span>Loading log files...</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section: File Log Entries Detail View -->
+  <div *ngIf="selectedFile" class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-6">
+    <!-- Detail Header -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div>
+        <button (click)="closeLogs()" class="inline-flex items-center gap-1 text-[#1e3678] hover:text-blue-700 text-xs font-bold transition-colors mb-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span>Back to files list</span>
+        </button>
+        <h2 class="text-xl font-bold text-gray-900 font-mono">{{ selectedFile }}</h2>
+        <p class="text-xs text-gray-500 mt-1">Showing log entries parsed from this file. Newest logs first.</p>
+      </div>
+
+      <!-- Filters & Refresh -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Search query -->
+        <div class="relative min-w-[200px]">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </span>
+          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()" placeholder="Search error or stack trace..." class="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+        </div>
+
+        <!-- Level selector -->
+        <select [(ngModel)]="selectedLevel" (change)="applyFilters()" class="border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+          <option value="ALL">All Levels</option>
+          <option value="ERROR">ERROR</option>
+          <option value="WARNING">WARNING</option>
+          <option value="INFO">INFO</option>
+        </select>
+
+        <!-- Refresh button -->
+        <button (click)="selectFile(selectedFile)" [disabled]="loadingLogs" class="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-500 hover:text-gray-900 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" [class.animate-spin]="loadingLogs" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15.89M21 20v-5h-.581" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Logs entries list -->
+    <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+      <!-- Loading spinner -->
+      <div *ngIf="loadingLogs" class="py-12 text-center">
+        <div class="flex items-center justify-center gap-2 text-[#1e3678] text-sm">
+          <span class="h-5 w-5 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+          <span>Parsing log entries...</span>
+        </div>
+      </div>
+
+      <!-- No log entries -->
+      <div *ngIf="filteredLogs.length === 0 && !loadingLogs" class="py-12 text-center text-gray-400 text-sm">
+        No log entries match the active level or search criteria.
+      </div>
+
+      <!-- Log items -->
+      <div *ngFor="let log of filteredLogs; let i = index" class="border rounded-2xl p-4 transition-all hover:border-gray-200" [ngClass]="{
+        'border-red-100 bg-red-50/20': log.level === 'ERROR' || log.level === 'CRITICAL' || log.level === 'ALERT' || log.level === 'EMERGENCY',
+        'border-amber-100 bg-amber-50/20': log.level === 'WARNING',
+        'border-blue-100 bg-blue-50/20': log.level === 'INFO' || log.level === 'NOTICE',
+        'border-gray-100 bg-gray-50/20': log.level !== 'ERROR' && log.level !== 'WARNING' && log.level !== 'INFO'
+      }">
+        <div class="flex justify-between items-start gap-4">
+          <div class="space-y-1.5 flex-grow min-w-0">
+            <!-- Badge & Timestamp -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider" [ngClass]="{
+                'bg-red-100 text-red-800': log.type === 'danger',
+                'bg-amber-100 text-amber-800': log.type === 'warning',
+                'bg-blue-100 text-blue-800': log.type === 'info',
+                'bg-gray-100 text-gray-800': log.type === 'secondary'
+              }">{{ log.level }}</span>
+              <span class="text-[11px] text-gray-400 font-mono">{{ log.timestamp }}</span>
+              <span class="text-[10px] text-gray-400 font-mono">({{ log.environment }})</span>
+            </div>
+
+            <!-- Message -->
+            <div class="text-sm font-semibold text-gray-800 break-words font-mono">
+              {{ log.message }}
+            </div>
+          </div>
+
+          <!-- Expand stacktrace action -->
+          <button *ngIf="log.stack_trace" (click)="toggleStackTrace(i)" class="px-3 py-1 text-xs font-semibold rounded-lg border border-gray-200 hover:bg-white text-gray-600 transition-all flex items-center gap-1 select-none">
+            <span>{{ expandedLogIndex === i ? 'Hide Trace' : 'Show Trace' }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform" [class.rotate-180]="expandedLogIndex === i" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Stack trace box -->
+        <div *ngIf="expandedLogIndex === i && log.stack_trace" class="mt-4 border-t pt-4 space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Stack Trace</span>
+            <button (click)="copyToClipboard(log.stack_trace)" class="inline-flex items-center gap-1 text-[#1e3678] hover:text-blue-700 text-xs font-bold transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l-3-3" />
+              </svg>
+              <span>Copy Trace</span>
+            </button>
+          </div>
+          <pre class="bg-gray-900 text-gray-200 p-4 rounded-xl text-[11px] leading-relaxed overflow-x-auto max-h-[300px] font-mono select-text">{{ log.stack_trace }}</pre>
+        </div>
       </div>
     </div>
   </div>
