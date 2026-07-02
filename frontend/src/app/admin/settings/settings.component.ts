@@ -143,7 +143,7 @@ export class SettingsComponent implements OnInit {
         
         if (this.settings['social_links']) {
           try {
-            this.socialLinks = JSON.parse(this.settings['social_links']);
+            this.socialLinks = Array.isArray(this.settings['social_links']) ? (this.settings['social_links'] as any) : JSON.parse(this.settings['social_links']);
           } catch (e) {
             this.socialLinks = [];
           }
@@ -153,7 +153,7 @@ export class SettingsComponent implements OnInit {
 
         if (this.settings['company_branches']) {
           try {
-            this.branchesList = JSON.parse(this.settings['company_branches']);
+            this.branchesList = Array.isArray(this.settings['company_branches']) ? (this.settings['company_branches'] as any) : JSON.parse(this.settings['company_branches']);
           } catch (e) {
             this.branchesList = [];
           }
@@ -163,7 +163,7 @@ export class SettingsComponent implements OnInit {
 
         if (this.settings['company_stats']) {
           try {
-            this.statsList = JSON.parse(this.settings['company_stats']);
+            this.statsList = Array.isArray(this.settings['company_stats']) ? (this.settings['company_stats'] as any) : JSON.parse(this.settings['company_stats']);
           } catch (e) {
             this.statsList = [];
           }
@@ -173,7 +173,7 @@ export class SettingsComponent implements OnInit {
 
         if (this.settings['home_partners']) {
           try {
-            this.partnersList = JSON.parse(this.settings['home_partners']);
+            this.partnersList = Array.isArray(this.settings['home_partners']) ? (this.settings['home_partners'] as any) : JSON.parse(this.settings['home_partners']);
           } catch (e) {
             this.partnersList = [];
           }
@@ -183,7 +183,7 @@ export class SettingsComponent implements OnInit {
 
         if (this.settings['home_construction_updates']) {
           try {
-            this.constructionUpdatesList = JSON.parse(this.settings['home_construction_updates']);
+            this.constructionUpdatesList = Array.isArray(this.settings['home_construction_updates']) ? (this.settings['home_construction_updates'] as any) : JSON.parse(this.settings['home_construction_updates']);
           } catch (e) {
             this.constructionUpdatesList = [];
           }

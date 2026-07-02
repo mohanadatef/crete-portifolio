@@ -110,7 +110,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
         if (data['home_partners']) {
           try {
-            const parsed = JSON.parse(data['home_partners']);
+            const parsed = Array.isArray(data['home_partners']) ? data['home_partners'] : JSON.parse(data['home_partners']);
             if (Array.isArray(parsed) && parsed.length > 0) {
               this.partners.set(parsed);
             }
@@ -121,7 +121,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
         if (data['home_construction_updates']) {
           try {
-            const parsed = JSON.parse(data['home_construction_updates']);
+            const parsed = Array.isArray(data['home_construction_updates']) ? data['home_construction_updates'] : JSON.parse(data['home_construction_updates']);
             if (Array.isArray(parsed) && parsed.length > 0) {
               this.constructionUpdates.set(parsed);
             }
@@ -134,7 +134,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         const statsSetting = data['company_stats'];
         if (statsSetting) {
           try {
-            const parsed = JSON.parse(statsSetting);
+            const parsed = Array.isArray(statsSetting) ? statsSetting : JSON.parse(statsSetting);
             if (Array.isArray(parsed) && parsed.length > 0) {
               const list = parsed.map(item => ({
                 number: parseInt(item.number, 10) || 0,

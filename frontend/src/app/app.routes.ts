@@ -160,6 +160,10 @@ export const routes: Routes = [
                 canActivate: [permissionGuard],
                 data: { permission: 'edit-blog-posts' }
             },
+            {
+                path: 'support',
+                loadComponent: () => import('./admin/support/support.component').then(m => m.SupportComponent)
+            },
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     }

@@ -82,9 +82,7 @@ export class ContactComponent implements OnInit {
         this.seoService.updateTitle(`Contact Us | ${siteName}`);
         
         if (data['company_branches']) {
-          try {
-            this.siteBranches.set(JSON.parse(data['company_branches']));
-          } catch (e) {}
+          this.siteBranches.set(this.parseSettingsList(data['company_branches']));
         }
         
         // Dynamically load Recaptcha
@@ -195,5 +193,21 @@ export class ContactComponent implements OnInit {
         this.toastService.error(this.translate.currentLang() === 'ar' ? 'فشل إرسال الطلب، يرجى المحاولة لاحقاً.' : 'Failed to send inquiry. Please try again.');
       }
     });
+  }
+
+  private parseSettingsList(value: any): any[] {
+    if (!value) return [];
+    if (typeof value === 'string') {
+      if (value === '[object Object]' || value.startsWith('[object')) {
+        return [];
+      }
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    return Array.isArray(value) ? value : [];
   }
 }

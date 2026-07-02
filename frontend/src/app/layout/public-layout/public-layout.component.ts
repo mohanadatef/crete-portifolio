@@ -89,14 +89,7 @@ export class PublicLayoutComponent implements OnInit {
           }
           if (settings.site_logo) this.siteLogo.set(settings.site_logo);
           if (settings.company_branches) {
-            try {
-              const list = JSON.parse(settings.company_branches);
-              if (Array.isArray(list) && list.length > 0) {
-                this.companyBranches.set(list);
-              }
-            } catch (e) {
-              console.error('Error parsing company_branches', e);
-            }
+            this.companyBranches.set(this.parseSettingsList(settings.company_branches));
           }
 
           if (settings.available_languages) {
@@ -119,12 +112,7 @@ export class PublicLayoutComponent implements OnInit {
           }
 
           if (settings.social_links) {
-            try {
-              this.socialLinks.set(JSON.parse(settings.social_links));
-            } catch (e) {
-              console.error('Error parsing social_links', e);
-              this.socialLinks.set([]);
-            }
+            this.socialLinks.set(this.parseSettingsList(settings.social_links));
           } else {
             this.socialLinks.set([]);
           }
@@ -151,6 +139,22 @@ export class PublicLayoutComponent implements OnInit {
       },
       error: (err) => console.error('Error loading public pages', err)
     });
+  }
+
+  private parseSettingsList(value: any): any[] {
+    if (!value) return [];
+    if (typeof value === 'string') {
+      if (value === '[object Object]' || value.startsWith('[object')) {
+        return [];
+      }
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    return Array.isArray(value) ? value : [];
   }
 
   toggleLanguage() {

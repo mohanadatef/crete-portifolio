@@ -84,9 +84,7 @@ export class PublicPageComponent implements OnInit {
     this.settingService.getPublicSettings().subscribe(settings => {
       const data = settings?.data || settings;
       if (data && data['company_branches']) {
-        try {
-          this.siteBranches.set(JSON.parse(data['company_branches']));
-        } catch (e) {}
+        this.siteBranches.set(this.parseSettingsList(data['company_branches']));
       }
     });
 
@@ -162,5 +160,21 @@ export class PublicPageComponent implements OnInit {
         this.contactStatus = 'error';
       }
     });
+  }
+
+  private parseSettingsList(value: any): any[] {
+    if (!value) return [];
+    if (typeof value === 'string') {
+      if (value === '[object Object]' || value.startsWith('[object')) {
+        return [];
+      }
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    return Array.isArray(value) ? value : [];
   }
 }
