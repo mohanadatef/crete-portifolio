@@ -1,7 +1,7 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, PLATFORM_ID } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateService, TranslatePipe, TranslateDirective } from '@ngx-translate/core';
-import { DOCUMENT, CommonModule } from '@angular/common';
+import { DOCUMENT, CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LayoutService } from '../../services/layout.service';
@@ -21,6 +21,7 @@ export class PublicLayoutComponent implements OnInit {
   layoutService = inject(LayoutService);
   private http = inject(HttpClient);
   private titleService = inject(Title);
+  private platformId = inject(PLATFORM_ID);
 
   // Settings properties
   siteName = signal<string>('CRETE');
@@ -30,16 +31,7 @@ export class PublicLayoutComponent implements OnInit {
   showContact = signal<boolean>(true);
   showAbout = signal<boolean>(true);
   availableLangs = signal<string[]>(['en', 'ar']);
-  companyBranches = signal<any[]>([
-    {
-      name_en: 'Main Office',
-      name_ar: 'المكتب الرئيسي',
-      phones: ['+971 50 123 4567'],
-      emails: ['info@crete.com'],
-      address_en: 'Dubai, UAE',
-      address_ar: 'دبي، الإمارات العربية المتحدة'
-    }
-  ]);
+  companyBranches = signal<any[]>([]);
 
   socialLinks = signal<any[]>([]);
   isChatWidgetExpanded = false;
@@ -67,7 +59,7 @@ export class PublicLayoutComponent implements OnInit {
   constructor() {
     this.translate.addLangs(['en', 'ar']);
     let defaultLang = 'en';
-    if (typeof window !== 'undefined') {
+    if (isPlatformBrowser(this.platformId)) {
       const savedLang = localStorage.getItem('lang');
       if (savedLang && (savedLang === 'en' || savedLang === 'ar')) {
         defaultLang = savedLang;
@@ -121,8 +113,10 @@ export class PublicLayoutComponent implements OnInit {
           // Apply website colors dynamically
           const primary = settings.web_primary_color || '#c89f45';
           const secondary = settings.web_secondary_color || '#1e3678';
-          this.document.documentElement.style.setProperty('--crete-gold', primary);
-          this.document.documentElement.style.setProperty('--crete-blue', secondary);
+          if (isPlatformBrowser(this.platformId)) {
+            this.document.documentElement.style.setProperty('--crete-gold', primary);
+            this.document.documentElement.style.setProperty('--crete-blue', secondary);
+          }
 
           if (settings.social_links) {
             try {
@@ -171,22 +165,19 @@ export class PublicLayoutComponent implements OnInit {
 
   setLanguage(lang: string) {
     this.translate.use(lang);
-    if (typeof window !== 'undefined') {
+    if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('lang', lang);
-    }
-    if (lang === 'ar') {
-      this.document.documentElement.dir = 'rtl';
-      this.document.documentElement.lang = 'ar';
-    } else {
-      this.document.documentElement.dir = 'ltr';
-      this.document.documentElement.lang = 'en';
+      this.document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      this.document.documentElement.lang = lang;
     }
   }
 
   toggleChatWidget() {
     const activeChatLinks = this.chatLinks();
     if (activeChatLinks.length === 1) {
-      window.open(activeChatLinks[0].url, '_blank', 'noopener,noreferrer');
+      if (isPlatformBrowser(this.platformId)) {
+        window.open(activeChatLinks[0].url, '_blank', 'noopener,noreferrer');
+      }
     } else {
       this.isChatWidgetExpanded = !this.isChatWidgetExpanded;
     }

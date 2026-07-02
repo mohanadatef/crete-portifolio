@@ -103,7 +103,14 @@ export class BlogPostDetailsComponent implements OnInit, OnDestroy {
   }
 
   getTags(): string[] {
-    const tagsStr = this.post()?.tags;
-    return tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(t => t.length > 0) : [];
+    const tags = this.post()?.tags;
+    if (!tags) return [];
+    if (Array.isArray(tags)) {
+      return tags;
+    }
+    if (typeof tags === 'string') {
+      return tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    }
+    return [];
   }
 }

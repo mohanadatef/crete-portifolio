@@ -31,6 +31,13 @@
         <span>General Configuration</span>
       </button>
 
+      <button (click)="setTab('homepage')" [ngClass]="{'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600': activeTab === 'homepage', 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent': activeTab !== 'homepage'}" class="w-full text-left px-4 py-3 rounded-lg text-sm transition-all duration-150 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+        <span>Homepage Content</span>
+      </button>
+
       <button (click)="setTab('appearance')" [ngClass]="{'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600': activeTab === 'appearance', 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent': activeTab !== 'appearance'}" class="w-full text-left px-4 py-3 rounded-lg text-sm transition-all duration-150 flex items-center gap-3">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
@@ -257,6 +264,206 @@
         </div>
       </div>
 
+      <!-- Tab: Homepage settings -->
+      <div *ngIf="activeTab === 'homepage'" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Homepage Content Settings</h2>
+          <p class="text-xs text-gray-500 mt-1">Configure hero headers, legacy descriptions, partner logos, and construction site progress updates.</p>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <!-- 1. Hero Content Section -->
+        <div class="space-y-4">
+          <h3 class="text-sm font-bold text-gray-850">1. Hero Headline & Subtitle</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Hero Title (English)</label>
+              <input type="text" [(ngModel)]="settings['home_hero_title_en']" name="hero-t-en" placeholder="e.g. Crete Developments" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div dir="rtl">
+              <label class="block text-xs font-semibold text-gray-600 mb-1 text-right">عنوان الهيرو (العربية)</label>
+              <input type="text" [(ngModel)]="settings['home_hero_title_ar']" name="hero-t-ar" placeholder="مثال: كريت للتطوير العقاري" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white text-right focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Hero Subtitle (English)</label>
+              <input type="text" [(ngModel)]="settings['home_hero_subtitle_en']" name="hero-st-en" placeholder="e.g. A stalwart of the Egyptian real estate market..." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div dir="rtl">
+              <label class="block text-xs font-semibold text-gray-600 mb-1 text-right">الوصف الفرعي للهيرو (العربية)</label>
+              <input type="text" [(ngModel)]="settings['home_hero_subtitle_ar']" name="hero-st-ar" placeholder="مثال: صرح عقاري عريق..." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white text-right focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+          </div>
+
+          <!-- Hero Background Upload -->
+          <div class="mt-4">
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Hero Background (Image or Video)</label>
+            <div class="flex items-center gap-4">
+              <input type="text" [(ngModel)]="settings['home_hero_bg']" name="hero-bg-url" placeholder="Paste URL or upload a file..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <div class="relative">
+                <input type="file" (change)="onHeroBgSelect($event)" id="heroBgUpload" accept="image/*,video/*" class="hidden">
+                <label for="heroBgUpload" class="cursor-pointer px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all inline-block">
+                  {{ heroBgUploading ? 'Uploading...' : 'Upload File' }}
+                </label>
+              </div>
+            </div>
+            <p class="text-[10px] text-gray-500 mt-1">Recommended: high resolution luxury building photo, or a looping landscape video file (e.g. .mp4).</p>
+          </div>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <!-- 2. Legacy / Trust Section -->
+        <div class="space-y-4">
+          <h3 class="text-sm font-bold text-gray-850">2. Legacy & Trust Section</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Legacy Title (English)</label>
+              <input type="text" [(ngModel)]="settings['home_legacy_title_en']" name="leg-t-en" placeholder="e.g. Decades of Excellence" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div dir="rtl">
+              <label class="block text-xs font-semibold text-gray-600 mb-1 text-right">عنوان قسم الإرث (العربية)</label>
+              <input type="text" [(ngModel)]="settings['home_legacy_title_ar']" name="leg-t-ar" placeholder="مثال: عقود من التميز والريادة" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white text-right focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Legacy Description (English)</label>
+              <textarea [(ngModel)]="settings['home_legacy_desc_en']" name="leg-d-en" placeholder="Detailed legacy information..." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 h-20"></textarea>
+            </div>
+            <div dir="rtl">
+              <label class="block text-xs font-semibold text-gray-600 mb-1 text-right">شرح قسم الإرث (العربية)</label>
+              <textarea [(ngModel)]="settings['home_legacy_desc_ar']" name="leg-d-ar" placeholder="تفاصيل تاريخ الشركة..." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white text-right focus:outline-none focus:ring-1 focus:ring-blue-500 h-20"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <!-- 3. Construction Updates Section -->
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-sm font-bold text-gray-850">3. Live Site Construction Updates</h3>
+            <button type="button" (click)="addConstructionUpdate()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-bold transition-all">
+              + Add Progress Card
+            </button>
+          </div>
+
+          <div *ngIf="constructionUpdatesList.length === 0" class="border border-dashed border-gray-200 rounded-xl p-6 text-center bg-gray-50">
+            <span class="text-xs text-gray-500">No construction updates added. Click "+ Add Progress Card" to showcase live works.</span>
+          </div>
+
+          <div class="space-y-4">
+            <div *ngFor="let item of constructionUpdatesList; let uIdx = index" class="p-4 bg-gray-50 rounded-xl border border-gray-200 relative space-y-3">
+              <button type="button" (click)="removeConstructionUpdate(uIdx)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold">
+                Remove
+              </button>
+              <span class="text-xs font-bold text-gray-400">Construction Card #{{ uIdx + 1 }}</span>
+
+              <!-- Titles -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">Card Title (English)</label>
+                  <input type="text" [(ngModel)]="item.title_en" [name]="'update-t-en-' + uIdx" placeholder="e.g. Quest Hub Skeleton Complete" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div dir="rtl">
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-0.5 text-right">عنوان التحديث (العربية)</label>
+                  <input type="text" [(ngModel)]="item.title_ar" [name]="'update-t-ar-' + uIdx" placeholder="مثال: اكتمال خرسانات كويست هب" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs bg-white text-right focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+              </div>
+
+              <!-- Phase, Location, and Progress Percentage -->
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">Progress Rate (0-100)</label>
+                  <input type="number" [(ngModel)]="item.progress" [name]="'update-prog-' + uIdx" placeholder="75" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">Location (English)</label>
+                  <input type="text" [(ngModel)]="item.location_en" [name]="'update-loc-en-' + uIdx" placeholder="e.g. New Cairo" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">Construction Phase (EN)</label>
+                  <input type="text" [(ngModel)]="item.phase_en" [name]="'update-ph-en-' + uIdx" placeholder="e.g. Concrete Structure" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div dir="rtl">
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-0.5 text-right">المرحلة الإنشائية (AR)</label>
+                  <input type="text" [(ngModel)]="item.phase_ar" [name]="'update-ph-ar-' + uIdx" placeholder="مثال: الهيكل الخرساني" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs bg-white text-right focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+              </div>
+
+              <!-- Location (AR) & Card Image URL with Upload Button -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">Background Image URL</label>
+                  <div class="flex gap-2">
+                    <input type="text" [(ngModel)]="item.image" [name]="'update-img-' + uIdx" placeholder="e.g. https://images.unsplash.com/..." class="flex-1 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <div class="relative">
+                      <input type="file" (change)="onConstructionImageSelect($event, uIdx)" [id]="'updateImageUpload-' + uIdx" accept="image/*" class="hidden">
+                      <label [for]="'updateImageUpload-' + uIdx" class="cursor-pointer px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-bold transition-all inline-block whitespace-nowrap">
+                        Upload
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div dir="rtl">
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-0.5 text-right">المنطقة (العربية)</label>
+                  <input type="text" [(ngModel)]="item.location_ar" [name]="'update-loc-ar-' + uIdx" placeholder="مثال: العبور الجديدة" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs bg-white text-right focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <!-- 4. Partners & Success Signs Section -->
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-sm font-bold text-gray-850">4. Corporate Partners & Consultants</h3>
+            <button type="button" (click)="addPartner()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-bold transition-all">
+              + Add Partner Card
+            </button>
+          </div>
+
+          <div *ngIf="partnersList.length === 0" class="border border-dashed border-gray-200 rounded-xl p-6 text-center bg-gray-50">
+            <span class="text-xs text-gray-500">No partners added. Click "+ Add Partner Card" to showcase consultants.</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div *ngFor="let partner of partnersList; let pIdx = index" class="p-4 bg-gray-50 rounded-xl border border-gray-200 relative space-y-2">
+              <button type="button" (click)="removePartner(pIdx)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold">
+                Remove
+              </button>
+              <span class="text-xs font-bold text-gray-400">Partner #{{ pIdx + 1 }}</span>
+
+              <div>
+                <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">Partner Name</label>
+                <input type="text" [(ngModel)]="partner.name" [name]="'partner-n-' + pIdx" placeholder="e.g. YBA Architects" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">Logo Text (Max 4 chars)</label>
+                  <input type="text" [(ngModel)]="partner.logoText" [name]="'partner-l-' + pIdx" placeholder="e.g. YBA" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-600 mb-0.5">Consultation Description</label>
+                  <input type="text" [(ngModel)]="partner.desc" [name]="'partner-d-' + pIdx" placeholder="e.g. Engineering Consultant" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
       <!-- Tab 2: Appearance settings -->
       <div *ngIf="activeTab === 'appearance'" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
         <div>
@@ -345,6 +552,21 @@
         <hr class="border-gray-100">
 
         <div class="space-y-6">
+          <!-- Enable reCAPTCHA Toggle -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <div>
+              <span class="block text-sm font-bold text-gray-700">Enable Google reCAPTCHA v3 Spam Protection</span>
+              <span class="text-[10px] text-gray-400 mt-0.5">Toggle this on to validate tokens on lead submissions. Make sure you set both keys below.</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" 
+                     [checked]="settings['recaptcha_enabled'] === '1'" 
+                     (change)="settings['recaptcha_enabled'] = $any($event.target).checked ? '1' : '0'"
+                     class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
           <!-- reCAPTCHA Site Key -->
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Google reCAPTCHA v3 Site Key</label>

@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
 import { authInterceptor } from './interceptors/auth.interceptor';
+import { ssrInterceptor } from './core/interceptors/ssr.interceptor';
 
 @Injectable({ providedIn: 'root' })
 export class CustomTranslateLoader implements TranslateLoader {
@@ -22,7 +23,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(
       withFetch(),
-      withInterceptors([authInterceptor])
+      withInterceptors([authInterceptor, ssrInterceptor])
     ),
     provideTranslateService({
       defaultLanguage: 'en',

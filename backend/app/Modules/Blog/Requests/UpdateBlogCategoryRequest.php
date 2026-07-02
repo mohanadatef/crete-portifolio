@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Modules\Blog\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,7 +23,9 @@ class UpdateBlogCategoryRequest extends FormRequest
      */
     public function rules()
     {
-        $id = $this->route('blog_category');
+        $blogCategory = $this->route('blog_category');
+        $id = is_object($blogCategory) ? $blogCategory->id : $blogCategory;
+        
         return [
             'slug' => 'nullable|string|unique:blog_categories,slug,' . $id,
             'name_ar' => 'required|string',

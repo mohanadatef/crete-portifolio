@@ -9,20 +9,40 @@ use App\Modules\Lead\Models\Lead;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
+use App\Traits\ApiResponseTrait;
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 class DashboardController extends Controller
 {
+    use ApiResponseTrait;
+
     public function index(Request $request): JsonResponse
     {
+      try {
         $projectId = $request->query('project_id');
         $landingPageId = $request->query('landing_page_id');
         $range = $request->query('range', 'week'); // today, yesterday, week, month, custom
         $startDateParam = $request->query('start_date');
         $endDateParam = $request->query('end_date');
 
+        $user = auth()->user();
+        $applyScope = function ($query) use ($user) {
+            if ($user && !$user->can('view-all-leads')) {
+                $query->where(function ($q) use ($user) {
+                    $q->where('assigned_to', $user->id);
+                    if ($user->can('view-unassigned-leads')) {
+                        $q->orWhereNull('assigned_to');
+                    }
+                });
+            }
+            return $query;
+        };
+
         // Base query for leads today
-        $todayQuery = Lead::whereDate('created_at', Carbon::today());
+        $todayQuery = $applyScope(Lead::whereDate('created_at', Carbon::today()));
         // Base query for leads yesterday
-        $yesterdayQuery = Lead::whereDate('created_at', Carbon::yesterday());
+        $yesterdayQuery = $applyScope(Lead::whereDate('created_at', Carbon::yesterday()));
 
         // Apply filters to today/yesterday queries
         if ($projectId) {
@@ -55,15 +75,15 @@ class DashboardController extends Controller
             $endDate = Carbon::today();
         } elseif ($range === 'custom') {
             if ($startDateParam) {
-                $startDate = Carbon::parse($startDateParam);
+                try { $startDate = Carbon::parse($startDateParam); } catch (\Throwable $t) { /* keep default */ }
             }
             if ($endDateParam) {
-                $endDate = Carbon::parse($endDateParam);
+                try { $endDate = Carbon::parse($endDateParam); } catch (\Throwable $t) { /* keep default */ }
             }
         }
 
         // Fetch chart data: group by date and count
-        $chartQuery = Lead::query()
+        $chartQuery = $applyScope(Lead::query())
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
             ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()]);
 
@@ -91,18 +111,20 @@ class DashboardController extends Controller
             $tempDate->addDay();
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'leads_today' => $leadsToday,
-                'leads_yesterday' => $leadsYesterday,
-                'leads_total' => Lead::count(),
-                'projects_count' => \App\Modules\Project\Models\Project::count(),
-                'pages_count' => \App\Modules\Page\Models\Page::count(),
-                'landing_pages_count' => \App\Modules\Page\Models\LandingPage::count(),
-                'blog_posts_count' => \App\Modules\Blog\Models\BlogPost::count(),
-                'chart_data' => $chartData
-            ]
-        ]);
+        return $this->successResponse([
+            'leads_today' => $leadsToday,
+            'leads_yesterday' => $leadsYesterday,
+            'leads_total' => $applyScope(Lead::query())->count(),
+            'website_visits' => \App\Modules\Lead\Models\UniqueView::where('viewable_type', 'Website')->count(),
+            'projects_count' => \App\Modules\Project\Models\Project::count(),
+            'pages_count' => \App\Modules\Page\Models\Page::count(),
+            'landing_pages_count' => \App\Modules\Page\Models\LandingPage::count(),
+            'blog_posts_count' => \App\Modules\Blog\Models\BlogPost::count(),
+            'chart_data' => $chartData
+        ], 'Dashboard statistics retrieved successfully');
+      } catch (Exception $e) {
+            Log::error('DashboardController@index: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to retrieve dashboard statistics.', 500);
+      }
     }
 }

@@ -45,4 +45,9 @@ class User extends Authenticatable
         'password' => 'hashed',
         'is_active' => 'boolean',
     ];
+
+    public function assignedLeads()
+    {
+        return $this->hasMany(\App\Modules\Lead\Models\Lead::class, 'assigned_to');
+    }
 }

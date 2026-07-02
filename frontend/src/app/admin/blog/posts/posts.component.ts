@@ -7,6 +7,8 @@ import { BlogPost } from '../../../core/models/models';
 import { HasPermissionDirective } from '../../../directives/has-permission.directive';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-posts',
@@ -16,9 +18,19 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 })
 export class PostsComponent implements OnInit {
   private dataService = inject(BlogPostService);
+  private toastService = inject(ToastService);
 
+  backendUrl = environment.backendUrl;
   posts = signal<BlogPost[]>([]);
   status = signal<'loading' | 'success' | 'error'>('loading');
+
+  getPostImageUrl(imagePath: string | null): string | null {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    return this.backendUrl + imagePath;
+  }
 
   currentPage = 1;
   lastPage = 1;
@@ -93,8 +105,11 @@ export class PostsComponent implements OnInit {
   deleteData(id: number) {
     if (confirm('Are you sure you want to delete this blog post?')) {
       this.dataService.delete(id).subscribe({
-        next: () => this.loadData(this.currentPage),
-        error: () => alert('Error deleting blog post')
+        next: () => {
+          this.toastService.success('Blog post deleted successfully.');
+          this.loadData(this.currentPage);
+        },
+        error: () => this.toastService.error('Error deleting blog post')
       });
     }
   }

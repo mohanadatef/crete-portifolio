@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, SafeResourceUrl } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { LayoutService } from '../../services/layout.service';
@@ -145,6 +145,8 @@ export class PublicLandingPageComponent implements OnInit, OnDestroy {
       group[field.name] = new FormControl('', validators);
     });
 
+    group['privacy_consent'] = new FormControl(false, [Validators.requiredTrue]);
+
     this.dynamicForm = this.fb.group(group);
   }
 
@@ -153,9 +155,9 @@ export class PublicLandingPageComponent implements OnInit, OnDestroy {
     return optionsString.split(',').map(s => s.trim()).filter(s => s.length > 0);
   }
 
-  sanitizeHtml(content?: string): SafeHtml {
-    if (!content) return '';
-    return this.sanitizer.bypassSecurityTrustHtml(content);
+  sanitizeResourceUrl(url?: string): SafeResourceUrl {
+    if (!url) return '';
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
   submitForm() {
@@ -169,7 +171,24 @@ export class PublicLandingPageComponent implements OnInit, OnDestroy {
     
     const formData = this.dynamicForm.value;
 
-    this.http.post(`${environment.apiUrl}/public/landing-pages/${this.slug}/submit`, formData).subscribe({
+    // Execute recaptcha if available, otherwise submit directly
+    if (typeof window !== 'undefined' && (window as any).grecaptcha) {
+      const siteKey = this.pageData()?.recaptcha_site_key || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+      (window as any).grecaptcha.ready(() => {
+        (window as any).grecaptcha.execute(siteKey, {action: 'submit'}).then((token: string) => {
+          this.doSubmit({ ...formData, recaptcha_token: token });
+        }).catch(() => {
+          // Fallback: submit with dev bypass token
+          this.doSubmit({ ...formData, recaptcha_token: 'dev_bypass_token' });
+        });
+      });
+    } else {
+      this.doSubmit({ ...formData, recaptcha_token: 'dev_bypass_token' });
+    }
+  }
+
+  private doSubmit(payload: any) {
+    this.http.post(`${environment.apiUrl}/public/landing-pages/${this.slug}/submit`, payload).subscribe({
       next: () => {
         this.submitStatus.set('success');
         this.router.navigate(['/landing', this.slug, 'thank-you']);

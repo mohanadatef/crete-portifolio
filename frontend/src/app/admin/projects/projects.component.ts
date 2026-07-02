@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { environment } from '../../../environments/environment';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-projects',
@@ -21,6 +22,7 @@ export class ProjectsComponent implements OnInit {
   private projectService = inject(ProjectService);
   private projectTypeService = inject(ProjectTypeService);
   private router = inject(Router);
+  private toastService = inject(ToastService);
   backendUrl = environment.backendUrl;
 
   projects = signal<Project[]>([]);
@@ -139,8 +141,11 @@ export class ProjectsComponent implements OnInit {
   deleteProject(id: number) {
     if (confirm('Are you sure you want to delete this project?')) {
       this.projectService.delete(id).subscribe({
-        next: () => this.loadProjects(),
-        error: () => alert('Error deleting project')
+        next: () => {
+          this.toastService.success('Project deleted successfully.');
+          this.loadProjects();
+        },
+        error: () => this.toastService.error('Error deleting project')
       });
     }
   }

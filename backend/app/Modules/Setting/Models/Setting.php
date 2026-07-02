@@ -9,4 +9,8 @@ class Setting extends Model
 {
     use HasFactory;
     protected $fillable = ['key', 'value'];
+
+    protected $casts = [
+        'value' => \App\Casts\DynamicSettingCast::class,
+    ];
 }

@@ -8,6 +8,7 @@ import { FeatureService } from '../../../core/services/feature.service';
 import { ProjectType, Project, Feature } from '../../../core/models/models';
 import { QuillModule } from 'ngx-quill';
 import { environment } from '../../../../environments/environment';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-project-form',
@@ -23,6 +24,7 @@ export class ProjectFormComponent implements OnInit {
   private featureService = inject(FeatureService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private toastService = inject(ToastService);
 
   backendUrl = environment.backendUrl;
 
@@ -93,6 +95,7 @@ export class ProjectFormComponent implements OnInit {
       description_ar: [''],
       description_en: [''],
       location: [''],
+      location_ar: [''],
       status: [true],
       featured: [false],
       price: [null],
@@ -199,6 +202,7 @@ export class ProjectFormComponent implements OnInit {
           description_ar: p.description_ar || '',
           description_en: p.description_en || '',
           location: p.location || '',
+          location_ar: p.location_ar || '',
           status: !!p.status,
           featured: !!p.featured,
           price: p.price,
@@ -238,7 +242,7 @@ export class ProjectFormComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading project', err);
-        alert('Failed to load project details.');
+        this.toastService.error('Failed to load project details.');
         this.router.navigate(['/admin/projects']);
       }
     });
@@ -365,7 +369,7 @@ export class ProjectFormComponent implements OnInit {
     // Validation: Enforce at least one image/video exists
     const hasMainMedia = this.mainFiles.length > 0 || this.existingImages.length > 0;
     if (!hasMainMedia) {
-      alert('Please upload or keep at least one project image/video.');
+      this.toastService.warning('Please upload or keep at least one project image/video.');
       return;
     }
 
@@ -442,12 +446,13 @@ export class ProjectFormComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.isSaving = false;
+        this.toastService.success('Project saved successfully.');
         this.router.navigate(['/admin/projects']);
       },
       error: (err) => {
         this.isSaving = false;
         console.error('Error saving project', err);
-        alert(err?.error?.message || 'Error occurred while saving the project.');
+        this.toastService.error(err?.error?.message || 'Error occurred while saving the project.');
       }
     });
   }

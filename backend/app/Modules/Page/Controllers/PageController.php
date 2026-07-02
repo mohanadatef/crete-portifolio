@@ -13,6 +13,7 @@ use App\Modules\Page\Resources\PageResource;
 use App\Http\Requests\StorePageRequest;
 use App\Http\Requests\UpdatePageRequest;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 class PageController extends Controller
@@ -42,7 +43,8 @@ class PageController extends Controller
                 'Pages retrieved successfully'
             );
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('PageController@index: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to retrieve pages.', 500);
         }
     }
 
@@ -52,7 +54,8 @@ class PageController extends Controller
             $pages = \App\Modules\Page\Models\Page::where('status', 1)->get();
             return $this->successResponse(PageResource::collection($pages), 'Pages retrieved successfully');
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('PageController@indexPublic: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to retrieve public pages.', 500);
         }
     }
 
@@ -85,7 +88,8 @@ class PageController extends Controller
             $page = $this->pageService->createPage($dto->data);
             return $this->successResponse(new PageResource($page), 'Page created successfully', 201);
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('PageController@store: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to create page.', 500);
         }
     }
 
@@ -106,7 +110,8 @@ class PageController extends Controller
             $page = $this->pageService->updatePage($id, $dto->data);
             return $this->successResponse(new PageResource($page), 'Page updated successfully');
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('PageController@update: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to update page.', 500);
         }
     }
 

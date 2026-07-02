@@ -1,7 +1,7 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, PLATFORM_ID } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { SeoService } from '../../services/seo.service';
@@ -18,6 +18,7 @@ export class AdminLayoutComponent implements OnInit {
   private document = inject(DOCUMENT);
   private seoService = inject(SeoService);
   private router = inject(Router);
+  private platformId = inject(PLATFORM_ID);
 
   siteName = signal<string>('CRETE');
   siteLogo = signal<string>('');
@@ -46,7 +47,9 @@ export class AdminLayoutComponent implements OnInit {
 
           // Apply admin colors dynamically
           const adminColor = settings.admin_primary_color || '#1e3678';
-          this.document.documentElement.style.setProperty('--admin-primary-color', adminColor);
+          if (isPlatformBrowser(this.platformId)) {
+            this.document.documentElement.style.setProperty('--admin-primary-color', adminColor);
+          }
         }
       },
       error: (err) => {

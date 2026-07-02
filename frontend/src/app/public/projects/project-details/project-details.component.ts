@@ -51,10 +51,18 @@ export class ProjectDetailsComponent implements OnInit {
           const projectTitle = this.translate.currentLang() === 'ar' ? (p.title_ar || p.title_en) : (p.title_en || p.title_ar);
           this.seoService.updateTitle(`${projectTitle} | ${siteName}`);
           
+          const desc = this.translate.currentLang() === 'ar' ? p.description_ar : p.description_en;
+          this.seoService.updateMeta('description', this.stripHtml(desc));
+          
           // Set initial active image from primary or first image
           const primaryImg = p.images?.find((img: ProjectImage) => img.is_primary);
           const firstImg = p.images && p.images.length > 0 ? p.images[0] : null;
-          this.activeImage.set(primaryImg ? primaryImg.image_path : (firstImg ? firstImg.image_path : null));
+          const activeImgPath = primaryImg ? primaryImg.image_path : (firstImg ? firstImg.image_path : null);
+          this.activeImage.set(activeImgPath);
+
+          if (activeImgPath) {
+            this.seoService.updateOgImage(this.getImageUrl(activeImgPath));
+          }
         } else {
           this.status.set('error');
         }
@@ -80,5 +88,10 @@ export class ProjectDetailsComponent implements OnInit {
       return imagePath;
     }
     return this.backendUrl + (imagePath.startsWith('/') ? '' : '/') + imagePath;
+  }
+
+  stripHtml(html?: string): string {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '').trim().substring(0, 160);
   }
 }

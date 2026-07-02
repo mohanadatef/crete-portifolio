@@ -48,12 +48,15 @@ Route::prefix('v1')->group(function () {
     Route::get('/public/blog-posts/{slug}', [BlogPostController::class, 'showPublic']);
 
     Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('/admin/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
+    Route::post('/admin/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:3,1');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/logout', [AuthController::class, 'logout']);
         
-        Route::post('/admin/media', [\App\Modules\Media\Controllers\MediaController::class, 'store']);
-        Route::get('/admin/dashboard', [\App\Modules\Lead\Controllers\DashboardController::class, 'index']);
+        Route::post('/admin/media', [\App\Modules\Media\Controllers\MediaController::class, 'store'])->middleware('permission:create-projects|edit-settings');
+        Route::get('/admin/dashboard', [\App\Modules\Lead\Controllers\DashboardController::class, 'index'])->middleware('permission:view-leads|view-all-leads|view-unassigned-leads');
+        Route::get('/admin/reports', [\App\Modules\Lead\Controllers\ReportController::class, 'index'])->middleware('permission:view-all-leads');
 
         Route::apiResource('/admin/pages', PageController::class);
         // User Management
@@ -79,7 +82,7 @@ Route::prefix('v1')->group(function () {
         // Phase 3 & 4
         Route::apiResource('/admin/landing-pages', LandingPageController::class);
         Route::get('/admin/landing-pages/{id}/logs', [LandingPageController::class, 'logs']);
-        Route::get('/admin/leads/export', [LeadController::class, 'export']);
+        Route::get('/admin/leads/export', [LeadController::class, 'export'])->middleware('permission:export-leads');
         Route::get('/admin/leads/{id}/logs', [LeadController::class, 'logs']);
         Route::apiResource('/admin/leads', LeadController::class)->except(['store']); // Admin only views, updates, and deletes
         Route::apiResource('/admin/blog-categories', BlogCategoryController::class);

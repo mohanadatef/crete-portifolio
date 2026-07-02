@@ -7,6 +7,7 @@ import { BlogCategoryService } from '../../../../core/services/blog-category.ser
 import { MediaService } from '../../../../core/services/media.service';
 import { BlogCategory, BlogPost } from '../../../../core/models/models';
 import { QuillModule } from 'ngx-quill';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-blog-post-form',
@@ -22,6 +23,7 @@ export class BlogPostFormComponent implements OnInit {
   private mediaService = inject(MediaService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private toastService = inject(ToastService);
 
   postForm!: FormGroup;
   isEditMode = false;
@@ -129,7 +131,7 @@ export class BlogPostFormComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading blog post', err);
-        alert('Failed to load blog post details.');
+        this.toastService.error('Failed to load blog post details.');
         this.router.navigate(['/admin/blog/posts']);
       }
     });
@@ -184,9 +186,9 @@ export class BlogPostFormComponent implements OnInit {
           this.savePostData(body);
         },
         error: (err) => {
-          this.isSaving = false;
-          console.error('Error uploading media', err);
-          alert('Failed to upload cover image.');
+           this.isSaving = false;
+           console.error('Error uploading media', err);
+           this.toastService.error('Failed to upload cover image.');
         }
       });
     } else {
@@ -204,12 +206,13 @@ export class BlogPostFormComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.isSaving = false;
+        this.toastService.success('Blog post saved successfully.');
         this.router.navigate(['/admin/blog/posts']);
       },
       error: (err) => {
         this.isSaving = false;
         console.error('Error saving post', err);
-        alert(err?.error?.message || 'Error occurred while saving the post.');
+        this.toastService.error(err?.error?.message || 'Error occurred while saving the post.');
       }
     });
   }

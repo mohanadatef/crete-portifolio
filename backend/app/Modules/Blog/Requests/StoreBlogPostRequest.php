@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Modules\Blog\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateBlogPostRequest extends FormRequest
+class StoreBlogPostRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,10 +23,9 @@ class UpdateBlogPostRequest extends FormRequest
      */
     public function rules()
     {
-        $id = $this->route('blog_post');
         return [
             'blog_category_id' => 'nullable|exists:blog_categories,id',
-            'slug' => 'required|string|unique:blog_posts,slug,' . $id,
+            'slug' => 'required|string|unique:blog_posts,slug',
             'title_ar' => 'required|string',
             'title_en' => 'required|string',
             'content_ar' => 'nullable|string',

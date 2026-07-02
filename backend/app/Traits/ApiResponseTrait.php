@@ -24,6 +24,13 @@ trait ApiResponseTrait
      */
     protected function errorResponse(string $message, int $code = 400, mixed $errors = null): JsonResponse
     {
+        if ($code === 500) {
+            \Illuminate\Support\Facades\Log::error("API 500 Error: " . $message);
+            if (config('app.env') === 'production' || !config('app.debug')) {
+                $message = 'An unexpected server error occurred. Please try again later.';
+            }
+        }
+
         return response()->json([
             'success' => false,
             'message' => $message,

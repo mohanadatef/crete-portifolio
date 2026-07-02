@@ -1,13 +1,14 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, Subject } from 'rxjs';
+import { forkJoin, Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-leads',
@@ -16,15 +17,17 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './leads.component.html',
   styleUrl: './leads.component.scss'
 })
-export class LeadsComponent implements OnInit {
+export class LeadsComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   public authService = inject(AuthService);
+  private toastService = inject(ToastService);
 
   searchSubject = new Subject<string>();
+  private searchSub: Subscription;
 
   constructor() {
-    this.searchSubject.pipe(
+    this.searchSub = this.searchSubject.pipe(
       debounceTime(400),
       distinctUntilChanged()
     ).subscribe((searchValue) => {
@@ -78,11 +81,10 @@ export class LeadsComponent implements OnInit {
   }
 
   loadFiltersData() {
-    const headers = { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` };
     forkJoin({
-      users: this.http.get<any>(`${environment.apiUrl}/admin/users`, { headers }),
-      projects: this.http.get<any>(`${environment.apiUrl}/admin/projects`, { headers }),
-      landingPages: this.http.get<any>(`${environment.apiUrl}/admin/landing-pages`, { headers })
+      users: this.http.get<any>(`${environment.apiUrl}/admin/users`),
+      projects: this.http.get<any>(`${environment.apiUrl}/admin/projects`),
+      landingPages: this.http.get<any>(`${environment.apiUrl}/admin/landing-pages`)
     }).subscribe({
       next: (res) => {
         const extractArr = (response: any) => response?.data?.data || response?.data || response || [];
@@ -95,7 +97,6 @@ export class LeadsComponent implements OnInit {
 
   loadLeads(page: number = 1) {
     this.status = 'loading';
-    const headers = { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` };
     
     // Build query params
     let params = new URLSearchParams();
@@ -105,7 +106,7 @@ export class LeadsComponent implements OnInit {
     params.append('page', page.toString());
     params.append('per_page', this.perPage.toString());
 
-    this.http.get<any>(`${environment.apiUrl}/admin/leads?${params.toString()}`, { headers }).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/admin/leads?${params.toString()}`).subscribe({
       next: (res) => {
         const paginatedData = res.data;
         this.leads = paginatedData.data || paginatedData || [];
@@ -161,11 +162,8 @@ export class LeadsComponent implements OnInit {
     });
     
     const url = `${environment.apiUrl}/admin/leads/export?${params.toString()}`;
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    
     // To trigger download with Authorization header, we fetch the blob and create an object URL
     this.http.get(url, {
-      headers: { Authorization: `Bearer ${token}` },
       responseType: 'blob'
     }).subscribe({
       next: (blob) => {
@@ -178,7 +176,7 @@ export class LeadsComponent implements OnInit {
         this.isExporting = false;
       },
       error: () => {
-        alert('Failed to export leads. You may not have permission.');
+        this.toastService.error('Failed to export leads. You may not have permission.');
         this.isExporting = false;
       }
     });
@@ -188,9 +186,8 @@ export class LeadsComponent implements OnInit {
     this.selectedLeadForLogs = lead;
     this.isLogsModalOpen = true;
     this.selectedLeadLogs = [];
-    
-    const headers = { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` };
-    this.http.get<any>(`${environment.apiUrl}/admin/leads/${lead.id}/logs`, { headers }).subscribe({
+    const url = `${environment.apiUrl}/admin/leads/${lead.id}/logs`;
+    this.http.get<any>(url).subscribe({
       next: (res) => {
         this.selectedLeadLogs = res.data || [];
       },
@@ -210,16 +207,16 @@ export class LeadsComponent implements OnInit {
     const originalValue = lead[field];
     lead[field] = value; // optimistic update
     
-    const headers = { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` };
-    this.http.put(`${environment.apiUrl}/admin/leads/${lead.id}`, { [field]: value }, { headers })
+    const url = `${environment.apiUrl}/admin/leads/${lead.id}`;
+    this.http.put(url, { [field]: value })
       .subscribe({
         next: () => {
-          // Success, keep optimistic update
+          this.toastService.success('Lead updated successfully.');
         },
         error: () => {
           // Revert on error
           lead[field] = originalValue;
-          alert('Failed to update lead');
+          this.toastService.error('Failed to update lead');
         }
       });
   }
@@ -251,5 +248,10 @@ export class LeadsComponent implements OnInit {
       }
     }
     return 'N/A';
+  }
+
+  ngOnDestroy() {
+    this.searchSub?.unsubscribe();
+    this.searchSubject.complete();
   }
 }

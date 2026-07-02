@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
 use App\Modules\Page\Models\LandingPage;
 use App\Modules\Project\Models\Project;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -142,11 +141,15 @@ class Lead extends Model
         'utm_campaign',
         'utm_content',
         'landing_page_id',
-        'form_data'
+        'form_data',
+        'privacy_consent',
+        'privacy_consent_at'
     ];
 
     protected $casts = [
-        'form_data' => 'array'
+        'form_data' => 'array',
+        'privacy_consent' => 'boolean',
+        'privacy_consent_at' => 'datetime'
     ];
 
     public function landingPage()

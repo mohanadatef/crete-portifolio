@@ -2,15 +2,15 @@
 
 namespace App\Modules\Project\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 class Project extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, SoftDeletes, LogsActivity;
 
     protected $fillable = [
         'slug',
@@ -19,6 +19,7 @@ class Project extends Model
         'description_ar',
         'description_en',
         'location',
+        'location_ar',
         'status',
         'featured',
         'price',
@@ -30,18 +31,22 @@ class Project extends Model
         'views_count'
     ];
 
-    protected $appends = ['images'];
+    protected $casts = [
+        'status' => 'boolean',
+        'featured' => 'boolean',
+        'price' => 'decimal:2',
+        'area' => 'decimal:2',
+        'project_type_id' => 'integer',
+        'bedrooms' => 'integer',
+        'views_count' => 'integer',
+        'delivery_date' => 'date'
+    ];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->logAll()
             ->logOnlyDirty();
-    }
-
-    public function getImagesAttribute()
-    {
-        return $this->projectImages()->pluck('image_path');
     }
 
     public function projectImages()

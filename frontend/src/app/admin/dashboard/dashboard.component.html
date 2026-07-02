@@ -81,8 +81,28 @@
   <div *ngIf="stats" class="space-y-8">
     
     <!-- Stats Cards Grid — each card links to its management page carrying current filters -->
-    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-5">
+    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4 sm:gap-5">
       
+      <!-- Website Visits -->
+      <div
+        class="group bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md hover:border-teal-200 hover:-translate-y-0.5 transition-all duration-200"
+        title="إجمالي زوار الموقع الفريدين"
+      >
+        <div class="flex items-center justify-between">
+          <div class="p-2.5 rounded-xl bg-teal-50 text-teal-650 group-hover:bg-teal-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] font-bold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded">Unique</span>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Website Visitors</p>
+          <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">{{ stats.website_visits }}</h3>
+        </div>
+      </div>
+
       <!-- Leads Today -->
       <a
         routerLink="/admin/leads"

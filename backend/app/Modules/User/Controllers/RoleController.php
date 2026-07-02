@@ -81,7 +81,8 @@ class RoleController extends Controller
             $this->roleService->deleteRole($id);
             return $this->successResponse(null, 'Role deleted successfully');
         } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage(), 400);
+            \Illuminate\Support\Facades\Log::error('RoleController@destroy: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to delete role.', 500);
         }
     }
 }

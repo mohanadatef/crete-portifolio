@@ -130,7 +130,7 @@ export interface BlogPost {
   blog_category?: BlogCategory;
   category?: BlogCategory;
   views_count?: number;
-  tags?: string;
+  tags?: any;
   created_at?: string;
   updated_at?: string;
 }

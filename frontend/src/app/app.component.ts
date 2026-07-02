@@ -1,13 +1,14 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { SeoService } from './services/seo.service';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { filter } from 'rxjs/operators';
+import { ToastContainerComponent } from './components/toast-container.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, ToastContainerComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -16,21 +17,23 @@ export class AppComponent implements OnInit {
   private seoService = inject(SeoService);
   private router = inject(Router);
   private document = inject(DOCUMENT);
+  private platformId = inject(PLATFORM_ID);
 
   ngOnInit() {
     this.seoService.initSettings();
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      // Calculate full URL
-      const currentUrl = `https://crete-developments.com${event.urlAfterRedirects.split('?')[0]}`;
-      this.seoService.updateCanonicalUrl(currentUrl);
+    
+    if (isPlatformBrowser(this.platformId)) {
+      this.router.events.pipe(
+        filter(event => event instanceof NavigationEnd)
+      ).subscribe((event: any) => {
+        const origin = window.location.origin;
+        const currentUrl = `${origin}${event.urlAfterRedirects.split('?')[0]}`;
+        this.seoService.updateCanonicalUrl(currentUrl);
 
-      // Set AR/EN hreflang alternatives assuming default path structure
-      this.seoService.updateHreflang([
-        { lang: 'en', url: currentUrl },
-        { lang: 'ar', url: `https://crete-developments.com/ar${event.urlAfterRedirects.split('?')[0]}` }
-      ]);
-    });
+        this.seoService.updateHreflang([
+          { lang: 'en', url: currentUrl }
+        ]);
+      });
+    }
   }
 }

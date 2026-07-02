@@ -1,0 +1,319 @@
+<div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+  <!-- Page Header -->
+  <div class="mb-8 flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Business Intelligence & Reports</h1>
+      <p class="text-sm text-gray-500 mt-1">Non-repetitive executive insights across sales pipelines, product demand, and marketing campaign attribution.</p>
+    </div>
+    <button (click)="fetchReports()" class="px-5 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-medium transition-all shadow-sm flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H12" />
+      </svg>
+      Refresh Data
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="status() === 'loading'" class="flex flex-col items-center justify-center py-32 gap-4">
+    <div class="w-12 h-12 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin"></div>
+    <span class="text-sm font-semibold text-gray-500 tracking-wider">Aggregating report metrics...</span>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="status() === 'error'" class="bg-red-50 border border-red-200 text-red-800 p-6 rounded-2xl text-center max-w-md mx-auto my-12">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    </svg>
+    <h3 class="text-lg font-bold">Failed to load reports</h3>
+    <p class="text-sm text-red-600 mt-1">An unexpected error occurred while communicating with the analytics server.</p>
+    <button (click)="fetchReports()" class="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-xs transition-colors">Try Again</button>
+  </div>
+
+  <div *ngIf="status() === 'success'" class="space-y-8 animate-fade-in-up">
+    <!-- Reports Selector Tabs -->
+    <div class="flex border-b border-gray-200">
+      <button (click)="setActiveReport('leads')"
+              [class]="activeReport() === 'leads' ? 'border-blue-600 text-blue-650 font-bold border-b-2' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2'"
+              class="py-4 px-6 text-sm font-medium transition-all">
+        1. Sales & Leads Pipeline
+      </button>
+      <button (click)="setActiveReport('projects')"
+              [class]="activeReport() === 'projects' ? 'border-blue-600 text-blue-650 font-bold border-b-2' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2'"
+              class="py-4 px-6 text-sm font-medium transition-all">
+        2. Project Demand & Location Analytics
+      </button>
+      <button (click)="setActiveReport('campaigns')"
+              [class]="activeReport() === 'campaigns' ? 'border-blue-600 text-blue-650 font-bold border-b-2' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2'"
+              class="py-4 px-6 text-sm font-medium transition-all">
+        3. Marketing UTM Campaign Attribution
+      </button>
+    </div>
+
+    <!-- REPORT 1: SALES & LEADS PIPELINE -->
+    <div *ngIf="activeReport() === 'leads'" class="space-y-8">
+      <!-- Summary KPI Widgets -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total Leads Generated</span>
+            <span class="text-3xl font-extrabold text-gray-800 mt-1 block">{{ reportData().lead_performance.total_leads }}</span>
+          </div>
+          <div class="p-3 bg-blue-50 text-blue-650 rounded-2xl">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Converted Deals (Closed Won)</span>
+            <span class="text-3xl font-extrabold text-green-700 mt-1 block">{{ reportData().lead_performance.converted_leads }}</span>
+          </div>
+          <div class="p-3 bg-green-50 text-green-700 rounded-2xl">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Conversion Success Rate</span>
+            <span class="text-3xl font-extrabold text-[#c89f45] mt-1 block">{{ reportData().lead_performance.conversion_rate }}%</span>
+          </div>
+          <div class="p-3 bg-[#c89f45]/10 text-[#c89f45] rounded-2xl">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lead Status & Sources Distributions -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Status Breakdown -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+          <h3 class="text-base font-bold text-gray-800">Leads by Status Pipeline</h3>
+          <div class="space-y-4">
+            <div *ngFor="let item of reportData().lead_performance.status_distribution">
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="capitalize text-gray-600">{{ item.status.replace('_', ' ') }}</span>
+                <span class="text-gray-850">{{ item.count }} leads</span>
+              </div>
+              <div class="w-full bg-gray-150 h-2.5 rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-blue-600" [style.width]="reportData().lead_performance.total_leads > 0 ? (item.count / reportData().lead_performance.total_leads * 100) + '%' : '0%'"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sources Breakdown -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+          <h3 class="text-base font-bold text-gray-800">Leads Acquisition Channel</h3>
+          <div class="space-y-4">
+            <div *ngFor="let item of reportData().lead_performance.source_distribution">
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="capitalize text-gray-600">{{ item.source }}</span>
+                <span class="text-gray-850">{{ item.count }} leads</span>
+              </div>
+              <div class="w-full bg-gray-150 h-2.5 rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#c89f45]" [style.width]="reportData().lead_performance.total_leads > 0 ? (item.count / reportData().lead_performance.total_leads * 100) + '%' : '0%'"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Team Conversion Performance -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-gray-100">
+          <h3 class="text-base font-bold text-gray-800">Sales Agent Effectiveness (Conversion & Assigned Leads)</h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <th class="p-4">Sales Agent Name</th>
+                <th class="p-4">Total Leads Assigned</th>
+                <th class="p-4">Converted Leads (Closed Won)</th>
+                <th class="p-4 text-right">Attributed Conversion Rate</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 text-sm">
+              <tr *ngFor="let agent of reportData().lead_performance.sales_performance" class="hover:bg-gray-50/50 transition-colors">
+                <td class="p-4 font-bold text-gray-850">{{ agent.name }}</td>
+                <td class="p-4 text-gray-600">{{ agent.total_leads }}</td>
+                <td class="p-4 text-green-700 font-semibold">{{ agent.converted_leads }}</td>
+                <td class="p-4 text-right font-black text-gray-850">
+                  <span class="inline-block px-2.5 py-1 rounded-full text-xs"
+                        [class]="agent.conversion_rate >= 30 ? 'bg-green-50 text-green-700' : (agent.conversion_rate >= 10 ? 'bg-yellow-50 text-yellow-700' : 'bg-red-50 text-red-700')">
+                    {{ agent.conversion_rate }}%
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="reportData().lead_performance.sales_performance.length === 0">
+                <td colspan="4" class="p-8 text-center text-gray-400">No active sales agents found in the system.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORT 2: PROJECT DEMAND & LOCATION ANALYTICS -->
+    <div *ngIf="activeReport() === 'projects'" class="space-y-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Top Projects by Website Clicks / Views -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+          <div class="border-b border-gray-50 pb-4">
+            <h3 class="text-base font-bold text-gray-800">Top 5 Projects by Page Views (Website Interest)</h3>
+          </div>
+          <div class="divide-y divide-gray-100">
+            <div *ngFor="let item of reportData().project_demand.top_projects_by_views; let idx = index" class="py-4 flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <span class="text-sm font-black text-gray-300 w-5">#{{ idx + 1 }}</span>
+                <div>
+                  <span class="font-bold text-gray-850 block">{{ item.title_en }}</span>
+                  <span class="text-[10px] text-gray-400 uppercase tracking-wider">{{ item.location }}</span>
+                </div>
+              </div>
+              <span class="text-sm font-black text-blue-650 bg-blue-50 px-3 py-1.5 rounded-lg">{{ item.views_count }} views</span>
+            </div>
+            <div *ngIf="reportData().project_demand.top_projects_by_views.length === 0" class="py-8 text-center text-gray-400">
+              No projects views recorded.
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Projects by Direct Lead Inquiries -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+          <div class="border-b border-gray-50 pb-4">
+            <h3 class="text-base font-bold text-gray-800">Top 5 Projects by Inquiry Count (Lead Intent)</h3>
+          </div>
+          <div class="divide-y divide-gray-100">
+            <div *ngFor="let item of reportData().project_demand.top_projects_by_inquiries; let idx = index" class="py-4 flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <span class="text-sm font-black text-gray-300 w-5">#{{ idx + 1 }}</span>
+                <div>
+                  <span class="font-bold text-gray-850 block">{{ item.title_en }}</span>
+                  <span class="text-[10px] text-gray-400 uppercase tracking-wider">{{ item.location_en }}</span>
+                </div>
+              </div>
+              <span class="text-sm font-black text-[#c89f45] bg-[#c89f45]/10 px-3 py-1.5 rounded-lg">{{ item.inquiries_count }} inquiries</span>
+            </div>
+            <div *ngIf="reportData().project_demand.top_projects_by_inquiries.length === 0" class="py-8 text-center text-gray-400">
+              No project inquiries recorded.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Geographic Demand Breakdown (Location Analytics) -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-gray-100">
+          <h3 class="text-base font-bold text-gray-800">Market Demand Breakdown by Geographical Location</h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <th class="p-4">Geographic Area</th>
+                <th class="p-4">Total Page Views (Awareness)</th>
+                <th class="p-4 text-right">Total Inquiries (Conversion)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 text-sm">
+              <tr *ngFor="let loc of reportData().project_demand.location_popularity" class="hover:bg-gray-50/50 transition-colors">
+                <td class="p-4 font-bold text-gray-850">
+                  <span>{{ loc.location_en }}</span>
+                  <span class="text-gray-400 text-xs ml-2 font-medium">({{ loc.location_ar }})</span>
+                </td>
+                <td class="p-4 text-gray-600 font-semibold">{{ loc.total_views }} views</td>
+                <td class="p-4 text-right font-black text-[#c89f45]">{{ loc.total_inquiries }} leads</td>
+              </tr>
+              <tr *ngIf="reportData().project_demand.location_popularity.length === 0">
+                <td colspan="3" class="p-8 text-center text-gray-400">No project location data exists.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORT 3: MARKETING UTM CAMPAIGN ATTRIBUTION -->
+    <div *ngIf="activeReport() === 'campaigns'" class="space-y-8">
+      <!-- UTM Sources & Campaign charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Leads by UTM Source -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+          <h3 class="text-base font-bold text-gray-800">Leads by Advertising Source (UTM Source)</h3>
+          <div class="space-y-4">
+            <div *ngFor="let item of reportData().campaign_attribution.utm_source_distribution">
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="uppercase text-gray-600">{{ item.source }}</span>
+                <span class="text-gray-850">{{ item.count }} leads</span>
+              </div>
+              <div class="w-full bg-gray-150 h-2.5 rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-blue-600" [style.width]="reportData().lead_performance.total_leads > 0 ? (item.count / reportData().lead_performance.total_leads * 100) + '%' : '0%'"></div>
+              </div>
+            </div>
+            <div *ngIf="reportData().campaign_attribution.utm_source_distribution.length === 0" class="text-center py-8 text-gray-400 text-xs">
+              No UTM tracking sources detected in lead queries.
+            </div>
+          </div>
+        </div>
+
+        <!-- Leads by UTM Campaign -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+          <h3 class="text-base font-bold text-gray-800">Leads by Specific Advertising Campaign (UTM Campaign)</h3>
+          <div class="space-y-4">
+            <div *ngFor="let item of reportData().campaign_attribution.utm_campaign_distribution">
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="text-gray-600">{{ item.campaign }}</span>
+                <span class="text-gray-850">{{ item.count }} leads</span>
+              </div>
+              <div class="w-full bg-gray-150 h-2.5 rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#c89f45]" [style.width]="reportData().lead_performance.total_leads > 0 ? (item.count / reportData().lead_performance.total_leads * 100) + '%' : '0%'"></div>
+              </div>
+            </div>
+            <div *ngIf="reportData().campaign_attribution.utm_campaign_distribution.length === 0" class="text-center py-8 text-gray-400 text-xs">
+              No UTM campaigns detected in lead queries.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Landing Pages Performance & Blog Organic SEO Views -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Landing Pages Conversion -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+          <h3 class="text-base font-bold text-gray-800">Landing Pages Performance (Campaign Leads Generated)</h3>
+          <div class="divide-y divide-gray-100">
+            <div *ngFor="let lp of reportData().campaign_attribution.landing_page_performance" class="py-4.5 flex items-center justify-between">
+              <div>
+                <span class="font-bold text-gray-800 block">{{ lp.title_en }}</span>
+                <span class="text-[10px] text-gray-400 block mt-0.5">Slug: /landing/{{ lp.slug }}</span>
+              </div>
+              <span class="text-sm font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-lg">+{{ lp.leads_count }} leads</span>
+            </div>
+            <div *ngIf="reportData().campaign_attribution.landing_page_performance.length === 0" class="py-8 text-center text-gray-400 text-xs">
+              No landing pages created in the system.
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Blog Posts by Views -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+          <h3 class="text-base font-bold text-gray-800">Organic Content SEO Traffic (Top Blog Posts by Views)</h3>
+          <div class="divide-y divide-gray-100">
+            <div *ngFor="let post of reportData().campaign_attribution.top_blog_posts_by_views; let idx = index" class="py-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="text-xs font-bold text-gray-300">#{{ idx + 1 }}</span>
+                <span class="font-medium text-gray-700 text-sm truncate max-w-[250px]">{{ post.title_en }}</span>
+              </div>
+              <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded">{{ post.views_count }} views</span>
+            </div>
+            <div *ngIf="reportData().campaign_attribution.top_blog_posts_by_views.length === 0" class="py-8 text-center text-gray-400 text-xs">
+              No blog posts view history.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

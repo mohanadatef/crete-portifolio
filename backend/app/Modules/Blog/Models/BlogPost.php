@@ -32,6 +32,13 @@ class BlogPost extends Model
         'tags'
     ];
 
+    protected $casts = [
+        'blog_category_id' => 'integer',
+        'status' => 'boolean',
+        'views_count' => 'integer',
+        'tags' => 'array'
+    ];
+
     public function category()
     {
         return $this->belongsTo(BlogCategory::class, 'blog_category_id');

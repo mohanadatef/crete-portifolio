@@ -44,3 +44,18 @@ jobs:
       run: |
         cd backend
         DB_CONNECTION=sqlite DB_DATABASE=database/database.sqlite php artisan test
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Frontend Dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Build Frontend
+      run: |
+        cd frontend
+        npx ng build --configuration=production

@@ -12,6 +12,7 @@ use App\Modules\Setting\Services\SettingService;
 use App\Modules\Setting\Resources\SettingResource;
 use App\Http\Requests\StoreSettingRequest;
 use App\Http\Requests\UpdateSettingRequest;
+use App\Http\Requests\BulkUpdateSettingRequest;
 use Exception;
 use OpenApi\Attributes as OA;
 
@@ -32,7 +33,8 @@ class SettingController extends Controller
                 'Settings retrieved successfully'
             );
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('SettingController@index: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('An internal server error occurred.', 500);
         }
     }
 
@@ -47,10 +49,14 @@ class SettingController extends Controller
     public function indexPublic(): JsonResponse
     {
         try {
+            $ipAddress = request()->ip();
+            \App\Modules\Lead\Models\UniqueView::logView($ipAddress, 'Website');
+
             $settings = $this->settingService->getSettingsMap();
             return $this->successResponse($settings, 'Settings retrieved successfully');
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('SettingController@indexPublic: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('An internal server error occurred.', 500);
         }
     }
 
@@ -61,17 +67,19 @@ class SettingController extends Controller
             $setting = $this->settingService->createSetting($dto->data);
             return $this->successResponse(new SettingResource($setting), 'Setting created successfully', 201);
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('SettingController@store: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('An internal server error occurred.', 500);
         }
     }
 
-    public function updateBulk(Request $request): JsonResponse
+    public function updateBulk(BulkUpdateSettingRequest $request): JsonResponse
     {
         try {
             $this->settingService->updateBulkSettings($request->all());
             return $this->successResponse(null, 'Settings updated successfully');
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('SettingController@updateBulk: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('An internal server error occurred.', 500);
         }
     }
 
@@ -92,7 +100,8 @@ class SettingController extends Controller
             $setting = $this->settingService->updateSetting($id, $dto->data);
             return $this->successResponse(new SettingResource($setting), 'Setting updated successfully');
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('SettingController@update: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('An internal server error occurred.', 500);
         }
     }
 

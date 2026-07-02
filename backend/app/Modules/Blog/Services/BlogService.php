@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Modules\Blog\Services;
 
 use App\Modules\Blog\Models\BlogCategory;
 use App\Modules\Blog\Models\BlogPost;

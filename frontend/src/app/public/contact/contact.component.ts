@@ -10,6 +10,7 @@ import { SeoService } from '../../services/seo.service';
 import { SettingService } from '../../services/setting.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-contact',
@@ -26,10 +27,12 @@ export class ContactComponent implements OnInit {
   private seoService = inject(SeoService);
   private settingService = inject(SettingService);
   private http = inject(HttpClient);
+  private toastService = inject(ToastService);
   
   page = signal<Page | null>(null);
   isLoadingPage = signal<boolean>(true);
   projects = signal<any[]>([]);
+  siteBranches = signal<any[]>([]);
 
   formData: any = {};
   
@@ -77,6 +80,12 @@ export class ContactComponent implements OnInit {
       if (data) {
         const siteName = data['site_name'] || 'CRETE Developments';
         this.seoService.updateTitle(`Contact Us | ${siteName}`);
+        
+        if (data['company_branches']) {
+          try {
+            this.siteBranches.set(JSON.parse(data['company_branches']));
+          } catch (e) {}
+        }
         
         // Dynamically load Recaptcha
         this.recaptchaSiteKey = data['recaptcha_site_key'] || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
@@ -138,7 +147,7 @@ export class ContactComponent implements OnInit {
           this.submitData(token);
         }).catch(() => {
           this.status = 'error';
-          alert('Security check failed. Please check your configuration.');
+          this.toastService.error('Security check failed. Please check your configuration.');
         });
       });
     } else {
@@ -159,6 +168,7 @@ export class ContactComponent implements OnInit {
       next: (res: any) => {
         this.status = 'success';
         this.formData = {};
+        this.toastService.success(this.translate.currentLang() === 'ar' ? 'تم إرسال طلبك بنجاح وسنتصل بك قريباً!' : 'Thank you! Your inquiry was sent successfully.');
 
         // MKT-01: Trigger GTM Event for Conversion Tracking
         if (typeof window !== 'undefined') {
@@ -168,8 +178,12 @@ export class ContactComponent implements OnInit {
               'lead_id': res?.lead?.id || 'unknown'
             });
           }
-          if (typeof (window as any).gtag === 'function') {
-            (window as any).gtag('event', 'conversion', { 'send_to': 'AW-XX/lead' });
+          const conversionId = this.settingService.getSetting('google_conversion_id') || 
+                               (environment as any).googleConversionId || 
+                               this.settingService.getSetting('google_tag');
+          if (conversionId && conversionId !== 'AW-XX' && typeof (window as any).gtag === 'function') {
+            const sendTo = conversionId.includes('/') ? conversionId : `${conversionId}/lead`;
+            (window as any).gtag('event', 'conversion', { 'send_to': sendTo });
           }
           if (typeof (window as any).fbq === 'function') {
             (window as any).fbq('track', 'Lead');
@@ -178,6 +192,7 @@ export class ContactComponent implements OnInit {
       },
       error: () => {
         this.status = 'error';
+        this.toastService.error(this.translate.currentLang() === 'ar' ? 'فشل إرسال الطلب، يرجى المحاولة لاحقاً.' : 'Failed to send inquiry. Please try again.');
       }
     });
   }

@@ -25,7 +25,8 @@ class LeadSubmissionTest extends TestCase
             'email' => 'john@example.com',
             'phone' => '+1234567890',
             'message' => 'Test message',
-            'recaptcha_token' => 'valid_token'
+            'recaptcha_token' => 'valid_token',
+            'privacy_consent' => true
         ]);
 
         $response->assertStatus(201);
@@ -38,7 +39,8 @@ class LeadSubmissionTest extends TestCase
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'phone' => '+1234567890',
-            'message' => 'Test message'
+            'message' => 'Test message',
+            'privacy_consent' => true
         ]);
 
         $response->assertStatus(422);

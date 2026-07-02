@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Modules\Media\Services\MediaService;
+use Illuminate\Validation\ValidationException;
 use Exception;
 
 class MediaController extends Controller
@@ -28,8 +29,11 @@ class MediaController extends Controller
                 'url' => url($media->path),
                 'path' => $media->path
             ], 'Media uploaded successfully', 201);
+        } catch (ValidationException $e) {
+            return $this->errorResponse($e->errors(), 422);
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('MediaController@store: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to upload media.', 500);
         }
     }
 }

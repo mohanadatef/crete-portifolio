@@ -1,11 +1,12 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SettingService } from '../../core/services/setting.service';
 import { MediaService } from '../../core/services/media.service';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
 import { AuthService } from '../../services/auth.service';
 import { QuillModule } from 'ngx-quill';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-settings',
@@ -18,6 +19,8 @@ export class SettingsComponent implements OnInit {
   private settingService = inject(SettingService);
   private mediaService = inject(MediaService);
   public authService = inject(AuthService);
+  private toastService = inject(ToastService);
+  private platformId = inject(PLATFORM_ID);
 
   quillModules = {
     toolbar: [
@@ -67,7 +70,19 @@ export class SettingsComponent implements OnInit {
     mail_agent_enabled: '1',
     social_links: '[]',
     company_branches: '[]',
-    company_stats: '[]'
+    company_stats: '[]',
+    home_hero_title_en: 'Crete Developments',
+    home_hero_title_ar: 'كريت للتطوير العقاري',
+    home_hero_subtitle_en: 'Premium Real Estate Developments.',
+    home_hero_subtitle_ar: 'تطوير عقاري فاخر.',
+    home_legacy_title_en: 'Decades of Excellence & Real Estate Leadership',
+    home_legacy_title_ar: 'عقود من التميز والريادة العقارية',
+    home_legacy_desc_en: '',
+    home_legacy_desc_ar: '',
+    home_partners: '[]',
+    home_construction_updates: '[]',
+    home_hero_bg: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=90',
+    recaptcha_enabled: '0'
   };
 
   branchesList: Array<{
@@ -86,9 +101,27 @@ export class SettingsComponent implements OnInit {
     label_ar: string;
   }> = [];
 
+  partnersList: Array<{
+    name: string;
+    logoText: string;
+    desc: string;
+  }> = [];
+
+  constructionUpdatesList: Array<{
+    title_en: string;
+    title_ar: string;
+    location_en: string;
+    location_ar: string;
+    progress: number;
+    phase_en: string;
+    phase_ar: string;
+    image: string;
+  }> = [];
+
   status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
   logoUploading = false;
   logoPreview: string | null = null;
+  heroBgUploading = false;
 
   ngOnInit() {
     this.loadSettings();
@@ -137,6 +170,26 @@ export class SettingsComponent implements OnInit {
         } else {
           this.statsList = [];
         }
+
+        if (this.settings['home_partners']) {
+          try {
+            this.partnersList = JSON.parse(this.settings['home_partners']);
+          } catch (e) {
+            this.partnersList = [];
+          }
+        } else {
+          this.partnersList = [];
+        }
+
+        if (this.settings['home_construction_updates']) {
+          try {
+            this.constructionUpdatesList = JSON.parse(this.settings['home_construction_updates']);
+          } catch (e) {
+            this.constructionUpdatesList = [];
+          }
+        } else {
+          this.constructionUpdatesList = [];
+        }
         
         this.status = 'idle';
       },
@@ -167,8 +220,41 @@ export class SettingsComponent implements OnInit {
         error: (err) => {
           this.logoUploading = false;
           console.error(err);
-          alert('Failed to upload logo.');
+          this.toastService.error('Failed to upload logo.');
           this.logoPreview = null;
+        }
+      });
+    }
+  }
+
+  onHeroBgSelect(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.heroBgUploading = true;
+      this.mediaService.upload(file).subscribe({
+        next: (res) => {
+          this.settings['home_hero_bg'] = res.data.url;
+          this.heroBgUploading = false;
+        },
+        error: (err) => {
+          this.heroBgUploading = false;
+          console.error(err);
+          this.toastService.error('Failed to upload hero background.');
+        }
+      });
+    }
+  }
+
+  onConstructionImageSelect(event: any, index: number) {
+    const file = event.target.files[0];
+    if (file) {
+      this.mediaService.upload(file).subscribe({
+        next: (res) => {
+          this.constructionUpdatesList[index].image = res.data.url;
+        },
+        error: (err) => {
+          console.error(err);
+          this.toastService.error('Failed to upload construction image.');
         }
       });
     }
@@ -183,24 +269,54 @@ export class SettingsComponent implements OnInit {
     this.settings['social_links'] = JSON.stringify(this.socialLinks);
     this.settings['company_branches'] = JSON.stringify(this.branchesList);
     this.settings['company_stats'] = JSON.stringify(this.statsList);
+    this.settings['home_partners'] = JSON.stringify(this.partnersList);
+    this.settings['home_construction_updates'] = JSON.stringify(this.constructionUpdatesList);
     this.status = 'loading';
     
     // Call bulk update setting endpoint
     this.settingService.updateBulk(this.settings).subscribe({
       next: () => {
         this.status = 'success';
+        this.toastService.success('Settings saved successfully.');
         
         // Dynamically apply site color changes if in preview
-        document.documentElement.style.setProperty('--crete-gold', this.settings['web_primary_color']);
-        document.documentElement.style.setProperty('--crete-blue', this.settings['web_secondary_color']);
+        if (isPlatformBrowser(this.platformId)) {
+          document.documentElement.style.setProperty('--crete-gold', this.settings['web_primary_color']);
+          document.documentElement.style.setProperty('--crete-blue', this.settings['web_secondary_color']);
+        }
         
         setTimeout(() => this.status = 'idle', 3000);
       },
       error: () => {
         this.status = 'error';
-        alert('Failed to save settings.');
+        this.toastService.error('Failed to save settings.');
       }
     });
+  }
+
+  addPartner() {
+    this.partnersList.push({ name: '', logoText: '', desc: '' });
+  }
+
+  removePartner(index: number) {
+    this.partnersList.splice(index, 1);
+  }
+
+  addConstructionUpdate() {
+    this.constructionUpdatesList.push({
+      title_en: '',
+      title_ar: '',
+      location_en: '',
+      location_ar: '',
+      progress: 50,
+      phase_en: '',
+      phase_ar: '',
+      image: ''
+    });
+  }
+
+  removeConstructionUpdate(index: number) {
+    this.constructionUpdatesList.splice(index, 1);
   }
 
   setTab(tab: string) {
@@ -235,7 +351,7 @@ export class SettingsComponent implements OnInit {
     if (index > -1) {
       // Don't allow deselecting all languages
       if (currentLangs.length === 1) {
-        alert('You must keep at least one active language.');
+        this.toastService.warning('You must keep at least one active language.');
         return;
       }
       currentLangs.splice(index, 1);

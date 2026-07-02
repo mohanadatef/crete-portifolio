@@ -73,14 +73,13 @@ export class ProjectTypesComponent implements OnInit {
   }
 
   loadProjectTypes(page: number = 1) {
-    const headers = { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` };
     let params = new URLSearchParams();
     if (this.filters.search) params.append('search', this.filters.search);
     if (this.filters.status) params.append('status', this.filters.status);
     params.append('page', page.toString());
     params.append('per_page', this.perPage.toString());
 
-    this.http.get<any>(`${environment.apiUrl}/admin/project-types?${params.toString()}`, { headers }).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/admin/project-types?${params.toString()}`).subscribe({
       next: (res) => {
         const paginatedData = res.data || {};
         this.projectTypes = paginatedData.data || [];
@@ -142,14 +141,13 @@ export class ProjectTypesComponent implements OnInit {
   }
 
   saveType() {
-    const headers = { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` };
     const payload = {
       ...this.formData,
       is_active: this.formData.is_active ? 1 : 0
     };
 
     if (this.isEditing && this.editingId) {
-      this.http.put(`${environment.apiUrl}/admin/project-types/${this.editingId}`, payload, { headers }).subscribe({
+      this.http.put(`${environment.apiUrl}/admin/project-types/${this.editingId}`, payload).subscribe({
         next: () => {
           this.closeModal();
           this.loadProjectTypes(this.currentPage);
@@ -161,7 +159,7 @@ export class ProjectTypesComponent implements OnInit {
         }
       });
     } else {
-      this.http.post(`${environment.apiUrl}/admin/project-types`, payload, { headers }).subscribe({
+      this.http.post(`${environment.apiUrl}/admin/project-types`, payload).subscribe({
         next: () => {
           this.closeModal();
           this.loadProjectTypes(1);
@@ -177,9 +175,7 @@ export class ProjectTypesComponent implements OnInit {
 
   deleteType(id: number) {
     if (confirm('Are you sure you want to delete this project type?')) {
-      this.http.delete(`${environment.apiUrl}/admin/project-types/${id}`, {
-        headers: { Authorization: `Bearer ${(typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null)}` }
-      }).subscribe({
+      this.http.delete(`${environment.apiUrl}/admin/project-types/${id}`).subscribe({
         next: () => {
           this.loadProjectTypes(this.currentPage);
           this.showToast('Project Type deleted successfully', 'success');

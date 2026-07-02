@@ -291,7 +291,7 @@
         <div class="grid grid-cols-1 md:grid-cols-5">
 
           <!-- ── Left: Info Panel ──────────────────────────── -->
-          <div class="md:col-span-2 relative overflow-hidden p-10 text-white" style="background: linear-gradient(160deg, #1e3678 0%, #0d1f4a 100%)">
+          <div *ngIf="page() || siteBranches().length > 0" class="md:col-span-2 relative overflow-hidden p-10 text-white" style="background: linear-gradient(160deg, #1e3678 0%, #0d1f4a 100%)">
             <!-- Decorative blobs -->
             <div class="absolute -top-16 -left-16 w-48 h-48 rounded-full" style="background:rgba(200,159,69,0.10)"></div>
             <div class="absolute -bottom-12 -right-12 w-36 h-36 rounded-full" style="background:rgba(200,159,69,0.07)"></div>
@@ -307,34 +307,25 @@
                 </h3>
                 <p class="text-gray-300 text-sm mb-8 leading-relaxed">{{ 'CONTACT.GET_IN_TOUCH_DESC' | translate }}</p>
 
-                <div class="space-y-5">
-                  <!-- Phone -->
-                  <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                      <svg class="h-5 w-5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                      </svg>
+                <div class="space-y-6 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div *ngFor="let branch of siteBranches()" class="border-b border-white/10 pb-4 last:border-0 last:pb-0">
+                    <span class="block text-xs font-bold text-crete-gold uppercase tracking-wider mb-2">
+                      {{ translate.currentLang() === 'ar' ? (branch.name_ar || branch.name_en) : (branch.name_en || branch.name_ar) }}
+                    </span>
+                    <div class="space-y-3 text-sm text-gray-300">
+                      <div *ngFor="let phone of branch.phones" class="flex items-center gap-3">
+                        <svg class="h-4 w-4 text-crete-gold shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                        <span dir="ltr">{{ phone }}</span>
+                      </div>
+                      <div *ngFor="let email of branch.emails" class="flex items-center gap-3">
+                        <svg class="h-4 w-4 text-crete-gold shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        <span>{{ email }}</span>
+                      </div>
+                      <div *ngIf="branch.address_en || branch.address_ar" class="flex items-start gap-3">
+                        <svg class="h-4 w-4 text-crete-gold shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <span>{{ translate.currentLang() === 'ar' ? (branch.address_ar || branch.address_en) : (branch.address_en || branch.address_ar) }}</span>
+                      </div>
                     </div>
-                    <span dir="ltr" class="text-sm font-medium">+971 50 123 4567</span>
-                  </div>
-                  <!-- Email -->
-                  <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                      <svg class="h-5 w-5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                      </svg>
-                    </div>
-                    <span class="text-sm font-medium">info&#64;crete-developments.com</span>
-                  </div>
-                  <!-- Location -->
-                  <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                      <svg class="h-5 w-5 text-crete-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                      </svg>
-                    </div>
-                    <span class="text-sm font-medium">{{ 'CONTACT.ADDRESS' | translate }}</span>
                   </div>
                 </div>
               </ng-template>
@@ -342,7 +333,7 @@
           </div>
 
           <!-- ── Right: Form ───────────────────────────────── -->
-          <div class="md:col-span-3 p-10">
+          <div [class.md:col-span-3]="page() || siteBranches().length > 0" [class.md:col-span-5]="!page() && siteBranches().length === 0" class="p-10">
             <h2 class="text-2xl font-bold text-gray-900 mb-6" style="font-family:'Playfair Display',serif">{{ 'CONTACT.SEND_MESSAGE' | translate }}</h2>
 
             <form class="space-y-5" (ngSubmit)="onSubmit()" #contactForm="ngForm">

@@ -21,6 +21,7 @@ class UpdateProjectRequest extends FormRequest
             'description_ar' => 'nullable',
             'description_en' => 'nullable',
             'location' => 'nullable',
+            'location_ar' => 'nullable|string',
             'status' => 'boolean',
             'featured' => 'boolean',
             'price' => 'nullable|numeric',

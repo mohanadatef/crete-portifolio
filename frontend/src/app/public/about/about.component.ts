@@ -28,6 +28,7 @@ export class AboutComponent implements OnInit {
   page = signal<Page | null>(null);
   isLoading = true;
   projects = signal<any[]>([]);
+  siteBranches = signal<any[]>([]);
 
   // Contact block fields
   contactFormData = {
@@ -60,8 +61,18 @@ export class AboutComponent implements OnInit {
   }
 
   ngOnInit() {
-    const siteName = this.settingService.getSetting('site_name') || 'CRETE Developments';
-    this.seoService.updateTitle(`About Us | ${siteName}`);
+    this.settingService.getPublicSettings().subscribe(settings => {
+      const data = settings?.data || settings;
+      if (data) {
+        const siteName = data['site_name'] || 'CRETE Developments';
+        this.seoService.updateTitle(`About Us | ${siteName}`);
+        if (data['company_branches']) {
+          try {
+            this.siteBranches.set(JSON.parse(data['company_branches']));
+          } catch (e) {}
+        }
+      }
+    });
     this.loadPageContent();
   }
 

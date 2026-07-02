@@ -8,11 +8,12 @@ use Illuminate\Http\Request;
 
 use Illuminate\Http\JsonResponse;
 use App\Modules\Blog\DTOs\BlogCategoryDTO;
-use App\Services\BlogService;
+use App\Modules\Blog\Services\BlogService;
 use App\Modules\Blog\Resources\BlogCategoryResource;
-use App\Http\Requests\StoreBlogCategoryRequest;
-use App\Http\Requests\UpdateBlogCategoryRequest;
+use App\Modules\Blog\Requests\StoreBlogCategoryRequest;
+use App\Modules\Blog\Requests\UpdateBlogCategoryRequest;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 class BlogCategoryController extends Controller
@@ -38,7 +39,8 @@ class BlogCategoryController extends Controller
                 'Categories retrieved successfully'
             );
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('BlogCategoryController@index: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to retrieve categories.', 500);
         }
     }
 
@@ -59,7 +61,8 @@ class BlogCategoryController extends Controller
                 'Categories retrieved successfully'
             );
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('BlogCategoryController@indexPublic: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to retrieve public categories.', 500);
         }
     }
 
@@ -70,7 +73,8 @@ class BlogCategoryController extends Controller
             $category = $this->blogService->createCategory($dto->data);
             return $this->successResponse(new BlogCategoryResource($category), 'Category created successfully', 201);
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('BlogCategoryController@store: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to create category.', 500);
         }
     }
 
@@ -91,7 +95,8 @@ class BlogCategoryController extends Controller
             $category = $this->blogService->updateCategory($id, $dto->data);
             return $this->successResponse(new BlogCategoryResource($category), 'Category updated successfully');
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('BlogCategoryController@update: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to update category.', 500);
         }
     }
 

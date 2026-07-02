@@ -7,6 +7,7 @@ import { Page } from '../../core/models/models';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-pages',
@@ -17,6 +18,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 export class PagesComponent implements OnInit {
   private dataService = inject(PageService);
   private router = inject(Router);
+  private toastService = inject(ToastService);
 
   pages = signal<Page[]>([]);
   status = signal<'loading' | 'success' | 'error'>('loading');
@@ -70,7 +72,8 @@ export class PagesComponent implements OnInit {
     this.dataService.getAll(params).subscribe({
       next: (response) => {
         const paginatedData = response.data as any;
-        this.pages.set(paginatedData.data || []);
+        const pageItems: Page[] = paginatedData.data || [];
+        this.pages.set(pageItems.filter(p => p.slug !== 'home'));
         this.currentPage = paginatedData.meta?.current_page || paginatedData.current_page || 1;
         this.lastPage = paginatedData.meta?.last_page || paginatedData.last_page || 1;
         this.totalRecords = paginatedData.meta?.total || paginatedData.total || 0;
@@ -102,8 +105,11 @@ export class PagesComponent implements OnInit {
   deleteData(id: number) {
     if (confirm('Are you sure you want to delete this item?')) {
       this.dataService.delete(id).subscribe({
-        next: () => this.loadData(this.currentPage),
-        error: () => alert('Error deleting item')
+        next: () => {
+          this.toastService.success('Page deleted successfully.');
+          this.loadData(this.currentPage);
+        },
+        error: () => this.toastService.error('Error deleting item')
       });
     }
   }

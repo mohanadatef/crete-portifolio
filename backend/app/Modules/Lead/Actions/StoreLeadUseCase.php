@@ -31,10 +31,15 @@ class StoreLeadUseCase
         $this->recaptchaService->validateToken($dto->recaptchaToken);
 
         $data = $dto->data;
+        if (!empty($data['privacy_consent'])) {
+            $data['privacy_consent'] = true;
+            $data['privacy_consent_at'] = now();
+        }
+
         $standardKeys = [
             'name', 'email', 'phone', 'message', 'project_id', 'status', 
             'assigned_to', 'utm_source', 'utm_medium', 'utm_campaign', 
-            'utm_content', 'landing_page_id'
+            'utm_content', 'landing_page_id', 'privacy_consent', 'privacy_consent_at'
         ];
 
         $customFields = array_diff_key($data, array_flip($standardKeys));

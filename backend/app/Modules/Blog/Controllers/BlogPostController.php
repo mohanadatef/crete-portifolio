@@ -8,11 +8,12 @@ use Illuminate\Http\Request;
 
 use Illuminate\Http\JsonResponse;
 use App\Modules\Blog\DTOs\BlogPostDTO;
-use App\Services\BlogService;
+use App\Modules\Blog\Services\BlogService;
 use App\Modules\Blog\Resources\BlogPostResource;
-use App\Http\Requests\StoreBlogPostRequest;
-use App\Http\Requests\UpdateBlogPostRequest;
+use App\Modules\Blog\Requests\StoreBlogPostRequest;
+use App\Modules\Blog\Requests\UpdateBlogPostRequest;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 class BlogPostController extends Controller
@@ -41,7 +42,8 @@ class BlogPostController extends Controller
                 'Posts retrieved successfully'
             );
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('BlogPostController@index: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to retrieve blog posts.', 500);
         }
     }
 
@@ -68,7 +70,8 @@ class BlogPostController extends Controller
                 'Posts retrieved successfully'
             );
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('BlogPostController@indexPublic: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to retrieve public blog posts.', 500);
         }
     }
 
@@ -88,7 +91,11 @@ class BlogPostController extends Controller
     {
         try {
             $post = $this->blogService->getPostBySlug($slug);
-            $post->increment('views_count');
+            $ipAddress = request()->ip();
+            $isUnique = \App\Modules\Lead\Models\UniqueView::logView($ipAddress, 'BlogPost', $post->id);
+            if ($isUnique) {
+                $post->increment('views_count');
+            }
             return $this->successResponse(new BlogPostResource($post), 'Post retrieved successfully');
         } catch (Exception $e) {
             return $this->errorResponse('Blog post not found', 404);
@@ -102,7 +109,8 @@ class BlogPostController extends Controller
             $post = $this->blogService->createPost($dto->data);
             return $this->successResponse(new BlogPostResource($post), 'Post created successfully', 201);
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('BlogPostController@store: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to create blog post.', 500);
         }
     }
 
@@ -123,7 +131,8 @@ class BlogPostController extends Controller
             $post = $this->blogService->updatePost($id, $dto->data);
             return $this->successResponse(new BlogPostResource($post), 'Post updated successfully');
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('BlogPostController@update: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to update blog post.', 500);
         }
     }
 

@@ -9,6 +9,7 @@ import { PagesComponent } from './admin/pages/pages.component';
 import { SettingsComponent } from './admin/settings/settings.component';
 import { LandingPagesComponent } from './admin/landing-pages/landing-pages.component';
 import { LeadsComponent } from './admin/leads/leads.component';
+import { ReportsComponent } from './admin/reports/reports.component';
 import { CategoriesComponent } from './admin/blog/categories/categories.component';
 import { PostsComponent } from './admin/blog/posts/posts.component';
 import { BlogComponent } from './public/blog/blog.component';
@@ -29,6 +30,7 @@ export const routes: Routes = [
             { path: 'blog/:slug', loadComponent: () => import('./public/blog/post-details/post-details.component').then(m => m.BlogPostDetailsComponent) },
             { path: 'about', loadComponent: () => import('./public/about/about.component').then(m => m.AboutComponent) },
             { path: 'contact', component: ContactComponent },
+            { path: 'privacy-policy', redirectTo: 'pages/privacy-policy', pathMatch: 'full' },
             { path: 'pages/:slug', loadComponent: () => import('./public/page/page.component').then(m => m.PublicPageComponent) },
             {
                 path: 'landing/:slug/thank-you',
@@ -127,6 +129,12 @@ export const routes: Routes = [
                 component: LeadsComponent,
                 canActivate: [permissionGuard],
                 data: { permission: 'view-leads' }
+            },
+            { 
+                path: 'reports', 
+                component: ReportsComponent,
+                canActivate: [permissionGuard],
+                data: { permission: 'view-all-leads' }
             },
             { 
                 path: 'blog/categories', 

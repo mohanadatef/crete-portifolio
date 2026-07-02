@@ -13,13 +13,14 @@ use App\Modules\Lead\Actions\StoreLeadUseCase;
 use App\Modules\Lead\Resources\LeadResource;
 use App\Http\Requests\StoreLeadRequest;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 class LeadController extends Controller
 {
     public function __construct(private readonly LeadService $leadService)
     {
-        $this->middleware('permission:view-leads')->only(['index', 'show']);
+        $this->middleware('permission:view-leads')->only(['index', 'show', 'logs']);
         $this->middleware('permission:edit-leads')->only(['update']);
         $this->middleware('permission:delete-leads')->only(['destroy']);
     }
@@ -38,7 +39,8 @@ class LeadController extends Controller
                 'Leads retrieved successfully'
             );
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('LeadController@index: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to retrieve leads.', 500);
         }
     }
 
@@ -80,8 +82,10 @@ class LeadController extends Controller
 
             return $this->successResponse(new LeadResource($lead), 'Lead created successfully', 201);
         } catch (Exception $e) {
+            Log::error('LeadController@store: ' . $e->getMessage(), ['exception' => $e]);
             $code = $e->getCode() === 422 ? 422 : 500;
-            return $this->errorResponse($e->getMessage(), $code);
+            $msg = $code === 500 ? 'An internal server error occurred.' : $e->getMessage();
+            return $this->errorResponse($msg, $code);
         }
     }
 
@@ -101,7 +105,8 @@ class LeadController extends Controller
             $lead = $this->leadService->updateLead($id, $request->validated());
             return $this->successResponse(new LeadResource($lead), 'Lead updated successfully');
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('LeadController@update: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to update lead.', 500);
         }
     }
 
@@ -203,7 +208,8 @@ class LeadController extends Controller
                 'Cache-Control' => 'no-cache, no-store, must-revalidate',
             ]);
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('LeadController@export: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to export leads.', 500);
         }
     }
 
@@ -237,7 +243,8 @@ class LeadController extends Controller
 
             return $this->successResponse($formattedLogs, 'Logs retrieved successfully');
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            Log::error('LeadController@logs: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to retrieve logs.', 500);
         }
     }
 }

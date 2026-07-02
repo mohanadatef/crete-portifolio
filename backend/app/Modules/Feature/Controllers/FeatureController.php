@@ -87,10 +87,11 @@ class FeatureController extends Controller
                 'message' => 'Feature deleted successfully'
             ]);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('FeatureController@destroy: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
-            ], 400);
+                'message' => 'Failed to delete feature.'
+            ], 500);
         }
     }
 }

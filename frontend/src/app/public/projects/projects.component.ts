@@ -32,6 +32,20 @@ export class ProjectsComponent implements OnInit {
     const primary = project.images.find((img: any) => img.is_primary);
     return primary ? primary.image_path : project.images[0].image_path;
   }
+
+  getProjectImageUrl(project: any): string {
+    if (!project.images || project.images.length === 0) {
+      return 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=900&q=80';
+    }
+    const path = this.getPrimaryImagePath(project);
+    if (!path) {
+      return 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=900&q=80';
+    }
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    return this.backendUrl + path;
+  }
   
   filters: {
     project_type_id: string;

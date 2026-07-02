@@ -4,9 +4,13 @@ namespace App\Modules\Setting\Services;
 
 use App\Modules\Setting\Models\Setting;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class SettingService
 {
+    private const CACHE_KEY = 'settings_map';
+
     public function getAllSettings(): Collection
     {
         return Setting::all();
@@ -14,7 +18,9 @@ class SettingService
 
     public function getSettingsMap(): \Illuminate\Support\Collection
     {
-        return Setting::all()->pluck('value', 'key');
+        return Cache::rememberForever(self::CACHE_KEY, function () {
+            return Setting::all()->pluck('value', 'key');
+        });
     }
 
     public function getSettingById(int $id): Setting
@@ -24,28 +30,44 @@ class SettingService
 
     public function createSetting(array $data): Setting
     {
-        return Setting::create($data);
+        return DB::transaction(function () use ($data) {
+            $setting = Setting::create($data);
+            Cache::forget(self::CACHE_KEY);
+            return $setting;
+        });
     }
 
     public function updateSetting(int $id, array $data): Setting
     {
-        $setting = $this->getSettingById($id);
-        $setting->update($data);
-        return $setting;
+        return DB::transaction(function () use ($id, $data) {
+            $setting = $this->getSettingById($id);
+            $setting->update($data);
+            Cache::forget(self::CACHE_KEY);
+            return $setting;
+        });
     }
 
     public function updateBulkSettings(array $settings): void
     {
-        foreach ($settings as $key => $value) {
-            Setting::updateOrCreate(
-                ['key' => $key],
-                ['value' => $value]
-            );
-        }
+        DB::transaction(function () use ($settings) {
+            foreach ($settings as $key => $value) {
+                Setting::updateOrCreate(
+                    ['key' => $key],
+                    ['value' => $value]
+                );
+            }
+            Cache::forget(self::CACHE_KEY);
+        });
     }
 
     public function deleteSetting(int $id): bool
     {
-        return Setting::destroy($id) > 0;
+        return DB::transaction(function () use ($id) {
+            $deleted = Setting::destroy($id) > 0;
+            if ($deleted) {
+                Cache::forget(self::CACHE_KEY);
+            }
+            return $deleted;
+        });
     }
 }

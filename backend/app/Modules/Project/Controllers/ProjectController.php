@@ -44,7 +44,8 @@ class ProjectController extends Controller
                 'Projects retrieved successfully'
             );
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('ProjectController@index: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to retrieve projects.', 500);
         }
     }
 
@@ -79,7 +80,8 @@ class ProjectController extends Controller
                 'Projects retrieved successfully'
             );
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('ProjectController@indexPublic: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to retrieve projects.', 500);
         }
     }
 
@@ -99,7 +101,11 @@ class ProjectController extends Controller
     {
         try {
             $project = $this->projectService->getProjectBySlug($slug);
-            $project->increment('views_count');
+            $ipAddress = request()->ip();
+            $isUnique = \App\Modules\Lead\Models\UniqueView::logView($ipAddress, 'Project', $project->id);
+            if ($isUnique) {
+                $project->increment('views_count');
+            }
             $project->load(['projectImages', 'projectUnits']);
             return $this->successResponse(new ProjectResource($project), 'Project retrieved successfully');
         } catch (Exception $e) {
@@ -127,7 +133,8 @@ class ProjectController extends Controller
             
             return $this->successResponse(new ProjectResource($project), 'Project created successfully', 201);
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('ProjectController@store: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to create project.', 500);
         }
     }
 
@@ -139,7 +146,8 @@ class ProjectController extends Controller
             
             return $this->successResponse(new ProjectResource($project), 'Project updated successfully');
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('ProjectController@update: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to update project.', 500);
         }
     }
 

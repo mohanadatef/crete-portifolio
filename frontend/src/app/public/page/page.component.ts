@@ -29,6 +29,7 @@ export class PublicPageComponent implements OnInit {
   page = signal<Page | null>(null);
   status = signal<'loading' | 'success' | 'error' | 'not-found'>('loading');
   projects = signal<any[]>([]);
+  siteBranches = signal<any[]>([]);
 
   // Contact block fields
   contactFormData = {
@@ -80,6 +81,15 @@ export class PublicPageComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.settingService.getPublicSettings().subscribe(settings => {
+      const data = settings?.data || settings;
+      if (data && data['company_branches']) {
+        try {
+          this.siteBranches.set(JSON.parse(data['company_branches']));
+        } catch (e) {}
+      }
+    });
+
     this.route.paramMap.subscribe(params => {
       const slug = params.get('slug');
       if (slug) {

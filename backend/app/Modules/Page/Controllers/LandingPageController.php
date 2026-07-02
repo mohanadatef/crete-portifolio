@@ -19,7 +19,7 @@ class LandingPageController extends Controller
 {
     public function __construct(private readonly PageService $pageService)
     {
-        $this->middleware('permission:view-landing-pages')->only(['index', 'show']);
+        $this->middleware('permission:view-landing-pages')->only(['index', 'show', 'logs']);
         $this->middleware('permission:create-landing-pages')->only(['store']);
         $this->middleware('permission:edit-landing-pages')->only(['update']);
         $this->middleware('permission:delete-landing-pages')->only(['destroy']);
@@ -37,7 +37,8 @@ class LandingPageController extends Controller
                 'Landing Pages retrieved successfully'
             );
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('LandingPageController@index: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('An internal server error occurred.', 500);
         }
     }
 
@@ -79,13 +80,30 @@ class LandingPageController extends Controller
     public function submitForm(Request $request, string $slug): JsonResponse
     {
         try {
+            $recaptchaToken = $request->input('recaptcha_token');
+            app(\App\Services\RecaptchaService::class)->validateToken($recaptchaToken);
+
             $page = $this->pageService->getLandingPageBySlug($slug);
             
             // Build dynamic validation rules based on form_schema
-            $schema = $page->form_schema ?? [];
-            $rules = [];
+            $schema = $page->form_schema;
+            if (empty($schema) || !is_array($schema)) {
+                return $this->errorResponse('Invalid or empty form schema configuration.', 422);
+            }
+
+            $rules = [
+                'privacy_consent' => 'required|boolean|accepted',
+                'name' => 'nullable|string|max:255',
+                'email' => 'nullable|email|max:255',
+                'phone' => 'nullable|string|max:50',
+            ];
             foreach ($schema as $field) {
-                $fieldRules = [];
+                if (!is_array($field) || !isset($field['name']) || !isset($field['type'])) {
+                    continue;
+                }
+                
+                $fieldRules = ['string'];
+                
                 if (!empty($field['required'])) {
                     $fieldRules[] = 'required';
                 } else {
@@ -94,6 +112,13 @@ class LandingPageController extends Controller
                 
                 if ($field['type'] === 'email') {
                     $fieldRules[] = 'email';
+                    $fieldRules[] = 'max:255';
+                } elseif ($field['type'] === 'phone') {
+                    $fieldRules[] = 'max:50';
+                } elseif ($field['type'] === 'textarea') {
+                    $fieldRules[] = 'max:2000';
+                } else {
+                    $fieldRules[] = 'max:255';
                 }
                 
                 $rules[$field['name']] = implode('|', $fieldRules);
@@ -107,6 +132,10 @@ class LandingPageController extends Controller
             $nameField = 'name'; // Default
 
             foreach ($schema as $field) {
+                if (!is_array($field) || !isset($field['name']) || !isset($field['type'])) {
+                    continue;
+                }
+
                 if ($field['type'] === 'email') {
                     $emailField = $field['name'];
                 } elseif ($field['type'] === 'phone') {
@@ -119,11 +148,13 @@ class LandingPageController extends Controller
             // Map standard fields if they exist, otherwise keep them in form_data
             $leadData = [
                 'landing_page_id' => $page->id,
-                'name' => $validatedData[$nameField] ?? $request->input('name', 'N/A'),
-                'email' => ($emailField && isset($validatedData[$emailField])) ? $validatedData[$emailField] : $request->input('email', null),
-                'phone' => ($phoneField && isset($validatedData[$phoneField])) ? $validatedData[$phoneField] : $request->input('phone', 'N/A'),
+                'name' => $validatedData[$nameField] ?? $validatedData['name'] ?? 'N/A',
+                'email' => ($emailField && isset($validatedData[$emailField])) ? $validatedData[$emailField] : ($validatedData['email'] ?? null),
+                'phone' => ($phoneField && isset($validatedData[$phoneField])) ? $validatedData[$phoneField] : ($validatedData['phone'] ?? 'N/A'),
                 'form_data' => $validatedData, // store everything in form_data just in case
                 'project_id' => $page->project_id, // inherit project from landing page
+                'privacy_consent' => true,
+                'privacy_consent_at' => now(),
             ];
             
             $lead = \App\Modules\Lead\Models\Lead::create($leadData);
@@ -133,7 +164,8 @@ class LandingPageController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['message' => 'Validation error', 'errors' => $e->errors()], 422);
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('LandingPageController@submitForm: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('An internal server error occurred.', 500);
         }
     }
 
@@ -144,7 +176,8 @@ class LandingPageController extends Controller
             $page = $this->pageService->createLandingPage($dto->data);
             return $this->successResponse(new LandingPageResource($page), 'Landing Page created successfully', 201);
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('LandingPageController@store: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('An internal server error occurred.', 500);
         }
     }
 
@@ -165,7 +198,8 @@ class LandingPageController extends Controller
             $page = $this->pageService->updateLandingPage($id, $dto->data);
             return $this->successResponse(new LandingPageResource($page), 'Landing Page updated successfully');
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 500);
+            \Illuminate\Support\Facades\Log::error('LandingPageController@update: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('An internal server error occurred.', 500);
         }
     }
 
@@ -175,7 +209,8 @@ class LandingPageController extends Controller
             $this->pageService->deleteLandingPage($id);
             return $this->successResponse(null, 'Landing Page deleted successfully');
         } catch (Exception $e) {
-            return $this->errorResponse($e->getMessage(), 400);
+            \Illuminate\Support\Facades\Log::error('LandingPageController@destroy: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to delete landing page', 500);
         }
     }
 

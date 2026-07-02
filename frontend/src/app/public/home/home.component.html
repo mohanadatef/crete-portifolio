@@ -4,14 +4,22 @@
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <section class="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
 
-  <!-- Background Image -->
-  <div
-    class="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-transform duration-[8000ms] ease-out"
-    style="background-image: url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=90');">
-  </div>
+  <!-- Hero Background Image or Video (Luxury Real Estate) -->
+  <ng-container *ngIf="isHeroBgVideo(); else imgBg">
+    <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover scale-105 transition-transform duration-[8000ms] ease-out">
+      <source [src]="heroBg()" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </ng-container>
+  <ng-template #imgBg>
+    <div
+      class="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-transform duration-[8000ms] ease-out"
+      [style.background-image]="'url(' + heroBg() + ')'">
+    </div>
+  </ng-template>
 
   <!-- Dark Overlay -->
-  <div class="hero-overlay absolute inset-0 bg-gradient-to-br from-[#0a1628]/90 via-[#1e3678]/70 to-[#0a1628]/85"></div>
+  <div class="hero-overlay absolute inset-0 bg-gradient-to-br from-[#0a1628]/95 via-[#1e3678]/80 to-[#0a1628]/90"></div>
 
   <!-- Gold Accent Line -->
   <div class="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-transparent via-[#c89f45] to-transparent opacity-60"></div>
@@ -26,20 +34,20 @@
     <!-- Eyebrow -->
     <div class="animate-fade-in-up inline-flex items-center gap-3 mb-6">
       <span class="h-px w-10 bg-[#c89f45]"></span>
-      <span class="text-[#c89f45] uppercase tracking-[0.35em] text-xs font-semibold">Premium Real Estate</span>
+      <span class="text-[#c89f45] uppercase tracking-[0.35em] text-xs font-semibold">{{ siteName() }}</span>
       <span class="h-px w-10 bg-[#c89f45]"></span>
     </div>
 
     <!-- Headline -->
     <h1 class="animate-fade-in-up font-bold text-5xl sm:text-6xl md:text-7xl xl:text-8xl text-white leading-[1.08] tracking-tight mb-6"
         style="font-family: 'Playfair Display', Georgia, serif; animation-delay: 0.1s;">
-      {{ 'HOME.HERO_TITLE' | translate }}
+      {{ translate.currentLang() === 'ar' ? heroTitleAr() : heroTitleEn() }}
     </h1>
 
     <!-- Subtitle -->
     <p class="animate-fade-in-up text-gray-300 text-lg sm:text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed mb-10"
        style="animation-delay: 0.25s;">
-      {{ 'HOME.HERO_SUBTITLE' | translate }}
+      {{ translate.currentLang() === 'ar' ? heroSubtitleAr() : heroSubtitleEn() }}
     </p>
 
     <!-- CTAs -->
@@ -49,7 +57,7 @@
       <a routerLink="/projects"
          class="group inline-flex items-center gap-3 bg-[#c89f45] hover:bg-[#b8902e] text-[#0a1628] font-bold px-9 py-4 text-sm uppercase tracking-[0.2em] transition-all duration-300 shadow-lg shadow-[#c89f45]/20 hover:shadow-[#c89f45]/40 hover:-translate-y-0.5">
         <span>{{ 'HOME.EXPLORE_PROJECTS' | translate }}</span>
-        <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 rlt:rotate-180 rlt:group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
         </svg>
       </a>
@@ -59,7 +67,7 @@
         <svg class="w-4 h-4 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
         </svg>
-        Contact Us
+        {{ translate.currentLang() === 'ar' ? 'اتصل بنا' : 'Contact Us' }}
       </a>
     </div>
   </div>
@@ -75,21 +83,46 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!--  STATS BAR                                                     -->
+<!--  LEGACY & STATS SPLIT SECTION (Mirroring alashraaf.com)        -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<section id="stats-section" class="bg-[#0d1f4a] relative z-10 shadow-2xl">
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="grid grid-cols-2 lg:grid-cols-4 divide-x divide-white/10 rtl:divide-x-reverse">
+<section id="stats-section" *ngIf="(stats() && stats().length > 0) || legacyTitleEn() || legacyTitleAr()" class="py-24 bg-[#0a1628] text-white relative overflow-hidden">
+  
+  <!-- Left Side Gold Blur -->
+  <div class="absolute left-[-200px] top-[10%] w-[500px] h-[500px] rounded-full bg-[#c89f45]/5 blur-[120px] pointer-events-none"></div>
 
-      <div *ngFor="let stat of stats()" class="flex flex-col items-center justify-center py-10 px-4 group">
-        <span class="text-[#c89f45] text-4xl md:text-5xl font-bold leading-none mb-1"
-              style="font-family: 'Playfair Display', Georgia, serif;">
-          {{ stat.current }}<span class="text-2xl md:text-3xl">{{ stat.suffix }}</span>
-        </span>
-        <span class="text-white/60 text-xs uppercase tracking-[0.25em] mt-2">
-          {{ translate.currentLang() === 'ar' ? (stat.label_ar || stat.label_en) : (stat.label_en || stat.label_ar) }}
-        </span>
-        <div class="w-8 h-px bg-transparent group-hover:bg-[#c89f45] group-hover:w-12 transition-all duration-500 mt-3"></div>
+  <div class="max-w-7xl mx-auto px-6 relative z-10">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      
+      <!-- Left Column: Legacy Intro -->
+      <div class="space-y-6 reveal-on-scroll">
+        <div class="inline-flex items-center gap-3">
+          <span class="h-px w-8 bg-[#c89f45]"></span>
+          <span class="text-[#c89f45] uppercase tracking-[0.25em] text-xs font-semibold">A Legacy of Trust</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight" style="font-family: 'Playfair Display', Georgia, serif;">
+          {{ translate.currentLang() === 'ar' ? legacyTitleAr() : legacyTitleEn() }}
+        </h2>
+        <p class="text-gray-400 text-sm leading-relaxed max-w-lg">
+          {{ translate.currentLang() === 'ar' ? legacyDescAr() : legacyDescEn() }}
+        </p>
+        <div class="pt-4">
+          <a routerLink="/about" class="inline-flex items-center gap-2 text-[#c89f45] hover:text-white text-xs font-bold uppercase tracking-widest transition-colors duration-300">
+            <span>{{ translate.currentLang() === 'ar' ? 'اقرأ المزيد عن الشركة ←' : 'Read More About Us ➔' }}</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Column: Stats Grid -->
+      <div class="grid grid-cols-2 gap-6 sm:gap-8 reveal-on-scroll">
+        <div *ngFor="let stat of stats()" class="p-6 bg-white/[0.03] border border-white/5 rounded-2xl hover:border-[#c89f45]/30 hover:bg-white/[0.05] transition-all duration-300 group">
+          <span class="block text-[#c89f45] text-3xl sm:text-4xl font-bold mb-2" style="font-family: 'Playfair Display', Georgia, serif;">
+            {{ stat.current }}<span class="text-xl sm:text-2xl">{{ stat.suffix }}</span>
+          </span>
+          <span class="block text-white/50 text-[10px] sm:text-xs uppercase tracking-widest leading-relaxed">
+            {{ translate.currentLang() === 'ar' ? (stat.label_ar || stat.label_en) : (stat.label_en || stat.label_ar) }}
+          </span>
+          <div class="w-6 h-px bg-[#c89f45]/20 group-hover:bg-[#c89f45] group-hover:w-10 transition-all duration-300 mt-4"></div>
+        </div>
       </div>
 
     </div>
@@ -98,26 +131,26 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!--  LATEST PROJECTS SECTION                                       -->
+<!--  LOCATION-BASED SHOWCASE SECTION                               -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <section class="py-28 bg-[#f8f6f1] relative overflow-hidden">
 
   <!-- Watermark -->
-  <div class="absolute top-10 right-0 text-[160px] font-bold text-[#1e3678]/[0.03] leading-none select-none pointer-events-none hidden lg:block"
+  <div class="absolute top-10 right-0 text-[160px] font-bold text-[#1e3678]/[0.02] leading-none select-none pointer-events-none hidden lg:block"
        style="font-family: 'Playfair Display', Georgia, serif;">CRETE</div>
 
   <div class="max-w-7xl mx-auto px-6">
 
     <!-- Section Header -->
-    <div class="flex flex-col items-center text-center mb-16">
+    <div class="flex flex-col items-center text-center mb-16 reveal-on-scroll">
       <div class="inline-flex items-center gap-3 mb-4">
         <span class="h-px w-8 bg-[#c89f45]"></span>
-        <span class="text-[#c89f45] uppercase tracking-[0.3em] text-xs font-semibold">Portfolio</span>
+        <span class="text-[#c89f45] uppercase tracking-[0.3em] text-xs font-semibold">Projects Showcase</span>
         <span class="h-px w-8 bg-[#c89f45]"></span>
       </div>
       <h2 class="text-4xl sm:text-5xl font-bold text-[#1e3678] tracking-tight leading-tight"
           style="font-family: 'Playfair Display', Georgia, serif;">
-        {{ 'HOME.LATEST_PROJECTS' | translate }}
+        {{ translate.currentLang() === 'ar' ? 'مشاريعنا العقارية' : 'Our Real Estate Portfolio' }}
       </h2>
       <div class="mt-5 flex items-center gap-3">
         <div class="h-px w-16 bg-[#c89f45]"></div>
@@ -126,7 +159,25 @@
       </div>
     </div>
 
-    <!-- Loading -->
+    <!-- Location Filtering Tabs (Minimalist Underline Style) -->
+    <div *ngIf="status === 'success' && locations.length > 0" 
+         class="flex flex-wrap items-center justify-center gap-8 md:gap-12 mb-16 border-b border-[#1e3678]/10 pb-4">
+      
+      <button (click)="selectLocation('All')"
+              [class]="selectedLocation() === 'All' ? 'text-[#c89f45] font-bold border-b-2 border-[#c89f45]' : 'text-gray-400 hover:text-[#1e3678] font-semibold'"
+              class="pb-3 text-xs sm:text-sm uppercase tracking-[0.25em] transition-all duration-300">
+        {{ translate.currentLang() === 'ar' ? 'الكل' : 'All Locations' }}
+      </button>
+      
+      <button *ngFor="let loc of locations"
+              (click)="selectLocation(loc.en)"
+              [class]="selectedLocation() === loc.en ? 'text-[#c89f45] font-bold border-b-2 border-[#c89f45]' : 'text-gray-400 hover:text-[#1e3678] font-semibold'"
+              class="pb-3 text-xs sm:text-sm uppercase tracking-[0.25em] transition-all duration-300">
+        {{ translate.currentLang() === 'ar' ? loc.ar : loc.en }}
+      </button>
+    </div>
+
+    <!-- Loading State -->
     <div *ngIf="status === 'loading'" class="flex flex-col items-center justify-center py-20 gap-5">
       <div class="relative">
         <div class="w-14 h-14 rounded-full border-2 border-[#1e3678]/10 border-t-[#c89f45] animate-spin"></div>
@@ -137,8 +188,8 @@
       <span class="text-[#1e3678]/50 text-sm uppercase tracking-widest">Loading properties...</span>
     </div>
 
-    <!-- Empty -->
-    <div *ngIf="status === 'success' && projects.length === 0" class="text-center py-20">
+    <!-- Empty State -->
+    <div *ngIf="status === 'success' && filteredProjects.length === 0" class="text-center py-20 bg-white rounded-2xl border border-gray-100 p-10">
       <svg class="w-16 h-16 mx-auto text-[#c89f45]/30 mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H3.75A.75.75 0 013 21V9.75z"/>
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 21V12h6v9"/>
@@ -146,87 +197,91 @@
       <p class="text-[#1e3678]/50 text-lg font-light">{{ 'HOME.NO_PROJECTS' | translate }}</p>
     </div>
 
-    <!-- Grid -->
-    <div *ngIf="status === 'success' && projects.length > 0" class="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+    <!-- Projects Grid -->
+    <div class="reveal-on-scroll">
+      <div *ngIf="status === 'success' && filteredProjects.length > 0" class="grid gap-10 md:grid-cols-2 xl:grid-cols-3">
 
-      <article *ngFor="let project of projects"
-               class="group bg-white shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 flex flex-col overflow-hidden">
+        <article *ngFor="let project of filteredProjects"
+                 class="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col overflow-hidden relative border border-gray-100">
 
-        <!-- Image -->
-        <a [routerLink]="['/projects', project.slug]" class="project-img-wrap block relative overflow-hidden h-64 bg-[#1e3678]/10 flex-shrink-0">
-          <img
-            loading="lazy"
-            class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-            [src]="project.images?.length ? (backendUrl + getPrimaryImagePath(project)) : 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=900&q=80'"
-            alt="Project Image"
-          >
-          <div class="absolute inset-0 bg-gradient-to-t from-[#0d1f4a]/70 via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500"></div>
+          <!-- Image Container -->
+          <a [routerLink]="['/projects', project.slug]" class="project-img-wrap block relative overflow-hidden h-64 bg-[#1e3678]/10 flex-shrink-0">
+            <img
+              loading="lazy"
+              class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+              [src]="getProjectImageUrl(project)"
+              alt="Project Image"
+            >
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0d1f4a]/80 via-transparent to-transparent opacity-80 group-hover:opacity-75 transition-opacity duration-500"></div>
+          </a>
 
-          <!-- Badge -->
-          <div class="absolute top-5 ltr:left-5 rtl:right-5 z-10" (click)="$event.stopPropagation()">
-            <a *ngIf="project.project_type"
-               [routerLink]="['/projects']"
-               [queryParams]="{ project_type_id: project.project_type.id }"
-               class="badge-gold inline-flex items-center gap-1.5 bg-[#c89f45] hover:bg-[#b8902e] text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-[0.2em] shadow-lg transition-colors">
-              <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-              </svg>
-              {{ translate.currentLang() === 'ar' ? project.project_type.name_ar : project.project_type.name_en }}
-            </a>
-          </div>
+          <!-- Content Body -->
+          <div class="flex flex-col flex-1 p-8">
 
-          <!-- Location -->
-          <div class="absolute bottom-4 ltr:left-5 rtl:right-5 z-10">
-            <span class="inline-flex items-center gap-1.5 text-white/90 text-xs font-medium">
-              <svg class="w-3.5 h-3.5 text-[#c89f45] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-              {{ translate.currentLang() === 'ar' ? (project.location_ar || project.location) : project.location }}
-            </span>
-          </div>
-        </a>
+            <!-- Type & Location Metadata Row -->
+            <div class="flex items-center justify-between gap-2 mb-3 text-xs font-bold uppercase tracking-wider">
+              <span class="text-[#c89f45]">{{ translate.currentLang() === 'ar' ? project.project_type?.name_ar : project.project_type?.name_en }}</span>
+              <span class="text-gray-400 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-[#c89f45] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                {{ translate.currentLang() === 'ar' ? (project.location_ar || project.location) : project.location }}
+              </span>
+            </div>
 
-        <!-- Body -->
-        <div class="flex flex-col flex-1 p-7 border-b border-l border-r border-gray-100">
+            <h3 class="text-2xl font-bold text-[#1e3678] leading-snug mb-3 group-hover:text-[#c89f45] transition-colors duration-300"
+                style="font-family: 'Playfair Display', Georgia, serif;">
+              <a [routerLink]="['/projects', project.slug]">
+                {{ translate.currentLang() === 'ar' ? (project.title_ar || project.title_en) : project.title_en }}
+              </a>
+            </h3>
 
-          <h3 class="text-xl font-bold text-[#1e3678] leading-snug mb-3 group-hover:text-[#c89f45] transition-colors duration-300"
-              style="font-family: 'Playfair Display', Georgia, serif;">
-            <a [routerLink]="['/projects', project.slug]">
-              {{ translate.currentLang() === 'ar' ? (project.title_ar || project.title_en) : project.title_en }}
-            </a>
-          </h3>
+            <div class="w-8 h-0.5 bg-[#c89f45] mb-5 transition-all duration-500 group-hover:w-16"></div>
 
-          <div class="w-10 h-0.5 bg-[#c89f45] mb-4 transition-all duration-500 group-hover:w-16"></div>
+            <p class="text-gray-500 text-sm leading-relaxed flex-1 line-clamp-3 mb-6">
+              {{ stripHtml(translate.currentLang() === 'ar' ? (project.description_ar || project.description_en) : project.description_en) }}
+            </p>
 
-          <p class="text-gray-500 text-sm leading-relaxed flex-1 line-clamp-3">
-            {{ stripHtml(translate.currentLang() === 'ar' ? (project.description_ar || project.description_en) : project.description_en) }}
-          </p>
+            <!-- Specifications Row -->
+            <div class="grid grid-cols-3 gap-2 border-t border-b border-gray-100 py-4 mb-6 text-center text-xs text-gray-500">
+              <div>
+                <span class="block text-[#1e3678] font-bold text-sm">{{ project.area || 'N/A' }} {{ 'PROJECTS.SQM' | translate }}</span>
+                <span class="text-[9px] uppercase tracking-wider text-gray-400">{{ translate.currentLang() === 'ar' ? 'المساحة' : 'Area' }}</span>
+              </div>
+              <div>
+                <span class="block text-[#1e3678] font-bold text-sm">{{ project.bedrooms || '-' }}</span>
+                <span class="text-[9px] uppercase tracking-wider text-gray-400">{{ 'PROJECTS.BEDS' | translate }}</span>
+              </div>
+              <div>
+                <span class="block text-[#1e3678] font-bold text-sm">{{ project.developer || 'Crete' }}</span>
+                <span class="text-[9px] uppercase tracking-wider text-gray-400">{{ translate.currentLang() === 'ar' ? 'المطور' : 'Developer' }}</span>
+              </div>
+            </div>
 
-          <div class="flex items-center justify-between mt-6 pt-5 border-t border-gray-100">
-            <a [routerLink]="['/projects', project.slug]"
-               class="group/btn inline-flex items-center gap-2 text-[#1e3678] hover:text-[#c89f45] text-sm font-bold uppercase tracking-[0.15em] transition-colors duration-300">
-              {{ 'HOME.DETAILS' | translate }}
-              <svg class="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1 rtl:rotate-180 rtl:group-hover/btn:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-              </svg>
-            </a>
-            <div class="w-7 h-7 rounded-full bg-[#1e3678]/5 flex items-center justify-center group-hover:bg-[#c89f45] transition-colors duration-300">
-              <svg class="w-3.5 h-3.5 text-[#1e3678] group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
+            <div class="flex items-center justify-between mt-auto">
+              <a [routerLink]="['/projects', project.slug]"
+                 class="group/btn inline-flex items-center gap-2 text-[#1e3678] hover:text-[#c89f45] text-xs font-bold uppercase tracking-[0.2em] transition-colors duration-300">
+                {{ 'HOME.DETAILS' | translate }}
+                <svg class="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1.5 rlt:rotate-180 rlt:group-hover/btn:-translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+              </a>
+              <span class="text-xs font-bold text-[#c89f45]" *ngIf="project.price">
+                {{ project.price | number }} EGP
+              </span>
             </div>
           </div>
-        </div>
-      </article>
+        </article>
 
+      </div>
     </div>
 
-    <!-- View All -->
-    <div *ngIf="status === 'success' && projects.length > 0" class="text-center mt-14">
+    <!-- View All Button -->
+    <div *ngIf="status === 'success' && filteredProjects.length > 0" class="text-center mt-16">
       <a routerLink="/projects"
-         class="group inline-flex items-center gap-3 border-2 border-[#1e3678] hover:border-[#c89f45] text-[#1e3678] hover:text-[#c89f45] font-bold px-10 py-4 text-sm uppercase tracking-[0.2em] transition-all duration-300 hover:-translate-y-0.5">
+         class="group inline-flex items-center gap-3 border-2 border-[#1e3678] hover:border-[#c89f45] text-[#1e3678] hover:text-[#c89f45] font-bold px-10 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:-translate-y-0.5">
         {{ 'HOME.EXPLORE_PROJECTS' | translate }}
-        <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1.5 rlt:rotate-180 rlt:group-hover:-translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
         </svg>
       </a>
@@ -237,101 +292,112 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!--  WHY CHOOSE US SECTION                                         -->
+<!--  CONSTRUCTION WORK UPDATES SECTION (Mirroring alashraaf.com)   -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<section class="py-28 bg-white relative overflow-hidden">
-
-  <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#c89f45] via-[#c89f45]/30 to-transparent rtl:left-auto rtl:right-0"></div>
-
+<section *ngIf="constructionUpdates() && constructionUpdates().length > 0" class="py-28 bg-white relative overflow-hidden">
   <div class="max-w-7xl mx-auto px-6">
-
-    <!-- Header -->
-    <div class="flex flex-col items-center text-center mb-16">
+    
+    <!-- Section Header -->
+    <div class="flex flex-col items-center text-center mb-20 reveal-on-scroll">
       <div class="inline-flex items-center gap-3 mb-4">
         <span class="h-px w-8 bg-[#c89f45]"></span>
-        <span class="text-[#c89f45] uppercase tracking-[0.3em] text-xs font-semibold">Our Promise</span>
+        <span class="text-[#c89f45] uppercase tracking-[0.3em] text-xs font-semibold">Live Site Updates</span>
         <span class="h-px w-8 bg-[#c89f45]"></span>
       </div>
-      <h2 class="text-4xl sm:text-5xl font-bold text-[#1e3678] tracking-tight"
+      <h2 class="text-4xl sm:text-5xl font-bold text-[#1e3678] tracking-tight leading-tight"
           style="font-family: 'Playfair Display', Georgia, serif;">
-        Why Choose Us
+        {{ translate.currentLang() === 'ar' ? 'تحديثات الأعمال الإنشائية لمشاريعنا' : 'Construction Work Updates' }}
       </h2>
       <div class="mt-5 flex items-center gap-3">
         <div class="h-px w-16 bg-[#c89f45]"></div>
         <div class="w-2 h-2 rotate-45 bg-[#c89f45]"></div>
         <div class="h-px w-16 bg-[#c89f45]"></div>
       </div>
-      <p class="mt-6 text-gray-500 text-lg font-light max-w-xl leading-relaxed">
-        We combine decades of expertise with an unwavering commitment to luxury, trust, and client success.
-      </p>
     </div>
 
-    <!-- Cards -->
-    <div class="grid gap-8 md:grid-cols-3">
+    <!-- Construction Grid -->
+    <div class="grid gap-10 md:grid-cols-3 reveal-on-scroll">
+      <div *ngFor="let update of constructionUpdates()" class="group bg-[#f8f6f1] border border-gray-150 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
+        
+        <!-- Image with progress label -->
+        <div class="relative h-56 overflow-hidden">
+          <img [src]="update.image" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+          <div class="absolute inset-0 bg-[#0d1f4a]/30"></div>
+          
+          <!-- Location Badge -->
+          <span class="absolute top-4 left-4 bg-[#0a1628]/80 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded">
+            {{ translate.currentLang() === 'ar' ? update.location_ar : update.location_en }}
+          </span>
 
-      <!-- Card 1 — Shield -->
-      <div class="group relative bg-[#f8f6f1] hover:bg-[#1e3678] p-10 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl cursor-default overflow-hidden">
-        <div class="absolute top-0 right-0 w-0 h-0 border-t-[50px] border-t-[#c89f45]/20 border-l-[50px] border-l-transparent rtl:right-auto rtl:left-0 rtl:border-l-0 rtl:border-r-[50px] rtl:border-r-transparent group-hover:border-t-[#c89f45]/40 transition-all duration-500"></div>
-
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-[#1e3678] group-hover:bg-[#c89f45] mb-7 transition-all duration-500 shadow-lg">
-          <svg class="w-8 h-8 text-[#c89f45] group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-          </svg>
+          <!-- Percentage Circular indicator overlay -->
+          <div class="absolute bottom-4 right-4 bg-[#c89f45] text-[#0a1628] font-extrabold text-sm h-12 w-12 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+            {{ update.progress }}%
+          </div>
         </div>
 
-        <div class="absolute top-8 right-8 rtl:right-auto rtl:left-8 text-5xl font-bold text-[#1e3678]/5 group-hover:text-white/5 select-none transition-colors duration-500"
-             style="font-family: 'Playfair Display', Georgia, serif;">01</div>
+        <!-- Detail content -->
+        <div class="p-6 space-y-4">
+          <span class="text-[10px] font-bold text-[#c89f45] uppercase tracking-widest block">
+            {{ translate.currentLang() === 'ar' ? update.phase_ar : update.phase_en }}
+          </span>
+          <h3 class="text-lg font-bold text-[#1e3678] line-clamp-2 leading-snug" style="font-family: 'Playfair Display', Georgia, serif;">
+            {{ translate.currentLang() === 'ar' ? update.title_ar : update.title_en }}
+          </h3>
 
-        <h3 class="text-xl font-bold text-[#1e3678] group-hover:text-white mb-3 transition-colors duration-500"
-            style="font-family: 'Playfair Display', Georgia, serif;">Trusted &amp; Secure</h3>
-        <div class="w-8 h-0.5 bg-[#c89f45] mb-5 transition-all duration-500 group-hover:w-14"></div>
-        <p class="text-gray-500 group-hover:text-white/70 text-sm leading-relaxed transition-colors duration-500">
-          Every transaction is backed by full legal compliance, transparent contracts, and uncompromising integrity — giving you complete peace of mind.
-        </p>
-      </div>
-
-      <!-- Card 2 — Star (Featured) -->
-      <div class="group relative bg-[#1e3678] hover:bg-[#c89f45] p-10 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl cursor-default overflow-hidden shadow-xl md:-mt-4 md:mb-4">
-
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-[#c89f45] group-hover:bg-white mb-7 transition-all duration-500 shadow-lg">
-          <svg class="w-8 h-8 text-white group-hover:text-[#c89f45] transition-colors duration-500" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-          </svg>
+          <!-- Progress Bar wrapper -->
+          <div class="space-y-1.5 pt-2">
+            <div class="flex justify-between text-[10px] text-gray-500">
+              <span>{{ translate.currentLang() === 'ar' ? 'نسبة الإنجاز' : 'Completion Rate' }}</span>
+              <span class="font-bold text-[#1e3678]">{{ update.progress }}%</span>
+            </div>
+            <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-[#1e3678] to-[#c89f45] rounded-full transition-all duration-1000 ease-out" 
+                   [style.width.%]="update.progress"></div>
+            </div>
+          </div>
         </div>
 
-        <div class="absolute top-8 right-8 rtl:right-auto rtl:left-8 text-5xl font-bold text-white/5 select-none"
-             style="font-family: 'Playfair Display', Georgia, serif;">02</div>
-
-        <h3 class="text-xl font-bold text-white mb-3 transition-colors duration-500"
-            style="font-family: 'Playfair Display', Georgia, serif;">Unrivalled Excellence</h3>
-        <div class="w-8 h-0.5 bg-[#c89f45] group-hover:bg-white mb-5 transition-all duration-500 group-hover:w-14"></div>
-        <p class="text-white/70 text-sm leading-relaxed">
-          From architectural design to interior finishes, every detail is crafted to the highest standard — delivering properties that define luxury living.
-        </p>
       </div>
-
-      <!-- Card 3 — Award -->
-      <div class="group relative bg-[#f8f6f1] hover:bg-[#1e3678] p-10 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl cursor-default overflow-hidden">
-        <div class="absolute top-0 right-0 w-0 h-0 border-t-[50px] border-t-[#c89f45]/20 border-l-[50px] border-l-transparent rtl:right-auto rtl:left-0 rtl:border-l-0 rtl:border-r-[50px] rtl:border-r-transparent group-hover:border-t-[#c89f45]/40 transition-all duration-500"></div>
-
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-[#1e3678] group-hover:bg-[#c89f45] mb-7 transition-all duration-500 shadow-lg">
-          <svg class="w-8 h-8 text-[#c89f45] group-hover:text-white transition-colors duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3h14M5 3a2 2 0 00-2 2v3a7 7 0 007 7m-5-10h10m0 0a2 2 0 012 2v3a7 7 0 01-7 7m0 0v3m0 0H9m3 0h3"/>
-          </svg>
-        </div>
-
-        <div class="absolute top-8 right-8 rtl:right-auto rtl:left-8 text-5xl font-bold text-[#1e3678]/5 group-hover:text-white/5 select-none transition-colors duration-500"
-             style="font-family: 'Playfair Display', Georgia, serif;">03</div>
-
-        <h3 class="text-xl font-bold text-[#1e3678] group-hover:text-white mb-3 transition-colors duration-500"
-            style="font-family: 'Playfair Display', Georgia, serif;">Award-Winning</h3>
-        <div class="w-8 h-0.5 bg-[#c89f45] mb-5 transition-all duration-500 group-hover:w-14"></div>
-        <p class="text-gray-500 group-hover:text-white/70 text-sm leading-relaxed transition-colors duration-500">
-          Recognised internationally for innovation, quality, and design — our trophy cabinet reflects our relentless pursuit of perfection in every project.
-        </p>
-      </div>
-
     </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SUCCESS SIGNS & PARTNERS (Mirroring alashraaf.com)            -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section *ngIf="partners() && partners().length > 0" class="py-24 bg-[#0a1628] text-white relative overflow-hidden">
+  
+  <div class="absolute right-[-100px] bottom-0 w-[400px] h-[400px] rounded-full bg-[#c89f45]/5 blur-[100px] pointer-events-none"></div>
+
+  <div class="max-w-7xl mx-auto px-6 relative z-10 text-center">
+    
+    <!-- Title -->
+    <div class="space-y-3 mb-16">
+      <span class="text-[#c89f45] uppercase tracking-[0.25em] text-xs font-bold block">Collaboration & Quality</span>
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-wider leading-relaxed" style="font-family: 'Playfair Display', Georgia, serif;">
+        {{ translate.currentLang() === 'ar' ? 'وراء كل جهد عظيم، علامات نجاح عظيمة' : 'BEHIND EVERY GREAT EFFORT, THERE ARE GREAT SIGNS OF SUCCESS' }}
+      </h2>
+      <div class="w-16 h-0.5 bg-[#c89f45] mx-auto mt-4"></div>
+    </div>
+
+    <!-- Partner Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 items-center max-w-5xl mx-auto reveal-on-scroll">
+      <div *ngFor="let partner of partners()" class="p-8 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-[#c89f45]/40 hover:bg-white/[0.04] transition-all duration-300 group cursor-default">
+        <!-- Mock Icon badge -->
+        <span class="block text-white/20 group-hover:text-[#c89f45] text-4xl font-black mb-3 transition-colors duration-300" style="font-family: 'Playfair Display', serif;">
+          {{ partner.logoText }}
+        </span>
+        <span class="block text-white font-bold text-sm group-hover:text-white transition-colors duration-300">
+          {{ partner.name }}
+        </span>
+        <span class="block text-white/40 text-[9px] uppercase tracking-widest mt-1">
+          {{ partner.desc }}
+        </span>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -339,9 +405,9 @@
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!--  FOOTER BAND                                                   -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="bg-[#0d1f4a] py-8">
+<div class="bg-[#081120] py-8 border-t border-white/5">
   <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-    <p class="text-white/30 text-xs uppercase tracking-widest">© 2026 Crete Real Estate. All rights reserved.</p>
+    <p class="text-white/30 text-xs uppercase tracking-widest">© 2026 Crete Developments. All rights reserved.</p>
     <div class="flex items-center gap-2">
       <span class="h-px w-8 bg-[#c89f45]/40"></span>
       <span class="text-[#c89f45]/60 text-xs uppercase tracking-[0.3em]">Luxury Living</span>

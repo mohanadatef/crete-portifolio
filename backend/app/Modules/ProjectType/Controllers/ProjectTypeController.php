@@ -12,9 +12,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 use App\Modules\ProjectType\Models\ProjectType;
+use App\Traits\ApiResponseTrait;
 
 class ProjectTypeController extends Controller
 {
+    use ApiResponseTrait;
     public function __construct(private readonly ProjectTypeService $projectTypeService)
     {
         $this->middleware('permission:view-project-types')->only(['index', 'show']);
@@ -31,19 +33,19 @@ class ProjectTypeController extends Controller
             $request->input('status')
         );
 
-        return response()->json([
-            'status' => 'success',
-            'data' => ProjectTypeResource::collection($projectTypes)->response()->getData(true)
-        ]);
+        return $this->successResponse(
+            ProjectTypeResource::collection($projectTypes)->response()->getData(true),
+            'Project types retrieved successfully'
+        );
     }
 
     public function active(): JsonResponse
     {
         $projectTypes = $this->projectTypeService->getActiveProjectTypes();
-        return response()->json([
-            'status' => 'success',
-            'data' => ProjectTypeResource::collection($projectTypes)
-        ]);
+        return $this->successResponse(
+            ProjectTypeResource::collection($projectTypes),
+            'Active project types retrieved successfully'
+        );
     }
 
     public function store(StoreProjectTypeRequest $request): JsonResponse
@@ -51,19 +53,19 @@ class ProjectTypeController extends Controller
         $dto = ProjectTypeDTO::fromRequest($request->validated());
         $projectType = $this->projectTypeService->createProjectType($dto->data);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Project Type created successfully',
-            'data' => new ProjectTypeResource($projectType)
-        ], 201);
+        return $this->successResponse(
+            new ProjectTypeResource($projectType),
+            'Project Type created successfully',
+            201
+        );
     }
 
     public function show(ProjectType $projectType): JsonResponse
     {
-        return response()->json([
-            'status' => 'success',
-            'data' => new ProjectTypeResource($projectType)
-        ]);
+        return $this->successResponse(
+            new ProjectTypeResource($projectType),
+            'Project type retrieved successfully'
+        );
     }
 
     public function update(UpdateProjectTypeRequest $request, ProjectType $projectType): JsonResponse
@@ -71,26 +73,20 @@ class ProjectTypeController extends Controller
         $dto = ProjectTypeDTO::fromRequest($request->validated());
         $projectType = $this->projectTypeService->updateProjectType($projectType, $dto->data);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Project Type updated successfully',
-            'data' => new ProjectTypeResource($projectType)
-        ]);
+        return $this->successResponse(
+            new ProjectTypeResource($projectType),
+            'Project Type updated successfully'
+        );
     }
 
     public function destroy(ProjectType $projectType): JsonResponse
     {
         try {
             $this->projectTypeService->deleteProjectType($projectType);
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Project Type deleted successfully'
-            ]);
+            return $this->successResponse(null, 'Project Type deleted successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 400);
+            \Illuminate\Support\Facades\Log::error('ProjectTypeController@destroy: ' . $e->getMessage(), ['exception' => $e]);
+            return $this->errorResponse('Failed to delete project type.', 500);
         }
     }
 }

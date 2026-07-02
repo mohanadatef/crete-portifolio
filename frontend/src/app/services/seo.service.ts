@@ -62,11 +62,8 @@ export class SeoService {
     if (this.document.getElementById('google-tag-injected')) return;
 
     const head = this.document.getElementsByTagName('head')[0];
-    const isMeasurementId = /^[A-Z0-9]-[A-Z0-9]+$/i.test(googleTag.trim());
-    
-    if (isMeasurementId) {
-      const id = googleTag.trim();
-      
+    const id = this.extractGoogleTagId(googleTag);
+    if (id) {
       const script1 = this.document.createElement('script');
       script1.async = true;
       script1.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
@@ -82,16 +79,25 @@ export class SeoService {
       `;
       head.appendChild(script2);
     } else {
-      const container = this.document.createElement('div');
-      container.id = 'google-tag-injected';
-      container.style.display = 'none';
-      
-      const range = this.document.createRange();
-      range.selectNode(head);
-      const fragment = range.createContextualFragment(googleTag);
-      container.appendChild(fragment);
-      this.document.body.appendChild(container);
+      console.warn('Unsafe or invalid Google Tag omitted. Only valid GTM-XXXX or G-XXXX container IDs or standard script blocks are allowed.');
     }
+  }
+
+  private extractGoogleTagId(tag: string): string | null {
+    const trimmed = tag.trim();
+    if (/^(G|GTM)-[A-Z0-9]+$/i.test(trimmed)) {
+      return trimmed.toUpperCase();
+    }
+    const gtmMatch = trimmed.match(/id=(GTM-[A-Z0-9]+)/i);
+    if (gtmMatch) return gtmMatch[1].toUpperCase();
+
+    const gMatch = trimmed.match(/id=(G-[A-Z0-9]+)/i);
+    if (gMatch) return gMatch[1].toUpperCase();
+
+    const configMatch = trimmed.match(/gtag\(['"]config['"]\s*,\s*['"](G-[A-Z0-9]+)['"]\)/i);
+    if (configMatch) return configMatch[1].toUpperCase();
+
+    return null;
   }
 
   updateTitle(title: string) {

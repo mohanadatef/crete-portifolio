@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PageService } from '../../../core/services/page.service';
 import { Page } from '../../../core/models/models';
 import { QuillModule } from 'ngx-quill';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-page-form',
@@ -17,6 +18,7 @@ export class PageFormComponent implements OnInit {
   private pageService = inject(PageService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private toastService = inject(ToastService);
 
   pageForm!: FormGroup;
   isEditMode = false;
@@ -123,7 +125,7 @@ export class PageFormComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Error loading page details:', err);
-        alert('Failed to load page details.');
+        this.toastService.error('Failed to load page details.');
         this.router.navigate(['/admin/pages']);
       }
     });
@@ -338,12 +340,13 @@ export class PageFormComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.isSaving = false;
+        this.toastService.success('Page saved successfully.');
         this.router.navigate(['/admin/pages']);
       },
       error: (err: any) => {
         this.isSaving = false;
         console.error('Error saving page', err);
-        alert(err?.error?.message || 'Error occurred while saving the page.');
+        this.toastService.error(err?.error?.message || 'Error occurred while saving the page.');
       }
     });
   }

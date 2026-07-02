@@ -104,22 +104,28 @@
         <div class="project-img-wrap relative h-60">
           <img
             loading="lazy"
-            [src]="backendUrl + (getPrimaryImagePath(project) || '/placeholder.jpg')"
+            [src]="getProjectImageUrl(project)"
             [alt]="project.title_en"
             class="w-full h-full object-cover"
           >
           <!-- Dark gradient overlay -->
           <div class="absolute inset-0 bg-gradient-to-t from-[#0d1f4a]/80 via-transparent to-transparent"></div>
-          <!-- Type badge bottom-left -->
-          <div class="absolute bottom-4 left-4 rtl:left-auto rtl:right-4">
-            <span class="badge-gold">
-              {{ translate.currentLang() === 'ar' ? project.project_type?.name_ar : project.project_type?.name_en || 'General' }}
-            </span>
-          </div>
         </div>
 
         <!-- Card Body -->
         <div class="p-6">
+
+          <!-- Type & Location Metadata Row -->
+          <div class="flex items-center justify-between gap-2 mb-3 text-xs font-bold uppercase tracking-wider">
+            <span class="text-crete-gold">{{ translate.currentLang() === 'ar' ? project.project_type?.name_ar : project.project_type?.name_en || 'General' }}</span>
+            <span class="text-gray-400 flex items-center gap-1">
+              <svg class="w-3.5 h-3.5 text-crete-gold flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              {{ translate.currentLang() === 'ar' ? (project.location_ar || project.location) : project.location }}
+            </span>
+          </div>
+
           <h3 class="text-lg font-bold text-gray-900 mb-2 leading-snug group-hover:text-crete-gold transition-colors" style="font-family:'Playfair Display',serif">
             <a [routerLink]="['/projects', project.slug]">
               {{ translate.currentLang() === 'ar' ? (project.title_ar || project.title_en) : project.title_en }}
@@ -157,7 +163,7 @@
           <!-- Price + CTA -->
           <div class="flex justify-between items-center">
             <div>
-              <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Starting From</p>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">{{ translate.currentLang() === 'ar' ? 'يبدأ من' : 'Starting From' }}</p>
               <span class="text-xl font-extrabold text-crete-gold">${{ project.price | number }}</span>
             </div>
             <div class="flex gap-3">
