@@ -158,11 +158,11 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
           </span>
-          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()" placeholder="Search error or stack trace..." class="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onFilterChange()" placeholder="Search error or stack trace..." class="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
         </div>
 
         <!-- Level selector -->
-        <select [(ngModel)]="selectedLevel" (change)="applyFilters()" class="border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+        <select [(ngModel)]="selectedLevel" (change)="onFilterChange()" class="border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
           <option value="ALL">All Levels</option>
           <option value="ERROR">ERROR</option>
           <option value="WARNING">WARNING</option>
@@ -170,7 +170,7 @@
         </select>
 
         <!-- Refresh button -->
-        <button (click)="selectFile(selectedFile)" [disabled]="loadingLogs" class="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-500 hover:text-gray-900 transition-colors">
+        <button (click)="selectFile(selectedFile, false)" [disabled]="loadingLogs" class="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-500 hover:text-gray-900 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" [class.animate-spin]="loadingLogs" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15.89M21 20v-5h-.581" />
           </svg>
@@ -189,12 +189,12 @@
       </div>
 
       <!-- No log entries -->
-      <div *ngIf="filteredLogs.length === 0 && !loadingLogs" class="py-12 text-center text-gray-400 text-sm">
+      <div *ngIf="parsedLogs.length === 0 && !loadingLogs" class="py-12 text-center text-gray-400 text-sm">
         No log entries match the active level or search criteria.
       </div>
 
       <!-- Log items -->
-      <div *ngFor="let log of filteredLogs; let i = index" class="border rounded-2xl p-4 transition-all hover:border-gray-200" [ngClass]="{
+      <div *ngFor="let log of parsedLogs; let i = index" class="border rounded-2xl p-4 transition-all hover:border-gray-200" [ngClass]="{
         'border-red-100 bg-red-50/20': log.level === 'ERROR' || log.level === 'CRITICAL' || log.level === 'ALERT' || log.level === 'EMERGENCY',
         'border-amber-100 bg-amber-50/20': log.level === 'WARNING',
         'border-blue-100 bg-blue-50/20': log.level === 'INFO' || log.level === 'NOTICE',
@@ -242,6 +242,35 @@
           </div>
           <pre class="bg-gray-900 text-gray-200 p-4 rounded-xl text-[11px] leading-relaxed overflow-x-auto max-h-[300px] font-mono select-text">{{ log.stack_trace }}</pre>
         </div>
+      </div>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div *ngIf="parsedLogs.length > 0 && !loadingLogs" class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-t border-gray-100 pt-6 gap-4 select-none">
+      <div class="text-xs text-gray-500 font-medium">
+        Showing <span class="font-bold text-gray-900">{{ (page - 1) * perPage + 1 }}</span> to 
+        <span class="font-bold text-gray-900">{{ page * perPage > totalEntries ? totalEntries : page * perPage }}</span> of 
+        <span class="font-bold text-gray-900">{{ totalEntries }}</span> log entries
+      </div>
+      <div class="flex items-center gap-2">
+        <!-- Previous Page Button -->
+        <button [disabled]="page === 1" (click)="onPageChange(page - 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent text-xs font-semibold transition-colors flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+          <span>Previous</span>
+        </button>
+        <!-- Page Indicator -->
+        <span class="text-xs font-bold text-gray-700 px-3">
+          Page {{ page }} of {{ lastPage }}
+        </span>
+        <!-- Next Page Button -->
+        <button [disabled]="page === lastPage" (click)="onPageChange(page + 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:hover:bg-transparent text-xs font-semibold transition-colors flex items-center gap-1">
+          <span>Next</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+          </svg>
+        </button>
       </div>
     </div>
   </div>

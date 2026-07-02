@@ -75,9 +75,15 @@ class LogController extends Controller
                 return $this->errorResponse('Log file not found.', 404);
             }
 
-            // Read the last 2MB of the log file to prevent memory crash
+            // Get query params
+            $page = (int)request()->query('page', 1);
+            $perPage = (int)request()->query('per_page', 50);
+            $level = strtoupper(request()->query('level', 'ALL'));
+            $search = request()->query('search', '');
+
+            // Read the last 5MB for paginated views to make sure we get enough entries
             $fileSize = File::size($filePath);
-            $maxRead = 2 * 1024 * 1024; // 2MB
+            $maxRead = 5 * 1024 * 1024; // 5MB
             $content = '';
 
             if ($fileSize > $maxRead) {
@@ -85,7 +91,7 @@ class LogController extends Controller
                 fseek($handle, -$maxRead, SEEK_END);
                 $content = fread($handle, $maxRead);
                 fclose($handle);
-                $content = "[... Truncated for performance, showing last 2MB ...]\n" . $content;
+                $content = "[... Truncated for performance, showing last 5MB ...]\n" . $content;
             } else {
                 $content = File::get($filePath);
             }
@@ -98,7 +104,7 @@ class LogController extends Controller
             foreach ($matches as $match) {
                 $timestamp = $match[1];
                 $env = $match[2];
-                $level = $match[3];
+                $logLevel = strtoupper($match[3]);
                 $messageWithStack = $match[4];
 
                 // Split message and stack trace if present
@@ -106,22 +112,50 @@ class LogController extends Controller
                 $message = $lines[0];
                 $stackTrace = count($lines) > 1 ? implode("\n", array_slice($lines, 1)) : '';
 
+                // Filter by Level
+                if ($level !== 'ALL' && $logLevel !== $level) {
+                    continue;
+                }
+
+                // Filter by Search Query
+                if (!empty($search)) {
+                    $searchLower = strtolower($search);
+                    $msgLower = strtolower($message);
+                    $traceLower = strtolower($stackTrace);
+                    if (strpos($msgLower, $searchLower) === false && strpos($traceLower, $searchLower) === false) {
+                        continue;
+                    }
+                }
+
                 $parsedLogs[] = [
                     'timestamp' => $timestamp,
                     'environment' => $env,
-                    'level' => strtoupper($level),
+                    'level' => $logLevel,
                     'message' => $message,
                     'stack_trace' => $stackTrace,
-                    'type' => $this->getLogLevelClass($level)
+                    'type' => $this->getLogLevelClass($logLevel)
                 ];
             }
 
             // Return latest logs first
             $parsedLogs = array_reverse($parsedLogs);
 
+            // Paginate
+            $total = count($parsedLogs);
+            $lastPage = (int)ceil($total / $perPage);
+            $page = max(1, min($page, $lastPage ?: 1));
+            
+            $paginatedLogs = array_slice($parsedLogs, ($page - 1) * $perPage, $perPage);
+
             return $this->successResponse([
                 'filename' => $filename,
-                'logs' => $parsedLogs
+                'logs' => $paginatedLogs,
+                'pagination' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $total
+                ]
             ], 'Log file parsed successfully.');
         } catch (Exception $e) {
             return $this->errorResponse('Failed to read log file: ' . $e->getMessage(), 500);

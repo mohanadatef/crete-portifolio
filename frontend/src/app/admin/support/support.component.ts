@@ -20,11 +20,16 @@ export class SupportComponent implements OnInit {
 
   selectedFile: string | null = null;
   parsedLogs: any[] = [];
-  filteredLogs: any[] = [];
 
   searchQuery = '';
   selectedLevel = 'ALL';
   expandedLogIndex: number | null = null;
+
+  // Pagination properties
+  page = 1;
+  perPage = 50;
+  lastPage = 1;
+  totalEntries = 0;
 
   ngOnInit() {
     this.loadLogFiles();
@@ -44,19 +49,36 @@ export class SupportComponent implements OnInit {
     });
   }
 
-  selectFile(filename: string) {
+  selectFile(filename: string, resetPage = true) {
     this.selectedFile = filename;
     this.loadingLogs = true;
-    this.parsedLogs = [];
-    this.filteredLogs = [];
     this.expandedLogIndex = null;
-    this.searchQuery = '';
-    this.selectedLevel = 'ALL';
 
-    this.http.get<any>(`${environment.apiUrl}/admin/logs/${filename}`).subscribe({
+    if (resetPage) {
+      this.page = 1;
+      this.searchQuery = '';
+      this.selectedLevel = 'ALL';
+    }
+
+    const params = {
+      page: this.page.toString(),
+      per_page: this.perPage.toString(),
+      level: this.selectedLevel,
+      search: this.searchQuery
+    };
+
+    this.http.get<any>(`${environment.apiUrl}/admin/logs/${filename}`, { params }).subscribe({
       next: (res) => {
         this.parsedLogs = res.data.logs || [];
-        this.applyFilters();
+        
+        const pagination = res.data.pagination;
+        if (pagination) {
+          this.page = pagination.current_page;
+          this.lastPage = pagination.last_page;
+          this.perPage = pagination.per_page;
+          this.totalEntries = pagination.total;
+        }
+
         this.loadingLogs = false;
       },
       error: (err) => {
@@ -66,10 +88,23 @@ export class SupportComponent implements OnInit {
     });
   }
 
+  onFilterChange() {
+    if (this.selectedFile) {
+      this.page = 1;
+      this.selectFile(this.selectedFile, false);
+    }
+  }
+
+  onPageChange(newPage: number) {
+    if (this.selectedFile && newPage >= 1 && newPage <= this.lastPage) {
+      this.page = newPage;
+      this.selectFile(this.selectedFile, false);
+    }
+  }
+
   closeLogs() {
     this.selectedFile = null;
     this.parsedLogs = [];
-    this.filteredLogs = [];
     this.expandedLogIndex = null;
   }
 
@@ -77,19 +112,7 @@ export class SupportComponent implements OnInit {
     this.expandedLogIndex = this.expandedLogIndex === index ? null : index;
   }
 
-  applyFilters() {
-    this.filteredLogs = this.parsedLogs.filter(log => {
-      const matchesSearch = log.message.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
-                            log.stack_trace.toLowerCase().includes(this.searchQuery.toLowerCase());
-      
-      const matchesLevel = this.selectedLevel === 'ALL' || log.level === this.selectedLevel;
-
-      return matchesSearch && matchesLevel;
-    });
-  }
-
   copyToClipboard(text: string) {
     navigator.clipboard.writeText(text);
-    // Simple notification logic can be used here
   }
 }
