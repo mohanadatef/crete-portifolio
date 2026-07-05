@@ -92,7 +92,15 @@
              {{ lead.created_at | date:'short' }}
           </td>
           <td class="p-4 text-sm">
-            <div class="font-semibold text-gray-900">{{ lead.name }}</div>
+            <div class="flex items-center gap-1.5">
+              <div class="font-semibold text-gray-900">{{ lead.name }}</div>
+              <span *ngIf="lead.is_suspicious" title="Suspicious/Fake Contact" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800 animate-pulse border border-red-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                SUSPICIOUS
+              </span>
+            </div>
             <div *ngIf="getEmail(lead) !== 'N/A'"><a [href]="'mailto:' + getEmail(lead)" class="text-blue-600 hover:underline">{{ getEmail(lead) }}</a></div>
             <div *ngIf="getEmail(lead) === 'N/A'" class="text-gray-400">No Email</div>
             <div *ngIf="getPhone(lead) !== 'N/A'"><a [href]="'tel:' + getPhone(lead)" class="text-blue-600 hover:underline">{{ getPhone(lead) }}</a></div>

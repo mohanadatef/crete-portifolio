@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
         $permissions[] = 'view-settings';
         $permissions[] = 'edit-settings';
         $permissions[] = 'download-backups';
+        $permissions[] = 'manage-blocklist';
         
         // Leads detailed access permissions
         $permissions[] = 'view-all-leads';

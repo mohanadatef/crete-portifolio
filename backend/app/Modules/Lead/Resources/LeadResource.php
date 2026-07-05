@@ -19,6 +19,20 @@ class LeadResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,
+            'is_suspicious' => (function() {
+                static $blockedValues = null;
+                if ($blockedValues === null) {
+                    $blockedValues = \App\Modules\Setting\Models\BlockedContact::pluck('value')->toArray();
+                }
+                $isBlocked = false;
+                if ($this->email && in_array(trim($this->email), $blockedValues)) {
+                    $isBlocked = true;
+                }
+                if ($this->phone && in_array(trim($this->phone), $blockedValues)) {
+                    $isBlocked = true;
+                }
+                return $isBlocked;
+            })(),
             'message' => $this->message,
             'project_id' => $this->project_id,
             'project' => $this->whenLoaded('project', function () {

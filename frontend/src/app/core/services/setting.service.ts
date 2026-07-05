@@ -45,6 +45,18 @@ export class SettingService {
     return this.http.get<ApiResponse<PaginatedData<any>>>(`${this.adminUrl}/backups`, { params });
   }
 
+  getBlockedContacts(params: any = {}): Observable<ApiResponse<PaginatedData<any>>> {
+    return this.http.get<ApiResponse<PaginatedData<any>>>(`${this.adminUrl}/blocked-contacts`, { params });
+  }
+
+  addBlockedContact(data: any): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.adminUrl}/blocked-contacts`, data);
+  }
+
+  deleteBlockedContact(id: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.adminUrl}/blocked-contacts/${id}`);
+  }
+
   // Public Methods
   getPublic(params: any = {}): Observable<ApiResponse<PaginatedData<Setting> | Setting[]>> {
     return this.http.get<ApiResponse<PaginatedData<Setting> | Setting[]>>(this.publicUrl, { params });
