@@ -37,6 +37,10 @@ export class SettingService {
     return this.http.delete<ApiResponse<boolean>>(`${this.adminUrl}/${id}`);
   }
 
+  downloadBackup(): Observable<Blob> {
+    return this.http.get(`${this.adminUrl}/backup`, { responseType: 'blob' });
+  }
+
   // Public Methods
   getPublic(params: any = {}): Observable<ApiResponse<PaginatedData<Setting> | Setting[]>> {
     return this.http.get<ApiResponse<PaginatedData<Setting> | Setting[]>>(this.publicUrl, { params });

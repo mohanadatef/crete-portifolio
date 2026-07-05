@@ -406,6 +406,34 @@ export class SettingsComponent implements OnInit {
     this.statsList.splice(index, 1);
   }
 
+  backupLoading = false;
+
+  downloadDatabaseBackup() {
+    this.backupLoading = true;
+    this.settingService.downloadBackup().subscribe({
+      next: (blob: Blob) => {
+        this.backupLoading = false;
+        
+        // Trigger file download in browser
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `database-backup-${new Date().toISOString().slice(0, 10)}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        this.toastService.success('Database backup downloaded successfully.');
+      },
+      error: (err) => {
+        this.backupLoading = false;
+        console.error(err);
+        this.toastService.error('Failed to generate or download database backup.');
+      }
+    });
+  }
+
   trackByFn(index: any, item: any) {
     return index;
   }

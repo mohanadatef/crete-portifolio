@@ -77,6 +77,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('/admin/features', App\Modules\Feature\Controllers\FeatureController::class);
 
         Route::post('/admin/settings/bulk', [SettingController::class, 'updateBulk']);
+        Route::get('/admin/settings/backup', [\App\Modules\Setting\Controllers\BackupController::class, 'download']);
         Route::apiResource('/admin/settings', SettingController::class);
         Route::get('/admin/logs', [\App\Modules\Setting\Controllers\LogController::class, 'index']);
         Route::get('/admin/logs/{filename}', [\App\Modules\Setting\Controllers\LogController::class, 'show']);
