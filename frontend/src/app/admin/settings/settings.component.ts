@@ -118,6 +118,11 @@ export class SettingsComponent implements OnInit {
     image: string;
   }> = [];
 
+  heroMediaList: Array<{
+    url: string;
+    type: 'image' | 'video';
+  }> = [];
+
   status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
   logoUploading = false;
   logoPreview: string | null = null;
@@ -189,6 +194,16 @@ export class SettingsComponent implements OnInit {
           }
         } else {
           this.constructionUpdatesList = [];
+        }
+
+        if (this.settings['home_hero_media']) {
+          try {
+            this.heroMediaList = Array.isArray(this.settings['home_hero_media']) ? (this.settings['home_hero_media'] as any) : JSON.parse(this.settings['home_hero_media']);
+          } catch (e) {
+            this.heroMediaList = [];
+          }
+        } else {
+          this.heroMediaList = [];
         }
         
         this.status = 'idle';
@@ -271,6 +286,7 @@ export class SettingsComponent implements OnInit {
     this.settings['company_stats'] = JSON.stringify(this.statsList);
     this.settings['home_partners'] = JSON.stringify(this.partnersList);
     this.settings['home_construction_updates'] = JSON.stringify(this.constructionUpdatesList);
+    this.settings['home_hero_media'] = JSON.stringify(this.heroMediaList);
     this.status = 'loading';
     
     // Call bulk update setting endpoint
@@ -582,6 +598,32 @@ export class SettingsComponent implements OnInit {
         error: (err) => {
           console.error(err);
           this.toastService.error('Failed to remove contact from blocklist.');
+        }
+      });
+    }
+  }
+
+  addHeroMediaItem() {
+    this.heroMediaList.push({ url: '', type: 'image' });
+  }
+
+  removeHeroMediaItem(index: number) {
+    this.heroMediaList.splice(index, 1);
+  }
+
+  onHeroMediaFileSelect(event: any, index: number) {
+    const file = event.target.files[0];
+    if (file) {
+      const isVideo = file.type.startsWith('video/');
+      this.heroMediaList[index].type = isVideo ? 'video' : 'image';
+      
+      this.mediaService.upload(file).subscribe({
+        next: (res) => {
+          this.heroMediaList[index].url = res.data.url;
+        },
+        error: (err) => {
+          console.error(err);
+          this.toastService.error('Failed to upload file.');
         }
       });
     }

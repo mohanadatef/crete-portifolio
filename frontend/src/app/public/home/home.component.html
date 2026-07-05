@@ -4,32 +4,49 @@
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <section class="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
 
-  <!-- Hero Background Image or Video (Luxury Real Estate) -->
-  <ng-container *ngIf="isHeroBgVideo(); else imgBg">
-    <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover scale-105 transition-transform duration-[8000ms] ease-out">
-      <source [src]="heroBg()" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
-  </ng-container>
-  <ng-template #imgBg>
-    <div
-      class="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-transform duration-[8000ms] ease-out"
-      [style.background-image]="'url(' + heroBg() + ')'">
+  <!-- Hero Background Media Slideshow (Multiple Images/Videos Support) -->
+  <div class="absolute inset-0 w-full h-full">
+    <div *ngFor="let media of heroMedia(); let mIdx = index" 
+         [ngClass]="{'opacity-100 z-10': activeMediaIndex() === mIdx, 'opacity-0 z-0': activeMediaIndex() !== mIdx}"
+         class="absolute inset-0 transition-opacity duration-1000 ease-in-out w-full h-full">
+      
+      <!-- Video Element -->
+      <ng-container *ngIf="media.type === 'video'">
+        <video *ngIf="activeMediaIndex() === mIdx" autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover scale-105 transition-transform duration-[8000ms] ease-out">
+          <source [src]="media.url" type="video/mp4">
+        </video>
+      </ng-container>
+
+      <!-- Image Element -->
+      <ng-container *ngIf="media.type === 'image'">
+        <div class="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-transform duration-[8000ms] ease-out"
+             [style.background-image]="'url(' + media.url + ')'">
+        </div>
+      </ng-container>
     </div>
-  </ng-template>
+  </div>
 
   <!-- Dark Overlay -->
-  <div class="hero-overlay absolute inset-0 bg-gradient-to-br from-[#0a1628]/95 via-[#1e3678]/80 to-[#0a1628]/90"></div>
+  <div class="hero-overlay absolute inset-0 bg-gradient-to-br from-[#0a1628]/95 via-[#1e3678]/80 to-[#0a1628]/90 z-20"></div>
 
   <!-- Gold Accent Line -->
-  <div class="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-transparent via-[#c89f45] to-transparent opacity-60"></div>
+  <div class="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-transparent via-[#c89f45] to-transparent opacity-60 z-20"></div>
 
   <!-- Decorative rings -->
-  <div class="absolute bottom-[-120px] right-[-120px] w-[420px] h-[420px] rounded-full border border-[#c89f45]/20 pointer-events-none"></div>
-  <div class="absolute bottom-[-80px] right-[-80px] w-[280px] h-[280px] rounded-full border border-[#c89f45]/15 pointer-events-none"></div>
+  <div class="absolute bottom-[-120px] right-[-120px] w-[420px] h-[420px] rounded-full border border-[#c89f45]/20 pointer-events-none z-20"></div>
+  <div class="absolute bottom-[-80px] right-[-80px] w-[280px] h-[280px] rounded-full border border-[#c89f45]/15 pointer-events-none z-20"></div>
+
+  <!-- Hero Indicators / Dots -->
+  <div *ngIf="heroMedia().length > 1" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-30 flex gap-2.5">
+    <button *ngFor="let media of heroMedia(); let mIdx = index" 
+            (click)="setHeroMediaIndex(mIdx)" 
+            [ngClass]="{'bg-[#c89f45] w-8': activeMediaIndex() === mIdx, 'bg-white/40 hover:bg-white/70 w-2.5': activeMediaIndex() !== mIdx}" 
+            class="h-2.5 rounded-full transition-all duration-300" 
+            [title]="'Slide ' + (mIdx + 1)"></button>
+  </div>
 
   <!-- Hero Content -->
-  <div class="relative z-10 text-center px-6 max-w-5xl mx-auto">
+  <div class="relative z-30 text-center px-6 max-w-5xl mx-auto">
 
     <!-- Eyebrow -->
     <div class="animate-fade-in-up inline-flex items-center gap-3 mb-6">

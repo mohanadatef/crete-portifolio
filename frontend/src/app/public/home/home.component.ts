@@ -40,6 +40,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   heroSubtitleEn = signal<string>('');
   heroSubtitleAr = signal<string>('');
   heroBg = signal<string>('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=90');
+  heroMedia = signal<Array<{ url: string; type: 'image' | 'video' }>>([]);
+  activeMediaIndex = signal<number>(0);
+  private slideshowInterval: any;
   siteName = signal<string>('Crete Developments');
 
   isHeroBgVideo(): boolean {
@@ -102,6 +105,29 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         this.heroSubtitleEn.set(data['home_hero_subtitle_en'] || '');
         this.heroSubtitleAr.set(data['home_hero_subtitle_ar'] || '');
         this.heroBg.set(data['home_hero_bg'] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=90');
+
+        const mediaList = [];
+        if (data['home_hero_media']) {
+          try {
+            const parsed = Array.isArray(data['home_hero_media']) ? data['home_hero_media'] : JSON.parse(data['home_hero_media']);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              mediaList.push(...parsed);
+            }
+          } catch (e) {
+            console.error('Failed to parse home_hero_media', e);
+          }
+        }
+        if (mediaList.length === 0) {
+          const fallbackBg = this.heroBg();
+          const isVideo = fallbackBg.toLowerCase().endsWith('.mp4') || fallbackBg.toLowerCase().endsWith('.webm') || fallbackBg.toLowerCase().endsWith('.ogg') || fallbackBg.includes('/video/');
+          mediaList.push({
+            url: fallbackBg,
+            type: isVideo ? ('video' as const) : ('image' as const)
+          });
+        }
+        this.heroMedia.set(mediaList);
+        this.activeMediaIndex.set(0);
+        this.startHeroSlideshow();
 
         this.legacyTitleEn.set(data['home_legacy_title_en'] || '');
         this.legacyTitleAr.set(data['home_legacy_title_ar'] || '');
@@ -292,11 +318,34 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  startHeroSlideshow() {
+    this.stopHeroSlideshow();
+    if (this.heroMedia().length <= 1) return;
+    
+    this.slideshowInterval = setInterval(() => {
+      const nextIndex = (this.activeMediaIndex() + 1) % this.heroMedia().length;
+      this.activeMediaIndex.set(nextIndex);
+    }, 6000);
+  }
+
+  stopHeroSlideshow() {
+    if (this.slideshowInterval) {
+      clearInterval(this.slideshowInterval);
+      this.slideshowInterval = null;
+    }
+  }
+
+  setHeroMediaIndex(index: number) {
+    this.activeMediaIndex.set(index);
+    this.startHeroSlideshow();
+  }
+
   ngOnDestroy() {
     this.counterTimers.forEach(t => clearInterval(t));
     if (this.scrollObserver) {
       this.scrollObserver.disconnect();
     }
+    this.stopHeroSlideshow();
   }
 
   stripHtml(html: string | undefined): string {
