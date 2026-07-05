@@ -41,6 +41,10 @@ export class SettingService {
     return this.http.get(`${this.adminUrl}/backup`, { responseType: 'blob' });
   }
 
+  getBackupLogs(params: any = {}): Observable<ApiResponse<PaginatedData<any>>> {
+    return this.http.get<ApiResponse<PaginatedData<any>>>(`${this.adminUrl}/backups`, { params });
+  }
+
   // Public Methods
   getPublic(params: any = {}): Observable<ApiResponse<PaginatedData<Setting> | Setting[]>> {
     return this.http.get<ApiResponse<PaginatedData<Setting> | Setting[]>>(this.publicUrl, { params });

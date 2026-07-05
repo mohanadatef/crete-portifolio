@@ -321,6 +321,9 @@ export class SettingsComponent implements OnInit {
 
   setTab(tab: string) {
     this.activeTab = tab;
+    if (tab === 'backup') {
+      this.loadBackupLogs();
+    }
   }
 
   addSocialLink() {
@@ -408,6 +411,16 @@ export class SettingsComponent implements OnInit {
 
   backupLoading = false;
 
+  // Backup logs properties
+  backupLogs: any[] = [];
+  loadingBackupLogs = false;
+  backupLogPage = 1;
+  backupLogPerPage = 10;
+  backupLogLastPage = 1;
+  backupLogTotal = 0;
+  backupLogSearch = '';
+  backupLogStatus = 'ALL';
+
   downloadDatabaseBackup() {
     this.backupLoading = true;
     this.settingService.downloadBackup().subscribe({
@@ -425,13 +438,53 @@ export class SettingsComponent implements OnInit {
         window.URL.revokeObjectURL(url);
         
         this.toastService.success('Database backup downloaded successfully.');
+        this.loadBackupLogs();
       },
       error: (err) => {
         this.backupLoading = false;
         console.error(err);
         this.toastService.error('Failed to generate or download database backup.');
+        this.loadBackupLogs();
       }
     });
+  }
+
+  loadBackupLogs() {
+    this.loadingBackupLogs = true;
+    const params = {
+      page: this.backupLogPage.toString(),
+      per_page: this.backupLogPerPage.toString(),
+      status: this.backupLogStatus,
+      search: this.backupLogSearch
+    };
+
+    this.settingService.getBackupLogs(params).subscribe({
+      next: (res: any) => {
+        const paginatedData = res?.data || res;
+        this.backupLogs = paginatedData.data || [];
+        this.backupLogPage = paginatedData.current_page || 1;
+        this.backupLogLastPage = paginatedData.last_page || 1;
+        this.backupLogTotal = paginatedData.total || 0;
+        this.loadingBackupLogs = false;
+      },
+      error: (err) => {
+        console.error('Failed to load backup logs', err);
+        this.loadingBackupLogs = false;
+        this.toastService.error('Failed to load backup history.');
+      }
+    });
+  }
+
+  onBackupFilterChange() {
+    this.backupLogPage = 1;
+    this.loadBackupLogs();
+  }
+
+  onBackupPageChange(newPage: number) {
+    if (newPage >= 1 && newPage <= this.backupLogLastPage) {
+      this.backupLogPage = newPage;
+      this.loadBackupLogs();
+    }
   }
 
   trackByFn(index: any, item: any) {
