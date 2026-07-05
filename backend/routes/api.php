@@ -57,6 +57,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/admin/media', [\App\Modules\Media\Controllers\MediaController::class, 'store'])->middleware('permission:create-projects|edit-settings');
         Route::get('/admin/dashboard', [\App\Modules\Lead\Controllers\DashboardController::class, 'index'])->middleware('permission:view-leads|view-all-leads|view-unassigned-leads');
         Route::get('/admin/reports', [\App\Modules\Lead\Controllers\ReportController::class, 'index'])->middleware('permission:view-all-leads');
+        Route::get('/admin/custom-reports/{id}/run', [\App\Modules\Lead\Controllers\CustomReportController::class, 'run']);
+        Route::apiResource('/admin/custom-reports', \App\Modules\Lead\Controllers\CustomReportController::class);
 
         Route::apiResource('/admin/pages', PageController::class);
         // User Management

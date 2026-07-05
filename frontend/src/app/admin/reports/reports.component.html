@@ -31,7 +31,7 @@
 
   <div *ngIf="status() === 'success'" class="space-y-8 animate-fade-in-up">
     <!-- Reports Selector Tabs -->
-    <div class="flex border-b border-gray-200">
+    <div class="flex border-b border-gray-200 overflow-x-auto whitespace-nowrap">
       <button (click)="setActiveReport('leads')"
               [class]="activeReport() === 'leads' ? 'border-blue-600 text-blue-650 font-bold border-b-2' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2'"
               class="py-4 px-6 text-sm font-medium transition-all">
@@ -46,6 +46,11 @@
               [class]="activeReport() === 'campaigns' ? 'border-blue-600 text-blue-650 font-bold border-b-2' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2'"
               class="py-4 px-6 text-sm font-medium transition-all">
         3. Marketing UTM Campaign Attribution
+      </button>
+      <button (click)="setActiveReport('custom')"
+              [class]="activeReport() === 'custom' ? 'border-blue-600 text-blue-650 font-bold border-b-2' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2'"
+              class="py-4 px-6 text-sm font-medium transition-all">
+        4. Custom BI Report Builder
       </button>
     </div>
 
@@ -311,6 +316,295 @@
             <div *ngIf="reportData().campaign_attribution.top_blog_posts_by_views.length === 0" class="py-8 text-center text-gray-400 text-xs">
               No blog posts view history.
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORT 4: CUSTOM BI REPORT BUILDER -->
+    <div *ngIf="activeReport() === 'custom'" class="space-y-8">
+      
+      <!-- Top Action Bar -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-150 shadow-sm">
+        <div>
+          <h3 class="text-base font-bold text-gray-800">Your Saved Custom Reports</h3>
+          <p class="text-xs text-gray-400 mt-0.5">Build and save multiple customized reports for leads, projects, or landing pages.</p>
+        </div>
+        <button (click)="openCreateForm()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/10">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Build Custom Report
+        </button>
+      </div>
+
+      <!-- Report Builder Modal / Form Drawer -->
+      <div *ngIf="showBuilder()" class="bg-white p-6 rounded-2xl border border-blue-100 shadow-lg space-y-6 animate-fade-in">
+        <div class="flex justify-between items-center pb-3 border-b border-gray-150">
+          <h4 class="text-sm font-bold text-gray-850">{{ isEditing() ? 'Edit Custom Report Definition' : 'Configure New Custom Report' }}</h4>
+          <button (click)="showBuilder.set(false)" class="text-gray-400 hover:text-gray-600 text-xs font-semibold">Cancel</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Left fields -->
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1">Report Name *</label>
+              <input type="text" [(ngModel)]="newReport.name" placeholder="e.g. Weekly Campaign Leads" class="w-full border border-gray-300 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1">Description</label>
+              <textarea [(ngModel)]="newReport.description" placeholder="Brief description of report purpose..." class="w-full border border-gray-300 rounded-xl px-3.5 py-2 text-xs h-20 focus:ring-1 focus:ring-blue-500 focus:outline-none"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">Entity Type</label>
+                <select [(ngModel)]="newReport.entity_type" (change)="onEntityTypeChange()" class="w-full border border-gray-300 rounded-xl px-3.5 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  <option value="leads">Leads</option>
+                  <option value="projects">Projects</option>
+                  <option value="landing_pages">Landing Pages</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">Display Format</label>
+                <select [(ngModel)]="newReport.config.chart_type" class="w-full border border-gray-300 rounded-xl px-3.5 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  <option value="table">Data Table</option>
+                  <option value="bar">Bar Chart</option>
+                  <option value="pie">Pie Chart</option>
+                </select>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1.5">Group By / Aggregate (Optional)</label>
+              <select [(ngModel)]="newReport.config.group_by" class="w-full border border-gray-300 rounded-xl px-3.5 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option value="">-- None (Show raw rows list) --</option>
+                <option *ngFor="let option of getAvailableGroupBy()" [value]="option">{{ option | uppercase }}</option>
+              </select>
+              <p class="text-[10px] text-gray-400 mt-1">If a grouping key is set, the report will display the aggregate counts per group value.</p>
+            </div>
+          </div>
+
+          <!-- Right fields (Columns & Filters) -->
+          <div class="space-y-4 border-t md:border-t-0 md:border-l border-gray-150 md:pl-6 pt-4 md:pt-0">
+            <!-- Columns multiselect -->
+            <div *ngIf="!newReport.config.group_by">
+              <label class="block text-xs font-bold text-gray-700 mb-1.5">Columns to Display</label>
+              <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1 border border-gray-200 rounded-xl bg-gray-50/50">
+                <button type="button" 
+                        *ngFor="let col of getAvailableColumns()" 
+                        (click)="toggleColumn(col)" 
+                        [class]="isColumnSelected(col) ? 'bg-blue-600 text-white' : 'bg-white text-gray-650 hover:bg-gray-100 border border-gray-200'"
+                        class="px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all">
+                  {{ col.replace('_', ' ') }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="space-y-3">
+              <label class="block text-xs font-bold text-gray-700">Custom Filters</label>
+              
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[9px] font-semibold text-gray-500 mb-0.5">Date From</label>
+                  <input type="date" [(ngModel)]="newReport.config.filters.date_from" class="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs">
+                </div>
+                <div>
+                  <label class="block text-[9px] font-semibold text-gray-500 mb-0.5">Date To</label>
+                  <input type="date" [(ngModel)]="newReport.config.filters.date_to" class="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs">
+                </div>
+              </div>
+
+              <!-- Leads Filters -->
+              <div *ngIf="newReport.entity_type === 'leads'" class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[9px] font-semibold text-gray-500 mb-0.5">Lead Status</label>
+                  <select [(ngModel)]="newReport.config.filters.status" class="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs bg-white focus:outline-none">
+                    <option value="">All Statuses</option>
+                    <option value="new">New</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="converted">Converted</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="not_interested">Not Interested</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[9px] font-semibold text-gray-500 mb-0.5">Assigned Agent</label>
+                  <select [(ngModel)]="newReport.config.filters.assigned_to" class="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs bg-white focus:outline-none">
+                    <option value="">All Agents</option>
+                    <option *ngFor="let user of users()" [value]="user.id">{{ user.name }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Projects Filters -->
+              <div *ngIf="newReport.entity_type === 'projects'">
+                <label class="block text-[9px] font-semibold text-gray-500 mb-0.5">Location Search</label>
+                <input type="text" [(ngModel)]="newReport.config.filters.location" placeholder="e.g. New Cairo" class="w-full border border-gray-300 rounded-lg px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-gray-150 flex justify-end gap-3">
+          <button (click)="showBuilder.set(false)" class="px-4 py-2 border border-gray-250 rounded-xl text-xs font-semibold hover:bg-gray-50">Cancel</button>
+          <button (click)="saveReport()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/10">Save Report Setup</button>
+        </div>
+      </div>
+
+      <!-- List of Saved Reports -->
+      <div *ngIf="customReports().length === 0 && !showBuilder()" class="border border-dashed border-gray-250 rounded-2xl p-12 text-center bg-gray-50/50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h4 class="text-sm font-bold text-gray-700">No Custom Reports Saved Yet</h4>
+        <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">Create specialized reports with specific fields and filters. Any custom report can be generated again with one click.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" *ngIf="customReports().length > 0">
+        <div *ngFor="let rep of customReports()" class="bg-white p-5 rounded-2xl border border-gray-150 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+          <div class="space-y-2">
+            <div class="flex justify-between items-start">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-100">
+                {{ rep.entity_type }}
+              </span>
+              <span class="text-[10px] text-gray-400 font-medium">Format: {{ rep.config.chart_type }}</span>
+            </div>
+            <h4 class="font-extrabold text-gray-800 text-sm group-hover:text-blue-650 transition-colors">{{ rep.name }}</h4>
+            <p class="text-xs text-gray-400 line-clamp-2">{{ rep.description || 'No description provided.' }}</p>
+            
+            <div class="text-[10px] text-gray-500 pt-1.5 space-y-1">
+              <div *ngIf="rep.config.group_by">
+                <span class="font-semibold text-gray-600">Aggregate by:</span> {{ rep.config.group_by }}
+              </div>
+              <div *ngIf="!rep.config.group_by">
+                <span class="font-semibold text-gray-600">Columns:</span> {{ rep.config.columns.join(', ') }}
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-gray-100 mt-4 flex items-center justify-between">
+            <button (click)="runReport(rep.id)" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-bold transition-all shadow-sm shadow-blue-600/10">
+              Run Report
+            </button>
+            <div class="flex gap-2">
+              <button (click)="openEditForm(rep)" class="p-1.5 text-gray-400 hover:text-blue-600 rounded hover:bg-gray-50" title="Edit Setup">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <button (click)="deleteReport(rep.id)" class="p-1.5 text-gray-400 hover:text-red-650 rounded hover:bg-red-50" title="Delete">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Execution Results Area -->
+      <div *ngIf="runningReportStatus() !== 'idle'" class="bg-white rounded-2xl border border-gray-150 shadow-sm overflow-hidden mt-8">
+        <div class="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+          <div>
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Running Report</span>
+            <h3 class="text-base font-bold text-gray-800 mt-0.5">{{ runningReportData()?.report?.name }}</h3>
+          </div>
+          <button (click)="runningReportData.set(null); runningReportStatus.set('idle')" class="text-gray-400 hover:text-gray-650 text-xs font-semibold">Clear View</button>
+        </div>
+
+        <!-- Running Loading -->
+        <div *ngIf="runningReportStatus() === 'loading'" class="py-16 text-center space-y-3">
+          <div class="w-10 h-10 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin mx-auto"></div>
+          <p class="text-xs text-gray-500">Executing database query...</p>
+        </div>
+
+        <!-- Running Error -->
+        <div *ngIf="runningReportStatus() === 'error'" class="p-8 text-center text-red-500 space-y-2">
+          <svg class="w-10 h-10 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <p class="text-sm font-bold">Failed to compile and run report query.</p>
+        </div>
+
+        <!-- Running Success -->
+        <div *ngIf="runningReportStatus() === 'success' && runningReportData()" class="p-6 space-y-6">
+          
+          <!-- Case A: Group By Chart view -->
+          <div *ngIf="runningReportData().report.config.group_by" class="space-y-6 max-w-3xl">
+            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Aggregated counts by {{ runningReportData().report.config.group_by }}</h4>
+            
+            <div class="space-y-4">
+              <div *ngFor="let item of runningReportData().results">
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <!-- Display human readable values for relationships -->
+                  <span class="capitalize text-gray-700">
+                    <ng-container *ngIf="runningReportData().report.config.group_by === 'assigned_to'">
+                      {{ getAgentName(item[runningReportData().report.config.group_by]) }}
+                    </ng-container>
+                    <ng-container *ngIf="runningReportData().report.config.group_by !== 'assigned_to'">
+                      {{ item[runningReportData().report.config.group_by] || 'Unassigned / General' }}
+                    </ng-container>
+                  </span>
+                  <span class="text-gray-800">{{ item.count }} records</span>
+                </div>
+                <div class="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full bg-blue-600" 
+                       [style.width]="(item.count / runningReportData().results[0]?.count * 100) + '%'"></div>
+                </div>
+              </div>
+
+              <div *ngIf="runningReportData().results.length === 0" class="text-center py-12 text-gray-400 text-xs">
+                No matching records returned.
+              </div>
+            </div>
+          </div>
+
+          <!-- Case B: Flat Rows list view -->
+          <div *ngIf="!runningReportData().report.config.group_by" class="overflow-x-auto -mx-6 -mb-6 border-t border-gray-100">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  <th *ngFor="let col of runningReportData().report.config.columns" class="p-4">{{ col.replace('_', ' ') }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 text-xs text-gray-700">
+                <tr *ngFor="let row of runningReportData().results" class="hover:bg-gray-50/50 transition-colors">
+                  <td *ngFor="let col of runningReportData().report.config.columns" class="p-4">
+                    <!-- Format specific columns -->
+                    <ng-container [ngSwitch]="col">
+                      <!-- Project relation -->
+                      <span *ngSwitchCase="'project_id'">
+                        {{ row.project?.title_en || 'None' }}
+                      </span>
+                      <!-- Landing page relation -->
+                      <span *ngSwitchCase="'landing_page_id'">
+                        {{ row.landing_page?.title || 'None' }}
+                      </span>
+                      <!-- Assigned user relation -->
+                      <span *ngSwitchCase="'assigned_to'">
+                        {{ row.assigned_to?.name || 'Unassigned' }}
+                      </span>
+                      <!-- Date columns -->
+                      <span *ngSwitchCase="'created_at'">
+                        {{ row.created_at | date:'short' }}
+                      </span>
+                      <!-- General column -->
+                      <span *ngSwitchDefault>
+                        {{ row[col] !== null ? row[col] : '-' }}
+                      </span>
+                    </ng-container>
+                  </td>
+                </tr>
+                <tr *ngIf="runningReportData().results.length === 0">
+                  <td [attr.colspan]="runningReportData().report.config.columns.length" class="p-8 text-center text-gray-400">
+                    No matching records found in database.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
