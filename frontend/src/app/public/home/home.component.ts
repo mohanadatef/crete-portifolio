@@ -40,7 +40,22 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   heroSubtitleEn = signal<string>('');
   heroSubtitleAr = signal<string>('');
   heroBg = signal<string>('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=90');
-  heroMedia = signal<Array<{ url: string; type: 'image' | 'video' }>>([]);
+  heroMedia = signal<Array<{
+    url: string;
+    type: 'image' | 'video';
+    title_en?: string;
+    title_ar?: string;
+    subtitle_en?: string;
+    subtitle_ar?: string;
+    btn1_enabled?: boolean;
+    btn1_text_en?: string;
+    btn1_text_ar?: string;
+    btn1_link?: string;
+    btn2_enabled?: boolean;
+    btn2_text_en?: string;
+    btn2_text_ar?: string;
+    btn2_link?: string;
+  }>>([]);
   activeMediaIndex = signal<number>(0);
   private slideshowInterval: any;
   siteName = signal<string>('Crete Developments');
@@ -111,7 +126,22 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
           try {
             const parsed = Array.isArray(data['home_hero_media']) ? data['home_hero_media'] : JSON.parse(data['home_hero_media']);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              mediaList.push(...parsed);
+              mediaList.push(...parsed.map((item: any) => ({
+                url: item.url || '',
+                type: item.type || 'image',
+                title_en: item.title_en || '',
+                title_ar: item.title_ar || '',
+                subtitle_en: item.subtitle_en || '',
+                subtitle_ar: item.subtitle_ar || '',
+                btn1_enabled: item.btn1_enabled !== undefined ? !!item.btn1_enabled : true,
+                btn1_text_en: item.btn1_text_en || 'Explore Projects',
+                btn1_text_ar: item.btn1_text_ar || 'اكتشف المشاريع',
+                btn1_link: item.btn1_link || '/projects',
+                btn2_enabled: item.btn2_enabled !== undefined ? !!item.btn2_enabled : true,
+                btn2_text_en: item.btn2_text_en || 'Contact Us',
+                btn2_text_ar: item.btn2_text_ar || 'اتصل بنا',
+                btn2_link: item.btn2_link || '/contact'
+              })));
             }
           } catch (e) {
             console.error('Failed to parse home_hero_media', e);
@@ -122,7 +152,19 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
           const isVideo = fallbackBg.toLowerCase().endsWith('.mp4') || fallbackBg.toLowerCase().endsWith('.webm') || fallbackBg.toLowerCase().endsWith('.ogg') || fallbackBg.includes('/video/');
           mediaList.push({
             url: fallbackBg,
-            type: isVideo ? ('video' as const) : ('image' as const)
+            type: isVideo ? ('video' as const) : ('image' as const),
+            title_en: this.heroTitleEn(),
+            title_ar: this.heroTitleAr(),
+            subtitle_en: this.heroSubtitleEn(),
+            subtitle_ar: this.heroSubtitleAr(),
+            btn1_enabled: true,
+            btn1_text_en: 'Explore Projects',
+            btn1_text_ar: 'اكتشف المشاريع',
+            btn1_link: '/projects',
+            btn2_enabled: true,
+            btn2_text_en: 'Contact Us',
+            btn2_text_ar: 'اتصل بنا',
+            btn2_link: '/contact'
           });
         }
         this.heroMedia.set(mediaList);

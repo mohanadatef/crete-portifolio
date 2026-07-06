@@ -121,6 +121,18 @@ export class SettingsComponent implements OnInit {
   heroMediaList: Array<{
     url: string;
     type: 'image' | 'video';
+    title_en?: string;
+    title_ar?: string;
+    subtitle_en?: string;
+    subtitle_ar?: string;
+    btn1_enabled?: boolean;
+    btn1_text_en?: string;
+    btn1_text_ar?: string;
+    btn1_link?: string;
+    btn2_enabled?: boolean;
+    btn2_text_en?: string;
+    btn2_text_ar?: string;
+    btn2_link?: string;
   }> = [];
 
   status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
@@ -198,7 +210,23 @@ export class SettingsComponent implements OnInit {
 
         if (this.settings['home_hero_media']) {
           try {
-            this.heroMediaList = Array.isArray(this.settings['home_hero_media']) ? (this.settings['home_hero_media'] as any) : JSON.parse(this.settings['home_hero_media']);
+            const rawMedia = Array.isArray(this.settings['home_hero_media']) ? (this.settings['home_hero_media'] as any) : JSON.parse(this.settings['home_hero_media']);
+            this.heroMediaList = rawMedia.map((item: any) => ({
+              url: item.url || '',
+              type: item.type || 'image',
+              title_en: item.title_en || '',
+              title_ar: item.title_ar || '',
+              subtitle_en: item.subtitle_en || '',
+              subtitle_ar: item.subtitle_ar || '',
+              btn1_enabled: item.btn1_enabled !== undefined ? !!item.btn1_enabled : true,
+              btn1_text_en: item.btn1_text_en || 'Explore Projects',
+              btn1_text_ar: item.btn1_text_ar || 'اكتشف المشاريع',
+              btn1_link: item.btn1_link || '/projects',
+              btn2_enabled: item.btn2_enabled !== undefined ? !!item.btn2_enabled : true,
+              btn2_text_en: item.btn2_text_en || 'Contact Us',
+              btn2_text_ar: item.btn2_text_ar || 'اتصل بنا',
+              btn2_link: item.btn2_link || '/contact'
+            }));
           } catch (e) {
             this.heroMediaList = [];
           }
@@ -604,7 +632,22 @@ export class SettingsComponent implements OnInit {
   }
 
   addHeroMediaItem() {
-    this.heroMediaList.push({ url: '', type: 'image' });
+    this.heroMediaList.push({
+      url: '',
+      type: 'image',
+      title_en: '',
+      title_ar: '',
+      subtitle_en: '',
+      subtitle_ar: '',
+      btn1_enabled: true,
+      btn1_text_en: 'Explore Projects',
+      btn1_text_ar: 'اكتشف المشاريع',
+      btn1_link: '/projects',
+      btn2_enabled: true,
+      btn2_text_en: 'Contact Us',
+      btn2_text_ar: 'اتصل بنا',
+      btn2_link: '/contact'
+    });
   }
 
   removeHeroMediaItem(index: number) {

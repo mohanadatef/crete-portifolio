@@ -4,11 +4,11 @@
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <section class="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
 
-  <!-- Hero Background Media Slideshow (Multiple Images/Videos Support) -->
+  <!-- Hero Background Media Slideshow & Custom Content -->
   <div class="absolute inset-0 w-full h-full">
     <div *ngFor="let media of heroMedia(); let mIdx = index" 
-         [ngClass]="{'opacity-100 z-10': activeMediaIndex() === mIdx, 'opacity-0 z-0': activeMediaIndex() !== mIdx}"
-         class="absolute inset-0 transition-opacity duration-1000 ease-in-out w-full h-full">
+         [ngClass]="{'opacity-100 z-30 pointer-events-auto': activeMediaIndex() === mIdx, 'opacity-0 z-0 pointer-events-none': activeMediaIndex() !== mIdx}"
+         class="absolute inset-0 transition-opacity duration-1000 ease-in-out w-full h-full flex items-center justify-center">
       
       <!-- Video Element -->
       <ng-container *ngIf="media.type === 'video'">
@@ -23,70 +23,71 @@
              [style.background-image]="'url(' + media.url + ')'">
         </div>
       </ng-container>
+
+      <!-- Dark Overlay -->
+      <div class="hero-overlay absolute inset-0 bg-gradient-to-br from-[#0a1628]/95 via-[#1e3678]/85 to-[#0a1628]/90 z-10"></div>
+
+      <!-- Slide content wrapper -->
+      <div class="relative z-20 text-center px-6 max-w-5xl mx-auto transition-all duration-1000 transform"
+           [ngClass]="{'translate-y-0 opacity-100': activeMediaIndex() === mIdx, 'translate-y-8 opacity-0': activeMediaIndex() !== mIdx}">
+        
+        <!-- Eyebrow -->
+        <div class="inline-flex items-center gap-3 mb-6">
+          <span class="h-px w-10 bg-[#c89f45]"></span>
+          <span class="text-[#c89f45] uppercase tracking-[0.35em] text-xs font-semibold">{{ siteName() }}</span>
+          <span class="h-px w-10 bg-[#c89f45]"></span>
+        </div>
+
+        <!-- Headline -->
+        <h1 class="font-bold text-5xl sm:text-6xl md:text-7xl xl:text-8xl text-white leading-[1.08] tracking-tight mb-6"
+            style="font-family: 'Playfair Display', Georgia, serif;">
+          {{ translate.currentLang() === 'ar' ? (media.title_ar || heroTitleAr()) : (media.title_en || heroTitleEn()) }}
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-gray-300 text-lg sm:text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed mb-10">
+          {{ translate.currentLang() === 'ar' ? (media.subtitle_ar || heroSubtitleAr()) : (media.subtitle_en || heroSubtitleEn()) }}
+        </p>
+
+        <!-- CTAs -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <!-- Button 1 -->
+          <a *ngIf="media.btn1_enabled" [routerLink]="media.btn1_link"
+             class="group inline-flex items-center gap-3 bg-[#c89f45] hover:bg-[#b8902e] text-[#0a1628] font-bold px-9 py-4 text-sm uppercase tracking-[0.2em] transition-all duration-300 shadow-lg shadow-[#c89f45]/20 hover:shadow-[#c89f45]/40 hover:-translate-y-0.5">
+            <span>{{ translate.currentLang() === 'ar' ? media.btn1_text_ar : media.btn1_text_en }}</span>
+            <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 rlt:rotate-180 rlt:group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
+          </a>
+
+          <!-- Button 2 -->
+          <a *ngIf="media.btn2_enabled" [routerLink]="media.btn2_link"
+             class="group inline-flex items-center gap-3 border border-white/40 hover:border-[#c89f45] text-white hover:text-[#c89f45] font-semibold px-9 py-4 text-sm uppercase tracking-[0.2em] transition-all duration-300 hover:-translate-y-0.5 backdrop-blur-sm">
+            <svg class="w-4 h-4 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+            </svg>
+            <span>{{ translate.currentLang() === 'ar' ? media.btn2_text_ar : media.btn2_text_en }}</span>
+          </a>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- Dark Overlay -->
-  <div class="hero-overlay absolute inset-0 bg-gradient-to-br from-[#0a1628]/95 via-[#1e3678]/80 to-[#0a1628]/90 z-20"></div>
-
   <!-- Gold Accent Line -->
-  <div class="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-transparent via-[#c89f45] to-transparent opacity-60 z-20"></div>
+  <div class="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-transparent via-[#c89f45] to-transparent opacity-60 z-40"></div>
 
   <!-- Decorative rings -->
-  <div class="absolute bottom-[-120px] right-[-120px] w-[420px] h-[420px] rounded-full border border-[#c89f45]/20 pointer-events-none z-20"></div>
-  <div class="absolute bottom-[-80px] right-[-80px] w-[280px] h-[280px] rounded-full border border-[#c89f45]/15 pointer-events-none z-20"></div>
+  <div class="absolute bottom-[-120px] right-[-120px] w-[420px] h-[420px] rounded-full border border-[#c89f45]/20 pointer-events-none z-40"></div>
+  <div class="absolute bottom-[-80px] right-[-80px] w-[280px] h-[280px] rounded-full border border-[#c89f45]/15 pointer-events-none z-40"></div>
 
   <!-- Hero Indicators / Dots -->
-  <div *ngIf="heroMedia().length > 1" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-30 flex gap-2.5">
+  <div *ngIf="heroMedia().length > 1" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-50 flex gap-2.5">
     <button *ngFor="let media of heroMedia(); let mIdx = index" 
             (click)="setHeroMediaIndex(mIdx)" 
             [ngClass]="{'bg-[#c89f45] w-8': activeMediaIndex() === mIdx, 'bg-white/40 hover:bg-white/70 w-2.5': activeMediaIndex() !== mIdx}" 
             class="h-2.5 rounded-full transition-all duration-300" 
             [title]="'Slide ' + (mIdx + 1)"></button>
-  </div>
-
-  <!-- Hero Content -->
-  <div class="relative z-30 text-center px-6 max-w-5xl mx-auto">
-
-    <!-- Eyebrow -->
-    <div class="animate-fade-in-up inline-flex items-center gap-3 mb-6">
-      <span class="h-px w-10 bg-[#c89f45]"></span>
-      <span class="text-[#c89f45] uppercase tracking-[0.35em] text-xs font-semibold">{{ siteName() }}</span>
-      <span class="h-px w-10 bg-[#c89f45]"></span>
-    </div>
-
-    <!-- Headline -->
-    <h1 class="animate-fade-in-up font-bold text-5xl sm:text-6xl md:text-7xl xl:text-8xl text-white leading-[1.08] tracking-tight mb-6"
-        style="font-family: 'Playfair Display', Georgia, serif; animation-delay: 0.1s;">
-      {{ translate.currentLang() === 'ar' ? heroTitleAr() : heroTitleEn() }}
-    </h1>
-
-    <!-- Subtitle -->
-    <p class="animate-fade-in-up text-gray-300 text-lg sm:text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed mb-10"
-       style="animation-delay: 0.25s;">
-      {{ translate.currentLang() === 'ar' ? heroSubtitleAr() : heroSubtitleEn() }}
-    </p>
-
-    <!-- CTAs -->
-    <div class="animate-fade-in-up flex flex-col sm:flex-row items-center justify-center gap-4"
-         style="animation-delay: 0.4s;">
-
-      <a routerLink="/projects"
-         class="group inline-flex items-center gap-3 bg-[#c89f45] hover:bg-[#b8902e] text-[#0a1628] font-bold px-9 py-4 text-sm uppercase tracking-[0.2em] transition-all duration-300 shadow-lg shadow-[#c89f45]/20 hover:shadow-[#c89f45]/40 hover:-translate-y-0.5">
-        <span>{{ 'HOME.EXPLORE_PROJECTS' | translate }}</span>
-        <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 rlt:rotate-180 rlt:group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-        </svg>
-      </a>
-
-      <a routerLink="/contact"
-         class="group inline-flex items-center gap-3 border border-white/40 hover:border-[#c89f45] text-white hover:text-[#c89f45] font-semibold px-9 py-4 text-sm uppercase tracking-[0.2em] transition-all duration-300 hover:-translate-y-0.5 backdrop-blur-sm">
-        <svg class="w-4 h-4 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-        </svg>
-        {{ translate.currentLang() === 'ar' ? 'اتصل بنا' : 'Contact Us' }}
-      </a>
-    </div>
   </div>
 
   <!-- Scroll indicator -->

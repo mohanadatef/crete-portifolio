@@ -342,26 +342,25 @@
               <span class="text-xs text-gray-500">No slides added. Click "+ Add Media Slide" to create a premium hero background carousel.</span>
             </div>
 
-            <div class="space-y-3">
-              <div *ngFor="let media of heroMediaList; let mIdx = index" class="p-4 bg-gray-50 rounded-xl border border-gray-200 relative space-y-3">
-                <button type="button" (click)="removeHeroMediaItem(mIdx)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold">
-                  Remove
+            <div class="space-y-4">
+              <div *ngFor="let media of heroMediaList; let mIdx = index; trackBy: trackByFn" class="p-4 bg-gray-50 rounded-xl border border-gray-250 relative space-y-4">
+                <button type="button" (click)="removeHeroMediaItem(mIdx)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold bg-white px-2.5 py-1 rounded border border-red-200 transition-colors shadow-sm">
+                  Remove Slide
                 </button>
-                <span class="text-xs font-bold text-gray-400">Media Slide #{{ mIdx + 1 }}</span>
+                <span class="text-xs font-bold text-blue-600 block border-b border-gray-200 pb-2">Media Slide #{{ mIdx + 1 }} Configuration</span>
 
+                <!-- Media Source Fields -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                  <!-- Type -->
                   <div>
-                    <label class="block text-[10px] font-semibold text-gray-600 mb-1">Type</label>
+                    <label class="block text-[10px] font-bold text-gray-600 mb-1">Slide Media Type</label>
                     <select [(ngModel)]="media.type" [name]="'hero-media-t-' + mIdx" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                       <option value="image">Image</option>
                       <option value="video">Video</option>
                     </select>
                   </div>
 
-                  <!-- URL / Upload -->
                   <div class="md:col-span-2">
-                    <label class="block text-[10px] font-semibold text-gray-600 mb-1">Media File URL / Upload</label>
+                    <label class="block text-[10px] font-bold text-gray-600 mb-1">Media File URL / Upload</label>
                     <div class="flex items-center gap-3">
                       <input type="text" [(ngModel)]="media.url" [name]="'hero-media-u-' + mIdx" placeholder="Paste media URL or upload..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                       <div class="relative">
@@ -370,6 +369,68 @@
                           Upload
                         </label>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Custom Overlay Content (Title / Subtitle) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-200 pt-3">
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-600 mb-1">Headline / Title (English)</label>
+                    <input type="text" [(ngModel)]="media.title_en" [name]="'hero-media-title-en-' + mIdx" placeholder="e.g. Ultra Luxury Apartments" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-[10px] font-bold text-gray-600 mb-1 text-right">العنوان الرئيسي (العربية)</label>
+                    <input type="text" [(ngModel)]="media.title_ar" [name]="'hero-media-title-ar-' + mIdx" placeholder="مثال: شقق سكنية فاخرة جداً" class="w-full border border-gray-300 text-right rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-600 mb-1">Subtitle (English)</label>
+                    <input type="text" [(ngModel)]="media.subtitle_en" [name]="'hero-media-sub-en-' + mIdx" placeholder="e.g. Starting from $250k" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  </div>
+                  <div dir="rtl">
+                    <label class="block text-[10px] font-bold text-gray-600 mb-1 text-right">العنوان الفرعي (العربية)</label>
+                    <input type="text" [(ngModel)]="media.subtitle_ar" [name]="'hero-media-sub-ar-' + mIdx" placeholder="مثال: تبدأ الأسعار من ٢٥٠ ألف دولار" class="w-full border border-gray-300 text-right rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  </div>
+                </div>
+
+                <!-- Custom CTA Buttons Settings -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-200 pt-3">
+                  <!-- Button 1 Config -->
+                  <div class="bg-white p-3 rounded-lg border border-gray-200 space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[10px] font-bold text-gray-600 uppercase">Primary Button</span>
+                      <label class="inline-flex items-center gap-1 cursor-pointer">
+                        <input type="checkbox" [(ngModel)]="media.btn1_enabled" [name]="'hero-media-b1e-' + mIdx" class="h-3.5 w-3.5 rounded border-gray-300 text-blue-600">
+                        <span class="text-[9px] font-semibold text-gray-500">Enable</span>
+                      </label>
+                    </div>
+                    <div *ngIf="media.btn1_enabled" class="space-y-2">
+                      <div class="grid grid-cols-2 gap-2">
+                        <input type="text" [(ngModel)]="media.btn1_text_en" [name]="'hero-media-b1t-en-' + mIdx" placeholder="Text (En)" class="w-full border border-gray-300 rounded px-2.5 py-1 text-[10px]">
+                        <input type="text" [(ngModel)]="media.btn1_text_ar" [name]="'hero-media-b1t-ar-' + mIdx" placeholder="نص الزر (عربي)" dir="rtl" class="w-full border border-gray-300 rounded px-2.5 py-1 text-[10px]">
+                      </div>
+                      <input type="text" [(ngModel)]="media.btn1_link" [name]="'hero-media-b1l-' + mIdx" placeholder="Target Link (e.g. /projects)" class="w-full border border-gray-300 rounded px-2.5 py-1 text-[10px]">
+                    </div>
+                  </div>
+
+                  <!-- Button 2 Config -->
+                  <div class="bg-white p-3 rounded-lg border border-gray-200 space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[10px] font-bold text-gray-600 uppercase">Secondary Button</span>
+                      <label class="inline-flex items-center gap-1 cursor-pointer">
+                        <input type="checkbox" [(ngModel)]="media.btn2_enabled" [name]="'hero-media-b2e-' + mIdx" class="h-3.5 w-3.5 rounded border-gray-300 text-blue-600">
+                        <span class="text-[9px] font-semibold text-gray-500">Enable</span>
+                      </label>
+                    </div>
+                    <div *ngIf="media.btn2_enabled" class="space-y-2">
+                      <div class="grid grid-cols-2 gap-2">
+                        <input type="text" [(ngModel)]="media.btn2_text_en" [name]="'hero-media-b2t-en-' + mIdx" placeholder="Text (En)" class="w-full border border-gray-300 rounded px-2.5 py-1 text-[10px]">
+                        <input type="text" [(ngModel)]="media.btn2_text_ar" [name]="'hero-media-b2t-ar-' + mIdx" placeholder="نص الزر (عربي)" dir="rtl" class="w-full border border-gray-300 rounded px-2.5 py-1 text-[10px]">
+                      </div>
+                      <input type="text" [(ngModel)]="media.btn2_link" [name]="'hero-media-b2l-' + mIdx" placeholder="Target Link (e.g. /contact)" class="w-full border border-gray-300 rounded px-2.5 py-1 text-[10px]">
                     </div>
                   </div>
                 </div>
