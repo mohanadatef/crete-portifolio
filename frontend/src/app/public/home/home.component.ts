@@ -1,7 +1,7 @@
-import { Component, inject, OnInit, AfterViewInit, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit, OnDestroy, signal, PLATFORM_ID } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslatePipe, TranslateDirective, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { SeoService } from '../../services/seo.service';
@@ -22,6 +22,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private seoService = inject(SeoService);
   private settingService = inject(SettingService);
   private pageService = inject(PageService);
+  private platformId = inject(PLATFORM_ID);
 
   backendUrl = environment.backendUrl;
   allProjects: any[] = [];
@@ -362,6 +363,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   startHeroSlideshow() {
     this.stopHeroSlideshow();
+    if (!isPlatformBrowser(this.platformId)) return;
     if (this.heroMedia().length <= 1) return;
     
     this.slideshowInterval = setInterval(() => {
