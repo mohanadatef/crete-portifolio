@@ -1,0 +1,18 @@
+---
+deployment:
+  tasks:
+    - export REPOPATH=/home/cpanel_user/repositories/project
+    - export FRONTPATH=/home/cpanel_user/public_html
+    - export BACKPATH=/home/cpanel_user/repositories/project/backend
+
+    # تنظيف ملفات Angular القديمة
+    - /bin/rm -rf $FRONTPATH/*
+
+    # نسخ Angular build إلى public_html
+    - /bin/cp -R $REPOPATH/frontend/dist/frontend/browser/* $FRONTPATH/
+
+    # Laravel commands
+    - cd $BACKPATH && /usr/local/bin/php artisan optimize:clear
+    - cd $BACKPATH && /usr/local/bin/php artisan config:cache
+    - cd $BACKPATH && /usr/local/bin/php artisan route:cache
+    - cd $BACKPATH && /usr/local/bin/php artisan view:cache
