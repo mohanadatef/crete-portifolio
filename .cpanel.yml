@@ -1,9 +1,9 @@
 ---
 deployment:
   tasks:
-    - export REPOPATH=/home/cpanel_user/repositories/project
+    - export REPOPATH=/home/cpanel_user/repositories/crete-portifolio
     - export FRONTPATH=/home/cpanel_user/public_html
-    - export BACKPATH=/home/cpanel_user/repositories/project/backend
+    - export BACKPATH=/home/cpanel_user/repositories/crete-portifolio/backend
 
     # تنظيف ملفات Angular القديمة
     - /bin/rm -rf $FRONTPATH/*
