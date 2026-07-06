@@ -34,4 +34,8 @@ export class CustomReportService {
   run(id: number): Observable<ApiResponse<any>> {
     return this.http.get<ApiResponse<any>>(`${this.adminUrl}/${id}/run`);
   }
+
+  exportCsv(id: number): Observable<Blob> {
+    return this.http.get(`${this.adminUrl}/${id}/export`, { responseType: 'blob' });
+  }
 }

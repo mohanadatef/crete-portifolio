@@ -29,6 +29,11 @@ export class ReportsComponent implements OnInit {
   isEditing = signal<boolean>(false);
   users = signal<any[]>([]);
 
+  // Client-side search and sorting state
+  searchQuery = signal<string>('');
+  sortField = signal<string>('');
+  sortAsc = signal<boolean>(true);
+
   newReport = {
     id: null as number | null,
     name: '',
@@ -45,7 +50,11 @@ export class ReportsComponent implements OnInit {
         location: ''
       },
       group_by: '',
-      chart_type: 'table'
+      chart_type: 'table',
+      is_shared: false,
+      aggregation_function: 'count',
+      aggregation_column: '*',
+      date_group_interval: 'daily'
     }
   };
 
@@ -112,6 +121,11 @@ export class ReportsComponent implements OnInit {
       assigned_to: '',
       location: ''
     };
+
+    // Reset aggregation keys
+    this.newReport.config.aggregation_function = 'count';
+    this.newReport.config.aggregation_column = '*';
+    this.newReport.config.date_group_interval = 'daily';
   }
 
   getAvailableColumns(): string[] {
@@ -127,19 +141,26 @@ export class ReportsComponent implements OnInit {
 
   getAvailableGroupBy(): string[] {
     if (this.newReport.entity_type === 'leads') {
-      return ['status', 'source', 'utm_source', 'utm_campaign', 'utm_medium', 'assigned_to'];
+      return ['status', 'source', 'utm_source', 'utm_campaign', 'utm_medium', 'assigned_to', 'created_at'];
     } else if (this.newReport.entity_type === 'projects') {
-      return ['location'];
+      return ['location', 'created_at'];
     } else if (this.newReport.entity_type === 'landing_pages') {
-      return ['slug'];
+      return ['slug', 'created_at'];
     }
+    return [];
+  }
+
+  getAvailableAggregationColumns(): string[] {
+    if (this.newReport.entity_type === 'projects') {
+      return ['views_count'];
+    }
+    // leads and landing_pages don't have views_count directly, but they can be counted
     return [];
   }
 
   toggleColumn(col: string) {
     const idx = this.newReport.config.columns.indexOf(col);
     if (idx > -1) {
-      // Don't empty the columns entirely
       if (this.newReport.config.columns.length > 1) {
         this.newReport.config.columns.splice(idx, 1);
       }
@@ -170,7 +191,11 @@ export class ReportsComponent implements OnInit {
           location: ''
         },
         group_by: '',
-        chart_type: 'table'
+        chart_type: 'table',
+        is_shared: false,
+        aggregation_function: 'count',
+        aggregation_column: '*',
+        date_group_interval: 'daily'
       }
     };
     this.showBuilder.set(true);
@@ -178,10 +203,9 @@ export class ReportsComponent implements OnInit {
 
   openEditForm(report: any) {
     this.isEditing.set(true);
-    // Deep clone config to avoid direct mutations
     const configClone = JSON.parse(JSON.stringify(report.config));
     
-    // Ensure all filters properties exist
+    // Ensure nested parameters exist
     if (!configClone.filters) {
       configClone.filters = {};
     }
@@ -193,6 +217,11 @@ export class ReportsComponent implements OnInit {
       assigned_to: configClone.filters.assigned_to || '',
       location: configClone.filters.location || ''
     };
+
+    configClone.is_shared = !!configClone.is_shared;
+    configClone.aggregation_function = configClone.aggregation_function || 'count';
+    configClone.aggregation_column = configClone.aggregation_column || '*';
+    configClone.date_group_interval = configClone.date_group_interval || 'daily';
 
     this.newReport = {
       id: report.id,
@@ -242,9 +271,9 @@ export class ReportsComponent implements OnInit {
       this.customReportService.delete(id).subscribe({
         next: () => {
           this.loadCustomReports();
-          // If we deleted the active running report, clear it
           if (this.runningReportData()?.report?.id === id) {
             this.runningReportData.set(null);
+            this.runningReportStatus.set('idle');
           }
           alert('Report deleted.');
         },
@@ -262,12 +291,97 @@ export class ReportsComponent implements OnInit {
       next: (res) => {
         this.runningReportData.set(res.data);
         this.runningReportStatus.set('success');
+        // Reset sort/search state when running a new report
+        this.searchQuery.set('');
+        this.sortField.set('');
+        this.sortAsc.set(true);
       },
       error: (err) => {
         console.error('Failed to run custom report:', err);
         this.runningReportStatus.set('error');
       }
     });
+  }
+
+  exportToCsv(id: number, name: string) {
+    this.customReportService.exportCsv(id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${name.replace(/\s+/g, '_')}_data.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('Failed to export CSV:', err);
+        alert('Failed to export CSV report.');
+      }
+    });
+  }
+
+  sortColumn(col: string) {
+    if (this.sortField() === col) {
+      this.sortAsc.set(!this.sortAsc());
+    } else {
+      this.sortField.set(col);
+      this.sortAsc.set(true);
+    }
+  }
+
+  getSortedResults(): any[] {
+    const data = this.runningReportData();
+    if (!data || !data.results) return [];
+    
+    let results = [...data.results];
+
+    // Apply Client-Side Search filter
+    const query = this.searchQuery().toLowerCase().trim();
+    if (query) {
+      results = results.filter(row => {
+        return Object.keys(row).some(key => {
+          const val = row[key];
+          if (val === null || val === undefined) return false;
+          if (typeof val === 'object') {
+            return Object.keys(val).some(subKey => {
+              const subVal = val[subKey];
+              return subVal && String(subVal).toLowerCase().includes(query);
+            });
+          }
+          return String(val).toLowerCase().includes(query);
+        });
+      });
+    }
+
+    // Apply Client-Side Sorting
+    const field = this.sortField();
+    if (field) {
+      const asc = this.sortAsc();
+      results.sort((a, b) => {
+        let valA = a[field];
+        let valB = b[field];
+
+        // Format references/nested fields if sorting relationship columns
+        if (field === 'project_id' && a.project) valA = a.project.title_en;
+        if (field === 'project_id' && b.project) valB = b.project.title_en;
+        if (field === 'landing_page_id' && a.landingPage) valA = a.landingPage.title;
+        if (field === 'landing_page_id' && b.landingPage) valB = b.landingPage.title;
+        if (field === 'assigned_to' && a.assignedTo) valA = a.assignedTo.name;
+        if (field === 'assigned_to' && b.assignedTo) valB = b.assignedTo.name;
+
+        if (valA === null || valA === undefined) return asc ? 1 : -1;
+        if (valB === null || valB === undefined) return asc ? -1 : 1;
+
+        if (typeof valA === 'string' && typeof valB === 'string') {
+          return asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+        return asc ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
+      });
+    }
+
+    return results;
   }
 
   getAgentName(userId: any): string {

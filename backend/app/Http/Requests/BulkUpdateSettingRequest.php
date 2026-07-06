@@ -44,6 +44,7 @@ class BulkUpdateSettingRequest extends FormRequest
         'home_partners',
         'home_construction_updates',
         'home_hero_bg',
+        'home_hero_media',
         'recaptcha_enabled',
     ];
 
