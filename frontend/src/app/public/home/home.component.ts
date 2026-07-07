@@ -8,6 +8,7 @@ import { SeoService } from '../../services/seo.service';
 import { SettingService } from '../../services/setting.service';
 import { PageService } from '../../core/services/page.service';
 import { Page } from '../../core/models/models';
+import * as AOS from 'aos';
 
 @Component({
   selector: 'app-home',
@@ -105,6 +106,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       this.filteredProjects = this.allProjects.filter((p: any) => p.location === loc);
     }
     this.setupScrollReveal();
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        AOS.refresh();
+      }, 300);
+    }
   }
 
   ngOnInit() {
@@ -273,6 +279,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         this.filteredProjects = this.allProjects;
         this.status = 'success';
         this.setupScrollReveal();
+        if (isPlatformBrowser(this.platformId)) {
+          setTimeout(() => {
+            AOS.refresh();
+          }, 300);
+        }
       },
       error: () => this.status = 'error'
     });
@@ -311,6 +322,18 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      AOS.init({
+        duration: 1000,
+        once: true,
+        mirror: false,
+        anchorPlacement: 'top-bottom'
+      });
+      setTimeout(() => {
+        AOS.refresh();
+      }, 500);
+    }
+
     if (typeof window !== 'undefined') {
       // 1. Stats Counter Animation Observer
       const statsSection = document.querySelector('#stats-section');

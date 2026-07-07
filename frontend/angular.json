@@ -33,6 +33,7 @@
             ],
             "styles": [
               "node_modules/quill/dist/quill.snow.css",
+              "node_modules/aos/dist/aos.css",
               "src/styles.scss"
             ],
             "scripts": [],
