@@ -131,6 +131,12 @@ export const routes: Routes = [
                 data: { permission: 'view-leads' }
             },
             { 
+                path: 'blocklist', 
+                loadComponent: () => import('./admin/blocklist/blocklist.component').then(m => m.BlocklistComponent),
+                canActivate: [permissionGuard],
+                data: { permission: 'manage-blocklist' }
+            },
+            { 
                 path: 'reports', 
                 component: ReportsComponent,
                 canActivate: [permissionGuard],

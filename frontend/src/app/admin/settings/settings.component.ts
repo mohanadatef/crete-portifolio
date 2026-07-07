@@ -7,6 +7,7 @@ import { HasPermissionDirective } from '../../directives/has-permission.directiv
 import { AuthService } from '../../services/auth.service';
 import { QuillModule } from 'ngx-quill';
 import { ToastService } from '../../services/toast.service';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-settings',
@@ -21,6 +22,7 @@ export class SettingsComponent implements OnInit {
   public authService = inject(AuthService);
   private toastService = inject(ToastService);
   private platformId = inject(PLATFORM_ID);
+  private seoService = inject(SeoService);
 
   quillModules = {
     toolbar: [
@@ -82,7 +84,15 @@ export class SettingsComponent implements OnInit {
     home_partners: '[]',
     home_construction_updates: '[]',
     home_hero_bg: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=90',
-    recaptcha_enabled: '0'
+    recaptcha_enabled: '0',
+    font_body_type: 'google',
+    font_body_family: 'Inter',
+    font_body_custom_name: '',
+    font_body_custom_file: '',
+    font_headings_type: 'google',
+    font_headings_family: 'Playfair Display',
+    font_headings_custom_name: '',
+    font_headings_custom_file: ''
   };
 
   branchesList: Array<{
@@ -303,6 +313,47 @@ export class SettingsComponent implements OnInit {
     }
   }
 
+  fontBodyUploading = false;
+  fontHeadingsUploading = false;
+
+  onFontBodyFileSelect(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.fontBodyUploading = true;
+      this.mediaService.upload(file).subscribe({
+        next: (res) => {
+          this.settings['font_body_custom_file'] = res.data.url;
+          this.fontBodyUploading = false;
+          this.toastService.success('Custom body font uploaded successfully.');
+        },
+        error: (err) => {
+          this.fontBodyUploading = false;
+          console.error(err);
+          this.toastService.error('Failed to upload custom body font. Ensure the file is woff/woff2/ttf/otf and under 20MB.');
+        }
+      });
+    }
+  }
+
+  onFontHeadingsFileSelect(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.fontHeadingsUploading = true;
+      this.mediaService.upload(file).subscribe({
+        next: (res) => {
+          this.settings['font_headings_custom_file'] = res.data.url;
+          this.fontHeadingsUploading = false;
+          this.toastService.success('Custom headings font uploaded successfully.');
+        },
+        error: (err) => {
+          this.fontHeadingsUploading = false;
+          console.error(err);
+          this.toastService.error('Failed to upload custom headings font. Ensure the file is woff/woff2/ttf/otf and under 20MB.');
+        }
+      });
+    }
+  }
+
   removeLogo() {
     this.settings['site_logo'] = '';
     this.logoPreview = null;
@@ -327,6 +378,8 @@ export class SettingsComponent implements OnInit {
         if (isPlatformBrowser(this.platformId)) {
           document.documentElement.style.setProperty('--crete-gold', this.settings['web_primary_color']);
           document.documentElement.style.setProperty('--crete-blue', this.settings['web_secondary_color']);
+          // Dynamically apply font family updates live
+          this.seoService.applyFonts(this.settings);
         }
         
         setTimeout(() => this.status = 'idle', 3000);
@@ -367,8 +420,6 @@ export class SettingsComponent implements OnInit {
     this.activeTab = tab;
     if (tab === 'backup') {
       this.loadBackupLogs();
-    } else if (tab === 'blocklist') {
-      this.loadBlockedContacts();
     }
   }
 
@@ -530,104 +581,6 @@ export class SettingsComponent implements OnInit {
     if (newPage >= 1 && newPage <= this.backupLogLastPage) {
       this.backupLogPage = newPage;
       this.loadBackupLogs();
-    }
-  }
-
-  // Blocklist properties
-  blockedContacts: any[] = [];
-  loadingBlockedContacts = false;
-  blockedPage = 1;
-  blockedPerPage = 10;
-  blockedLastPage = 1;
-  blockedTotal = 0;
-  blockedSearch = '';
-  blockedType = 'ALL';
-
-  newBlockedValue = '';
-  newBlockedType = 'email';
-  newBlockedReason = '';
-  addingBlocked = false;
-
-  loadBlockedContacts() {
-    this.loadingBlockedContacts = true;
-    const params = {
-      page: this.blockedPage.toString(),
-      per_page: this.blockedPerPage.toString(),
-      type: this.blockedType,
-      search: this.blockedSearch
-    };
-
-    this.settingService.getBlockedContacts(params).subscribe({
-      next: (res: any) => {
-        const paginatedData = res?.data || res;
-        this.blockedContacts = paginatedData.data || [];
-        this.blockedPage = paginatedData.current_page || 1;
-        this.blockedLastPage = paginatedData.last_page || 1;
-        this.blockedTotal = paginatedData.total || 0;
-        this.loadingBlockedContacts = false;
-      },
-      error: (err) => {
-        console.error('Failed to load blocked contacts', err);
-        this.loadingBlockedContacts = false;
-        this.toastService.error('Failed to load blocked contacts.');
-      }
-    });
-  }
-
-  onBlockedFilterChange() {
-    this.blockedPage = 1;
-    this.loadBlockedContacts();
-  }
-
-  onBlockedPageChange(newPage: number) {
-    if (newPage >= 1 && newPage <= this.blockedLastPage) {
-      this.blockedPage = newPage;
-      this.loadBlockedContacts();
-    }
-  }
-
-  addContactToBlocklist() {
-    if (!this.newBlockedValue) {
-      this.toastService.warning('Please enter a phone number or email address.');
-      return;
-    }
-
-    this.addingBlocked = true;
-    const data = {
-      value: this.newBlockedValue.trim(),
-      type: this.newBlockedType,
-      reason: this.newBlockedReason
-    };
-
-    this.settingService.addBlockedContact(data).subscribe({
-      next: () => {
-        this.addingBlocked = false;
-        this.newBlockedValue = '';
-        this.newBlockedReason = '';
-        this.toastService.success('Contact added to blocklist successfully.');
-        this.loadBlockedContacts();
-      },
-      error: (err) => {
-        this.addingBlocked = false;
-        console.error(err);
-        const errorMsg = err?.error?.message || 'Failed to add contact to blocklist.';
-        this.toastService.error(errorMsg);
-      }
-    });
-  }
-
-  removeContactFromBlocklist(id: number) {
-    if (confirm('Are you sure you want to remove this contact from blocklist?')) {
-      this.settingService.deleteBlockedContact(id).subscribe({
-        next: () => {
-          this.toastService.success('Contact removed from blocklist.');
-          this.loadBlockedContacts();
-        },
-        error: (err) => {
-          console.error(err);
-          this.toastService.error('Failed to remove contact from blocklist.');
-        }
-      });
     }
   }
 

@@ -46,6 +46,14 @@ class BulkUpdateSettingRequest extends FormRequest
         'home_hero_bg',
         'home_hero_media',
         'recaptcha_enabled',
+        'font_body_type',
+        'font_body_family',
+        'font_body_custom_name',
+        'font_body_custom_file',
+        'font_headings_type',
+        'font_headings_family',
+        'font_headings_custom_name',
+        'font_headings_custom_file',
     ];
 
     /**

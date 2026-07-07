@@ -29,8 +29,91 @@ export class SeoService {
         if (data['google_tag']) {
           this.injectGoogleTag(data['google_tag']);
         }
+
+        // Apply primary and secondary colors dynamically in browser
+        if (typeof window !== 'undefined') {
+          if (data['web_primary_color']) {
+            document.documentElement.style.setProperty('--crete-gold', data['web_primary_color']);
+          }
+          if (data['web_secondary_color']) {
+            document.documentElement.style.setProperty('--crete-blue', data['web_secondary_color']);
+          }
+        }
+
+        // Apply fonts dynamically
+        this.applyFonts(data);
       }
     });
+  }
+
+  loadGoogleFont(fontFamily: string) {
+    if (!fontFamily || typeof window === 'undefined') return;
+    const formattedFont = fontFamily.replace(/\s+/g, '+');
+    const linkId = `google-font-${formattedFont.toLowerCase()}`;
+    
+    // Check if already injected
+    if (this.document.getElementById(linkId)) return;
+
+    const link = this.document.createElement('link');
+    link.id = linkId;
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${formattedFont}:wght@300;400;500;600;700;800&display=swap`;
+    this.document.head.appendChild(link);
+  }
+
+  loadCustomFont(fontFamily: string, fileUrl: string) {
+    if (!fontFamily || !fileUrl || typeof window === 'undefined') return;
+    const styleId = `custom-font-${fontFamily.replace(/\s+/g, '-').toLowerCase()}`;
+    
+    // Check if already injected
+    if (this.document.getElementById(styleId)) return;
+
+    const style = this.document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      @font-face {
+        font-family: '${fontFamily}';
+        src: url('${fileUrl}');
+        font-display: swap;
+      }
+    `;
+    this.document.head.appendChild(style);
+  }
+
+  applyFonts(data: any) {
+    if (typeof window === 'undefined') return;
+
+    // 1. Handle Body Font
+    const bodyType = data['font_body_type'] || 'google';
+    const bodyFamily = data['font_body_family'] || 'Inter';
+    const bodyCustomFile = data['font_body_custom_file'] || '';
+
+    if (bodyType === 'google') {
+      this.loadGoogleFont(bodyFamily);
+      document.documentElement.style.setProperty('--font-family-body', `'${bodyFamily}', system-ui, -apple-system, sans-serif`);
+    } else if (bodyType === 'custom' && bodyCustomFile) {
+      const familyName = data['font_body_custom_name'] || bodyFamily || 'CustomBodyFont';
+      this.loadCustomFont(familyName, bodyCustomFile);
+      document.documentElement.style.setProperty('--font-family-body', `'${familyName}', sans-serif`);
+    } else {
+      document.documentElement.style.setProperty('--font-family-body', `'Inter', system-ui, -apple-system, sans-serif`);
+    }
+
+    // 2. Handle Headings Font
+    const headingsType = data['font_headings_type'] || 'google';
+    const headingsFamily = data['font_headings_family'] || 'Playfair Display';
+    const headingsCustomFile = data['font_headings_custom_file'] || '';
+
+    if (headingsType === 'google') {
+      this.loadGoogleFont(headingsFamily);
+      document.documentElement.style.setProperty('--font-family-headings', `'${headingsFamily}', Georgia, serif`);
+    } else if (headingsType === 'custom' && headingsCustomFile) {
+      const familyName = data['font_headings_custom_name'] || headingsFamily || 'CustomHeadingsFont';
+      this.loadCustomFont(familyName, headingsCustomFile);
+      document.documentElement.style.setProperty('--font-family-headings', `'${familyName}', serif`);
+    } else {
+      document.documentElement.style.setProperty('--font-family-headings', `'Playfair Display', Georgia, serif`);
+    }
   }
 
   updateFavicon(url: string) {

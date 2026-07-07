@@ -20,7 +20,7 @@ class MediaController extends Controller
     {
         try {
             $request->validate([
-                'file' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,mov,avi|max:20480',
+                'file' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,mov,avi,woff,woff2,ttf,otf|max:20480',
             ]);
 
             $media = $this->mediaService->storeMedia($request->file('file'));

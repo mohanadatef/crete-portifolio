@@ -20,6 +20,8 @@
   --crete-navy:   #0d1f4a;
   --crete-cream:  #fdf8f0;
   --radius-card:  1.25rem;
+  --font-family-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-family-headings: 'Playfair Display', Georgia, serif;
 }
 
 /* ── Base ─────────────────────────────────────────────────── */
@@ -28,13 +30,13 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-family-body);
   @apply antialiased text-gray-800;
   background: #f8f9fb;
 }
 
 h1, h2, h3, .font-serif {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: var(--font-family-headings);
 }
 
 /* ── Glassmorphism ─────────────────────────────────────────── */

@@ -3,6 +3,7 @@
     "/",
     "/about",
     "/admin",
+    "/admin/blocklist",
     "/admin/blog/categories",
     "/admin/blog/posts",
     "/admin/blog/posts/create",
