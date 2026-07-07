@@ -33,6 +33,17 @@ export class AppComponent implements OnInit {
         this.seoService.updateHreflang([
           { lang: 'en', url: currentUrl }
         ]);
+
+        // Auto-scroll window to top
+        window.scrollTo(0, 0);
+
+        // Auto-scroll scrollable main content panels (like the dashboard scroll area) to top
+        setTimeout(() => {
+          const scrollables = document.querySelectorAll('.overflow-y-auto, main');
+          scrollables.forEach(el => {
+            el.scrollTo(0, 0);
+          });
+        }, 50);
       });
     }
   }
