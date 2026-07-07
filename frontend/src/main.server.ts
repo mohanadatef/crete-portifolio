@@ -2,6 +2,8 @@ import { BootstrapContext, bootstrapApplication } from '@angular/platform-browse
 import { AppComponent } from './app/app.component';
 import { config } from './app/app.config.server';
 
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+
 const bootstrap = (context: BootstrapContext) =>
     bootstrapApplication(AppComponent, config, context);
 

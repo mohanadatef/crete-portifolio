@@ -6,6 +6,14 @@ use App\Modules\User\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use App\Modules\Project\Models\Project;
+use App\Modules\Project\Models\ProjectImage;
+use App\Modules\ProjectType\Models\ProjectType;
+use App\Modules\Feature\Models\Feature;
+use App\Modules\Setting\Models\Setting;
+use App\Modules\Page\Models\Page;
+use App\Modules\Blog\Models\BlogPost;
+use App\Modules\Blog\Models\BlogCategory;
 
 class DatabaseSeeder extends Seeder
 {
@@ -29,17 +37,14 @@ class DatabaseSeeder extends Seeder
 
         foreach ($modules as $module) {
             foreach ($actions as $action) {
-                // E.g., view-users, create-users, etc.
                 $permissions[] = "{$action}-{$module}";
             }
         }
-        // Settings only need view and edit
         $permissions[] = 'view-settings';
         $permissions[] = 'edit-settings';
         $permissions[] = 'download-backups';
         $permissions[] = 'manage-blocklist';
         
-        // Leads detailed access permissions
         $permissions[] = 'view-all-leads';
         $permissions[] = 'view-unassigned-leads';
         $permissions[] = 'export-leads';
@@ -50,11 +55,9 @@ class DatabaseSeeder extends Seeder
 
         // 2. Roles
         $superAdmin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'sanctum']);
-        // Assign all to super admin
         $superAdmin->syncPermissions(Permission::where('guard_name', 'sanctum')->get());
 
         $contentEditor = Role::firstOrCreate(['name' => 'Content Editor', 'guard_name' => 'sanctum']);
-        // Content Editor specific permissions
         $editorPerms = [
             'view-projects', 'create-projects', 'edit-projects', 'delete-projects',
             'view-pages', 'create-pages', 'edit-pages', 'delete-pages',
@@ -79,99 +82,34 @@ class DatabaseSeeder extends Seeder
             $user->assignRole($superAdmin);
         }
 
-        // 4. Sample Data
-        $this->seedSampleData();
+        // 4. Seed Real Content & Clear Dummy Data
+        $this->seedRealContent();
     }
 
-    private function seedSampleData(): void
+    private function seedRealContent(): void
     {
-        // Blog Categories
-        $newsCat = \App\Modules\Blog\Models\BlogCategory::firstOrCreate(
-            ['slug' => 'news'],
-            ['name_en' => 'Company News', 'name_ar' => 'أخبار الشركة']
-        );
-        $tipsCat = \App\Modules\Blog\Models\BlogCategory::firstOrCreate(
-            ['slug' => 'tips'],
-            ['name_en' => 'Real Estate Tips', 'name_ar' => 'نصائح عقارية']
-        );
+        // Clear all dummy records
+        BlogPost::query()->delete();
+        BlogCategory::query()->delete();
+        ProjectImage::query()->delete();
+        Project::query()->delete();
+        ProjectType::query()->delete();
+        Feature::query()->delete();
 
-        // Blog Posts - 5 Real Estate related posts
-        \App\Modules\Blog\Models\BlogPost::firstOrCreate(
-            ['slug' => '5-tips-for-first-time-homebuyers'],
-            [
-                'blog_category_id' => $tipsCat->id,
-                'title_en' => '5 Tips for First-Time Homebuyers in Egypt',
-                'title_ar' => '5 نصائح للمشترين لأول مرة في مصر',
-                'content_en' => 'Buying your first home is a milestone. Here are the 5 essential tips including budgeting, location choices, developer verification, and future resale value analysis.',
-                'content_ar' => 'شراء منزلك الأول هو خطوة هامة. إليك 5 نصائح أساسية تشمل التخطيط المالي، اختيار الموقع، التحقق من المطور، ودراسة قيمة إعادة البيع مستقبلاً.',
-                'status' => 1
-            ]
-        );
-
-        \App\Modules\Blog\Models\BlogPost::firstOrCreate(
-            ['slug' => 'why-invest-in-commercial-real-estate'],
-            [
-                'blog_category_id' => $newsCat->id,
-                'title_en' => 'Why Invest in Commercial Real Estate in 2026?',
-                'title_ar' => 'لماذا تستثمر في العقارات التجارية في عام 2026؟',
-                'content_en' => 'Commercial real estate continues to offer strong rental yields and long-term capital appreciation. Discover the key factors driving the demand for office and retail spaces.',
-                'content_ar' => 'تستمر العقارات التجارية في تقديم عوائد إيجارية قوية وزيادة في رأس المال على المدى الطويل. اكتشف العوامل الرئيسية التي تحرك الطلب على المكاتب والمساحات التجارية.',
-                'status' => 1
-            ]
-        );
-
-        \App\Modules\Blog\Models\BlogPost::firstOrCreate(
-            ['slug' => 'the-rise-of-smart-green-communities'],
-            [
-                'blog_category_id' => $tipsCat->id,
-                'title_en' => 'The Rise of Smart Green Communities',
-                'title_ar' => 'صعود المجتمعات السكنية الذكية والخضراء',
-                'content_en' => 'Eco-friendly designs and smart home automation are shaping the future of living. Learn how sustainable features reduce utility costs and improve quality of life.',
-                'content_ar' => 'التصاميم الصديقة للبيئة والأنظمة المنزلية الذكية تشكل مستقبل المعيشة. تعرف على كيفية مساهمة الميزات المستدامة في تقليل تكاليف المرافق وتحسين جودة الحياة.',
-                'status' => 1
-            ]
-        );
-
-        \App\Modules\Blog\Models\BlogPost::firstOrCreate(
-            ['slug' => 'understanding-real-estate-appraisal'],
-            [
-                'blog_category_id' => $tipsCat->id,
-                'title_en' => 'Understanding Real Estate Appraisal and Value Factors',
-                'title_ar' => 'فهم التقييم العقاري وعوامل تحديد القيمة',
-                'content_en' => 'What determines the price of a property? Location, amenities, infrastructure developments, and market trends are the core pillars of real estate valuation.',
-                'content_ar' => 'ما الذي يحدد سعر العقار؟ الموقع، الخدمات، تطور البنية التحتية، واتجاهات السوق هي الركائز الأساسية لتقييم العقار.',
-                'status' => 1
-            ]
-        );
-
-        \App\Modules\Blog\Models\BlogPost::firstOrCreate(
-            ['slug' => 'maximize-property-rental-yield'],
-            [
-                'blog_category_id' => $newsCat->id,
-                'title_en' => 'How to Maximize Your Property Rental Yield',
-                'title_ar' => 'كيف تزيد من العائد الاستثماري لإيجار عقارك',
-                'content_en' => 'Renovation tips, choosing the right property manager, and targeting high-demand tenant segments can significantly improve your annual passive income from real estate.',
-                'content_ar' => 'نصائح التجديد، اختيار مدير العقار المناسب، واستهداف فئات المستأجرين الأكثر طلباً يمكن أن يحسن بشكل كبير من دخلك السنوي السلبي من العقارات.',
-                'status' => 1
-            ]
-        );
-
-        // Home Page
-        \App\Modules\Page\Models\Page::firstOrCreate(
+        // 1. Pages
+        Page::updateOrCreate(
             ['slug' => 'home'],
             [
                 'title_en' => 'Home',
                 'title_ar' => 'الرئيسية',
-                'content_en' => '<h2>Discover Luxury Living</h2><p>Experience the finest in premium real estate. We bring you handpicked properties that redefine elegance and comfort.</p><hr><h3>Our Achievements</h3><ul><li><strong>75+</strong> Residential Buildings</li><li><strong>4</strong> Commercial Malls</li><li><strong>1997</strong> Established Year</li><li><strong>100%</strong> Trust &amp; Quality</li></ul><hr><h3>Why Choose Us</h3><p><strong>Trusted &amp; Secure</strong> — Every transaction is backed by full legal compliance, transparent contracts, and uncompromising integrity.</p><p><strong>Unrivalled Excellence</strong> — From architectural design to interior finishes, every detail is crafted to the highest standard.</p><p><strong>Award-Winning</strong> — Recognised internationally for innovation, quality, and design.</p>',
-                'content_ar' => '<h2>اكتشف الحياة الفاخرة</h2><p>اختبر الأفضل في العقارات الفاخرة. نقدم لك عقارات مختارة بعناية تعيد تعريف الأناقة والراحة.</p><hr><h3>إنجازاتنا</h3><ul><li><strong>75+</strong> عمارة سكنية</li><li><strong>4</strong> مولات تجارية</li><li><strong>1997</strong> سنة التأسيس</li><li><strong>100%</strong> ثقة وجودة</li></ul><hr><h3>لماذا تختارنا</h3><p><strong>موثوق وآمن</strong> — كل معاملة مدعومة بالامتثال القانوني الكامل والعقود الشفافة والنزاهة.</p><p><strong>تميز لا مثيل له</strong> — من التصميم المعماري إلى التشطيبات الداخلية، يتم صياغة كل تفصيلة وفقاً لأعلى المعايير.</p><p><strong>حائز على جوائز</strong> — معترف به دولياً للابتكار والجودة والتصميم.</p>',
+                'content_en' => '<h2>Discover Luxury Living</h2><p>Experience the finest in premium real estate. We bring you handpicked properties that redefine elegance and comfort.</p><hr><h3>Our Achievements</h3><ul><li><strong>75+</strong> Residential Buildings</li><li><strong>3</strong> Commercial Malls</li><li><strong>1997</strong> Established Year</li><li><strong>100%</strong> Trust &amp; Quality</li></ul><hr><h3>Why Choose Us</h3><p><strong>Trusted &amp; Secure</strong> — Every transaction is backed by full legal compliance, transparent contracts, and uncompromising integrity.</p><p><strong>Unrivalled Excellence</strong> — From architectural design to interior finishes, every detail is crafted to the highest standard.</p><p><strong>Award-Winning</strong> — Recognised internationally for innovation, quality, and design.</p>',
+                'content_ar' => '<h2>اكتشف الحياة الفاخرة</h2><p>اختبر الأفضل in العقارات الفاخرة. نقدم لك عقارات مختارة بعناية تعيد تعريف الأناقة والراحة.</p><hr><h3>إنجازاتنا</h3><ul><li><strong>75+</strong> عمارة سكنية</li><li><strong>3</strong> مولات تجارية</li><li><strong>1997</strong> سنة التأسيس</li><li><strong>100%</strong> ثقة وجودة</li></ul><hr><h3>لماذا تختارنا</h3><p><strong>موثوق وآمن</strong> — كل معاملة مدعومة بالامتثال القانوني الكامل والعقود الشفافة والنزاهة.</p><p><strong>تميز لا مثيل له</strong> — من التصميم المعماري إلى التشطيبات الداخلية، يتم صياغة كل تفصيلة وفقاً لأعلى المعايير.</p><p><strong>حائز على جوائز</strong> — معترف به دولياً للابتكار والجودة والتصميم.</p>',
                 'status' => 1
             ]
         );
 
-        \App\Modules\Page\Models\Page::where('slug', 'about')->update(['slug' => 'about-us']);
-
         // About Us Page (Premium Builder Layout)
-        \App\Modules\Page\Models\Page::updateOrCreate(
+        Page::updateOrCreate(
             ['slug' => 'about-us'],
             [
                 'title_en' => 'About Us',
@@ -194,7 +132,7 @@ class DatabaseSeeder extends Seeder
                             'title_ar' => 'عن كريت للتطوير العقاري',
                             'subtitle_en' => 'Building Trust, Value, and Innovation Since 1997',
                             'subtitle_ar' => 'نبني الثقة، القيمة، والابتكار منذ عام 1997',
-                            'bg_image' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80',
+                            'bg_image' => 'projects/nine_mall_1.jpg',
                             'overlay_opacity' => 0.55
                         ],
                         [
@@ -205,7 +143,7 @@ class DatabaseSeeder extends Seeder
                             'text_en' => "Since 1997, Crete Developments has delivered over 75 premium residential buildings across East and West Cairo, building a reputation for absolute commitment to quality and client trust.\n\nIn 2025, after an in-depth market research, we expanded into commercial developments starting with Nine Mall, Traffic Mall, and Arena Mall, delivering strategic investments in high-density growth zones.",
                             'text_ar' => "منذ عام 1997، بدأت رحلتها في مجال التطوير العقاري، ونجحوا خلال هذه السنوات في تسليم أكثر من 75 عمارة سكنية في شرق وغرب القاهرة. وبنينا سمعة راسخة تقوم على الالتزام الكامل بالجودة وثقة عملائنا.\n\nوبعد دراسة متعمقة للسوق العقاري، قرروا في عام 2025 التوسع بمحفظة أراضٍ تجارية، لتكون بداية انطلاقتهم في القطاع التجاري من خلال Nine Mall، يليه Traffic Mall، ثم Arena Mall، لتقديم فرص استثمارية فريدة وقوية.",
                             'media_type' => 'image',
-                            'media_url' => 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                            'media_url' => 'projects/traffic_mall_1.jpg'
                         ],
                         [
                             'type' => 'features',
@@ -231,6 +169,73 @@ class DatabaseSeeder extends Seeder
                             ]
                         ],
                         [
+                            'type' => 'features',
+                            'title_en' => 'Our Core Values',
+                            'title_ar' => 'قيمنا الأساسية',
+                            'subtitle_en' => 'The foundation of everything we build',
+                            'subtitle_ar' => 'الأساس الذي نبني عليه كل شيء',
+                            'items' => [
+                                [
+                                    'icon' => 'shield',
+                                    'title_en' => 'Integrity',
+                                    'title_ar' => 'النزاهة والمصداقية',
+                                    'desc_en' => 'We maintain absolute transparency, clear contracts, and full legal compliance in every deal.',
+                                    'desc_ar' => 'نلتزم بالشفافية الكاملة، والعقود الواضحة، والامتثال القانوني الشامل في كل صفقة.'
+                                ],
+                                [
+                                    'icon' => 'award',
+                                    'title_en' => 'Excellence & Quality',
+                                    'title_ar' => 'التميز والجودة',
+                                    'desc_en' => 'From premium construction materials to professional finishes, quality is our top signature.',
+                                    'desc_ar' => 'من مواد البناء الفاخرة إلى التشطيبات الاحترافية، الجودة هي بصمتنا الأساسية.'
+                                ],
+                                [
+                                    'icon' => 'star',
+                                    'title_en' => 'Innovation',
+                                    'title_ar' => 'الابتكار والتطوير',
+                                    'desc_en' => 'Applying smart systems, green technologies, and modern architecture to create unique experiences.',
+                                    'desc_ar' => 'تطبيق الأنظمة الذكية، والتقنيات الخضراء، والعمارة الحديثة لتقديم تجارب فريدة.'
+                                ],
+                                [
+                                    'icon' => 'heart',
+                                    'title_en' => 'Customer Commitment',
+                                    'title_ar' => 'الالتزام تجاه العملاء',
+                                    'desc_en' => 'Delivering on time, honoring payment plans, and offering premium property management services.',
+                                    'desc_ar' => 'التسليم في المواعيد المحددة، الالتزام بخطط السداد، وتقديم خدمات متميزة لإدارة العقارات.'
+                                ]
+                            ]
+                        ],
+                        [
+                            'type' => 'features',
+                            'title_en' => 'Why Choose Crete Developments',
+                            'title_ar' => 'لماذا تختار كريت للتطوير العقاري',
+                            'subtitle_en' => 'Strategic features that maximize your investment return',
+                            'subtitle_ar' => 'ميزات استراتيجية تزيد من عوائد استثمارك',
+                            'items' => [
+                                [
+                                    'icon' => 'map',
+                                    'title_en' => 'Strategic Locations',
+                                    'title_ar' => 'مواقع استراتيجية متميزة',
+                                    'desc_en' => 'Our projects are situated on main roads and high-density zones in Obour City, guaranteeing excellent traffic.',
+                                    'desc_ar' => 'تقع مشاريعنا على شوارع رئيسية ومناطق عالية الكثافة بمدينة العبور، مما يضمن حركة مرور ممتازة.'
+                                ],
+                                [
+                                    'icon' => 'image',
+                                    'title_en' => 'Premium & Modern Designs',
+                                    'title_ar' => 'تصاميم راقية وعصرية',
+                                    'desc_en' => 'We implement international design standards with open panoramic frontages and green plaza areas.',
+                                    'desc_ar' => 'نطبق معايير التصميم العالمية مع واجهات بانورامية مفتوحة ومساحات بلازا خضراء.'
+                                ],
+                                [
+                                    'icon' => 'star',
+                                    'title_en' => 'Flexible Payment Plans',
+                                    'title_ar' => 'خطط سداد مرنة',
+                                    'desc_en' => 'We offer tailored investment options and installment structures to suit your financial goals.',
+                                    'desc_ar' => 'نقدم خيارات استثمارية مخصصة وهياكل تقسيط تناسب أهدافك المالية.'
+                                ]
+                            ]
+                        ],
+                        [
                             'type' => 'content',
                             'content_en' => "<div class='py-12 bg-gray-50/50 rounded-3xl p-8 border border-gray-100/50 max-w-4xl mx-auto'><h3 class='text-2xl font-bold text-center text-[#0d1f4a] mb-8' style=\"font-family: 'Playfair Display', serif;\">Our Founders & Leadership</h3><div class='grid grid-cols-1 md:grid-cols-2 gap-6 text-center'><div class='p-4 bg-white rounded-2xl shadow-sm border border-gray-100'><p class='font-bold text-gray-800 text-base'>Ashraf Helal Sadek</p><p class='text-xs text-crete-gold uppercase tracking-wider font-semibold mt-1'>Founder</p></div><div class='p-4 bg-white rounded-2xl shadow-sm border border-gray-100'><p class='font-bold text-gray-800 text-base'>Hany Gamil Honein</p><p class='text-xs text-crete-gold uppercase tracking-wider font-semibold mt-1'>Founder</p></div><div class='p-4 bg-white rounded-2xl shadow-sm border border-gray-100'><p class='font-bold text-gray-800 text-base'>Yasser Shokry Said</p><p class='text-xs text-crete-gold uppercase tracking-wider font-semibold mt-1'>Founder</p></div><div class='p-4 bg-white rounded-2xl shadow-sm border border-gray-100'><p class='font-bold text-gray-800 text-base'>Magdy Zakher Shaker Zakhary</p><p class='text-xs text-crete-gold uppercase tracking-wider font-semibold mt-1'>Founder</p></div><div class='p-4 bg-white rounded-2xl shadow-sm border border-gray-100 md:col-span-2 max-w-md mx-auto w-full'><p class='font-bold text-gray-800 text-base'>Safwat Lotfy Gad Moawad</p><p class='text-xs text-crete-gold uppercase tracking-wider font-semibold mt-1'>Founder</p></div></div></div>",
                             'content_ar' => "<div class='py-12 bg-gray-50/50 rounded-3xl p-8 border border-gray-100/50 max-w-4xl mx-auto' dir='rtl'><h3 class='text-2xl font-bold text-center text-[#0d1f4a] mb-8' style=\"font-family: 'Playfair Display', serif;\">مؤسسو ومجلس إدارة الشركة</h3><div class='grid grid-cols-1 md:grid-cols-2 gap-6 text-center'><div class='p-4 bg-white rounded-2xl shadow-sm border border-gray-100'><p class='font-bold text-gray-800 text-base'>أشرف هلال صادق</p><p class='text-xs text-crete-gold uppercase tracking-wider font-semibold mt-1'>مؤسس</p></div><div class='p-4 bg-white rounded-2xl shadow-sm border border-gray-100'><p class='font-bold text-gray-800 text-base'>هاني جميل حنين</p><p class='text-xs text-crete-gold uppercase tracking-wider font-semibold mt-1'>مؤسس</p></div><div class='p-4 bg-white rounded-2xl shadow-sm border border-gray-100'><p class='font-bold text-gray-800 text-base'>ياسر شكري سعيد</p><p class='text-xs text-crete-gold uppercase tracking-wider font-semibold mt-1'>مؤسس</p></div><div class='p-4 bg-white rounded-2xl shadow-sm border border-gray-100'><p class='font-bold text-gray-800 text-base'>مجدي زاخر شاكر زخاري</p><p class='text-xs text-crete-gold uppercase tracking-wider font-semibold mt-1'>مؤسس</p></div><div class='p-4 bg-white rounded-2xl shadow-sm border border-gray-100 md:col-span-2 max-w-md mx-auto w-full'><p class='font-bold text-gray-800 text-base'>صفوت لطفي جاد معوض</p><p class='text-xs text-crete-gold uppercase tracking-wider font-semibold mt-1'>مؤسس</p></div></div></div>"
@@ -240,8 +245,8 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Privacy Policy Page (Premium Standard Layout)
-        \App\Modules\Page\Models\Page::updateOrCreate(
+        // Privacy Policy Page
+        Page::updateOrCreate(
             ['slug' => 'privacy-policy'],
             [
                 'title_en' => 'Privacy Policy',
@@ -253,7 +258,7 @@ class DatabaseSeeder extends Seeder
         );
 
         // Contact Us Page
-        \App\Modules\Page\Models\Page::firstOrCreate(
+        Page::updateOrCreate(
             ['slug' => 'contact-us'],
             [
                 'title_en' => 'Contact Us',
@@ -282,25 +287,20 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Seed Project Types
-        $activeType = \App\Modules\ProjectType\Models\ProjectType::updateOrCreate(
-            ['slug' => 'residential'],
-            ['name_en' => 'Residential', 'name_ar' => 'سكني', 'is_active' => true]
-        );
-
-        $commercialType = \App\Modules\ProjectType\Models\ProjectType::updateOrCreate(
+        // 2. Project Types
+        $commercialType = ProjectType::updateOrCreate(
             ['slug' => 'commercial'],
             ['name_en' => 'Commercial', 'name_ar' => 'تجاري', 'is_active' => true]
         );
 
-        // Seed Projects
-        $nineMall = \App\Modules\Project\Models\Project::updateOrCreate(
+        // 3. Projects
+        $nineMall = Project::updateOrCreate(
             ['slug' => 'nine-mall'],
             [
                 'title_en' => 'Nine Mall',
                 'title_ar' => 'ناين مول',
                 'description_en' => '<p>Nine Mall is located on Al-Thaqafa Main Street, in one of the most densely populated districts, with a 100-meter frontage directly on the main road—helping our valued clients achieve the highest returns. We also considered the highest international design standards in both the interior and exterior design to maximize return on investment for our clients.</p><ul><li>Project Area: 2100m²</li><li>Number of Units: 96</li><li>Project Start Date: August 2025</li><li>Delivery Date: June 2027</li></ul>',
-                'description_ar' => '<p>يقع المول على شارع الثقافة الرئيسي، في واحدة من أكثر المناطق كثافةً سكانية، ويتمتع بواجهة بطول 100 متر مباشرةً على الطريق الرئيسي—مما يساعد عملاءنا الكرام على تحقيق أعلى العوائد. كما راعينا أعلى المعايير العالمية في التصميم، سواء في التصميم الداخلي أو الخارجي، بهدف تعظيم العائد على الاستثمار لعملائنا.</p><ul><li>مساحة المشروع: 2100 م²</li><li>عدد الوحدات: 96</li><li>تاريخ بدء المشروع: أغسطس 2025</li><li>تاريخ التسليم: يونيو 2027</li></ul>',
+                'description_ar' => '<p>يقع المول على شارع الثقافة الرئيسي، في واحدة من أكثر المناطق كثافةً سكانية، ويتمتع بواجهة بطول 100 متر مباشرةً على الطريق الرئيسي—مما يساعد عملاءنا الكرام على تحقيق أعلى العوائد. كما راعينا أعلى المعايير العالمية in التصميم، سواء في التصميم الداخلي أو الخارجي، بهدف تعظيم العائد على الاستثمار لعملائنا.</p><ul><li>مساحة المشروع: 2100 م²</li><li>عدد الوحدات: 96</li><li>تاريخ بدء المشروع: أغسطس 2025</li><li>تاريخ التسليم: يونيو 2027</li></ul>',
                 'location' => 'Obour City, Egypt',
                 'location_ar' => 'مدينة العبور، مصر',
                 'status' => true,
@@ -314,7 +314,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $trafficMall = \App\Modules\Project\Models\Project::updateOrCreate(
+        $trafficMall = Project::updateOrCreate(
             ['slug' => 'traffic-mall'],
             [
                 'title_en' => 'Traffic Mall',
@@ -334,7 +334,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $arenaMall = \App\Modules\Project\Models\Project::updateOrCreate(
+        $arenaMall = Project::updateOrCreate(
             ['slug' => 'arena-mall'],
             [
                 'title_en' => 'Arena Mall',
@@ -354,51 +354,32 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $seventyMall = \App\Modules\Project\Models\Project::updateOrCreate(
-            ['slug' => 'seventy-mall'],
-            [
-                'title_en' => 'Seventy Mall',
-                'title_ar' => 'سيفنتي مول',
-                'description_en' => '<p>Seventy Mall is a fully integrated commercial destination in Obour City, built over a total area of 5,500 sqm. The project enjoys a strategic location on Al Shabab Main Street at the intersection with Al Sab’een Street, within one of the most densely populated and vibrant areas, directly adjacent to the Seventy Service Zone. The name Seventy Mall was chosen because the project is located on the largest frontage on Street 70, giving it a strong visual presence and excellent exposure.</p><ul><li>Project Area: 5500m²</li><li>Project Start Date: May 2026</li><li>Delivery Date: May 2029</li></ul>',
-                'description_ar' => '<p>يعد سيفنتي مول وجهة تجارية متكاملة في مدينة العبور بمساحة إجمالية تبلغ 5500 متر مربع. ويتمتع المشروع بموقع استراتيجي على شارع الشباب الرئيسي عند تقاطعه مع شارع السبعين، ضمن أكثر المناطق حيوية وكثافة سكانية، بجوار منطقة خدمات السبعين مباشرة. تم اختيار الاسم Seventy Mall نظراً لوقوع المشروع على أكبر واجهة على شارع 70، مما يمنحه حضوراً بصرياً قوياً وفرصة عرض ممتازة.</p><ul><li>مساحة المشروع: 5500 م²</li><li>تاريخ بدء المشروع: مايو 2026</li><li>تاريخ التسليم: مايو 2029</li></ul>',
-                'location' => 'Obour City, Egypt',
-                'location_ar' => 'مدينة العبور، مصر',
-                'status' => true,
-                'featured' => true,
-                'price' => 0.00,
-                'area' => 5500.00,
-                'bedrooms' => null,
-                'developer' => 'Crete Developments',
-                'project_type_id' => $commercialType->id,
-                'views_count' => 150
-            ]
+        // 4. Project Images
+        ProjectImage::updateOrCreate(
+            ['project_id' => $nineMall->id, 'image_path' => 'projects/nine_mall_1.jpg'],
+            ['is_primary' => true]
+        );
+        ProjectImage::updateOrCreate(
+            ['project_id' => $nineMall->id, 'image_path' => 'projects/nine_mall_2.jpg'],
+            ['is_primary' => false]
         );
 
-        // Seed Project Images (Unsplash URLs that are high-quality real-estate views)
-        \App\Modules\Project\Models\ProjectImage::updateOrCreate(
-            ['project_id' => $nineMall->id, 'image_path' => 'https://images.unsplash.com/photo-1555636222-cae831e87094?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'],
+        ProjectImage::updateOrCreate(
+            ['project_id' => $trafficMall->id, 'image_path' => 'projects/traffic_mall_1.jpg'],
+            ['is_primary' => true]
+        );
+        ProjectImage::updateOrCreate(
+            ['project_id' => $trafficMall->id, 'image_path' => 'projects/traffic_mall_2.jpg'],
+            ['is_primary' => false]
+        );
+
+        ProjectImage::updateOrCreate(
+            ['project_id' => $arenaMall->id, 'image_path' => 'projects/arena_mall_1.jpg'],
             ['is_primary' => true]
         );
 
-        \App\Modules\Project\Models\ProjectImage::updateOrCreate(
-            ['project_id' => $trafficMall->id, 'image_path' => 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'],
-            ['is_primary' => true]
-        );
-
-        \App\Modules\Project\Models\ProjectImage::updateOrCreate(
-            ['project_id' => $arenaMall->id, 'image_path' => 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'],
-            ['is_primary' => true]
-        );
-
-        \App\Modules\Project\Models\ProjectImage::updateOrCreate(
-            ['project_id' => $seventyMall->id, 'image_path' => 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'],
-            ['is_primary' => true]
-        );
-
-        // Seed Features
+        // 5. Features
         $features = [
-            ['name_en' => 'Swimming Pool', 'name_ar' => 'حمّام سباحة', 'slug' => 'swimming-pool'],
-            ['name_en' => 'Gym', 'name_ar' => 'صالة ألعاب رياضية', 'slug' => 'gym'],
             ['name_en' => 'Parking', 'name_ar' => 'موقف سيارات', 'slug' => 'parking'],
             ['name_en' => '24/7 Security', 'name_ar' => 'أمن 24/7', 'slug' => 'security'],
             ['name_en' => 'Green Areas', 'name_ar' => 'مساحات خضراء', 'slug' => 'green-areas'],
@@ -412,31 +393,41 @@ class DatabaseSeeder extends Seeder
             ['name_en' => 'Plaza', 'name_ar' => 'منطقة بلازا', 'slug' => 'plaza']
         ];
         foreach ($features as $feat) {
-            \App\Modules\Feature\Models\Feature::firstOrCreate(
+            Feature::firstOrCreate(
                 ['slug' => $feat['slug']],
                 ['name_en' => $feat['name_en'], 'name_ar' => $feat['name_ar'], 'is_active' => true]
             );
         }
 
-        // Associate features with projects
-        $nineMallFeatureIds = \App\Modules\Feature\Models\Feature::whereIn('slug', ['sky-restaurant', 'food-court', 'open-air-gym', 'panoramic-elevators', 'fire-fighting-system'])->pluck('id')->toArray();
+        // Associate features
+        $nineMallFeatureIds = Feature::whereIn('slug', ['sky-restaurant', 'food-court', 'open-air-gym', 'panoramic-elevators', 'fire-fighting-system'])->pluck('id')->toArray();
         $nineMall->features()->sync($nineMallFeatureIds);
 
-        $trafficMallFeatureIds = \App\Modules\Feature\Models\Feature::whereIn('slug', ['cctv-systems', 'fire-fighting-system', 'security', 'parking'])->pluck('id')->toArray();
+        $trafficMallFeatureIds = Feature::whereIn('slug', ['cctv-systems', 'fire-fighting-system', 'security', 'parking'])->pluck('id')->toArray();
         $trafficMall->features()->sync($trafficMallFeatureIds);
 
-        $arenaMallFeatureIds = \App\Modules\Feature\Models\Feature::whereIn('slug', ['cctv-systems', 'fire-fighting-system', 'security', 'plaza', 'green-areas'])->pluck('id')->toArray();
+        $arenaMallFeatureIds = Feature::whereIn('slug', ['cctv-systems', 'fire-fighting-system', 'security', 'plaza', 'green-areas'])->pluck('id')->toArray();
         $arenaMall->features()->sync($arenaMallFeatureIds);
 
-        $seventyMallFeatureIds = \App\Modules\Feature\Models\Feature::whereIn('slug', ['ev-charging-station', 'open-air-gym', 'plaza', 'panoramic-elevators', 'cctv-systems', 'fire-fighting-system'])->pluck('id')->toArray();
-        $seventyMall->features()->sync($seventyMallFeatureIds);
-
-        // Seed Contact Settings - Empty as requested
-        \App\Modules\Setting\Models\Setting::updateOrCreate(
+        // 6. Settings
+        // Company Branches Settings (Only the single real Obour City Head Office)
+        $branches = [
+            [
+                'name_en' => 'Head Office',
+                'name_ar' => 'المقر الرئيسي',
+                'address_en' => 'El-Obour City, Cairo, Egypt',
+                'address_ar' => 'مدينة العبور، القاهرة، مصر',
+                'phone' => '19999',
+                'email' => 'info@cretedevelopments.com',
+                'map_url' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3451.15783307612!2d31.4795!3d30.2227'
+            ]
+        ];
+        Setting::updateOrCreate(
             ['key' => 'company_branches'],
-            ['value' => json_encode([])]
+            ['value' => json_encode($branches)]
         );
 
+        // Company Stats Settings
         $stats = [
             [
                 'number' => '75',
@@ -445,7 +436,7 @@ class DatabaseSeeder extends Seeder
                 'label_ar' => 'عمارة سكنية'
             ],
             [
-                'number' => '4',
+                'number' => '3',
                 'suffix' => '',
                 'label_en' => 'Commercial Malls',
                 'label_ar' => 'مولات تجارية'
@@ -463,12 +454,12 @@ class DatabaseSeeder extends Seeder
                 'label_ar' => 'ثقة وجودة'
             ]
         ];
-
-        \App\Modules\Setting\Models\Setting::updateOrCreate(
+        Setting::updateOrCreate(
             ['key' => 'company_stats'],
             ['value' => json_encode($stats)]
         );
 
+        // Homepage Titles and Legacy Settings
         $homepageSettings = [
             'home_hero_title_en' => 'Crete Developments',
             'home_hero_title_ar' => 'كريت للتطوير العقاري',
@@ -477,8 +468,8 @@ class DatabaseSeeder extends Seeder
             
             'home_legacy_title_en' => 'Since 1997, Delivering Excellence Across Cairo',
             'home_legacy_title_ar' => 'منذ عام 1997، مسيرة حافلة بالتميز العقاري',
-            'home_legacy_desc_en' => 'Since 1997, Crete Developments has delivered over 75 residential buildings across East and West Cairo. In 2025, after an in-depth market study, they expanded into commercial development with Nine Mall, followed by Traffic Mall and Arena Mall. Construction on Nine Mall and Traffic Mall began before the end of 2025.',
-            'home_legacy_desc_ar' => 'منذ عام 1997، بدأت رحلتها في مجال التطوير العقاري، ونجحوا خلال هذه السنوات في تسليم أكثر من 75 عمارة سكنية في شرق وغرب القاهرة. وبعد دراسة متعمقة للسوق العقاري، قرروا في عام 2025 التوسع بمحفظة أراضٍ تجارية، لتكون بداية انطلاقتهم في القطاع التجاري من خلال Nine Mall، يليه Traffic Mall، ثم Arena Mall. وقبل نهاية عام 2025، تم البدء فعليًا في أعمال الإنشاءات بمشروعي Nine Mall و Traffic Mall.',
+            'home_legacy_desc_en' => 'Since 1997, Crete Developments has delivered over 75 residential buildings across East and West Cairo. In 2025, after an in-depth market study, we expanded into commercial development with Nine Mall, followed by Traffic Mall and Arena Mall. Construction on Nine Mall and Traffic Mall began before the end of 2025.',
+            'home_legacy_desc_ar' => 'منذ عام 1997، بدأت رحلتها في مجال التطوير العقاري، ونجحوا خلال هذه السنوات في تسليم أكثر من 75 عمارة سكنية في شرق وغرب القاهرة. وبعد دراسة متعمقة للسوق العقاري، قررنا في عام 2025 التوسع بمحفظة أراضٍ تجارية، لتكون بداية انطلاقتهم في القطاع التجاري من خلال Nine Mall، يليه Traffic Mall، ثم Arena Mall. وقبل نهاية عام 2025، تم البدء فعليًا في أعمال الإنشاءات بمشروعي Nine Mall و Traffic Mall.',
             
             'home_partners' => json_encode([]),
             'home_construction_updates' => json_encode([]),
@@ -486,7 +477,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($homepageSettings as $key => $val) {
-            \App\Modules\Setting\Models\Setting::updateOrCreate(
+            Setting::updateOrCreate(
                 ['key' => $key],
                 ['value' => $val]
             );

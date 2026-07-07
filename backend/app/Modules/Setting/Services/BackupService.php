@@ -17,14 +17,24 @@ class BackupService
      */
     public function generateBackup(): string
     {
-        // Get database name from current configuration
-        $dbName = config('database.connections.mysql.database');
+        $connection = DB::connection();
+        $driver = $connection->getDriverName();
         
-        // 1. Get all tables
-        $tablesQuery = DB::select('SHOW TABLES');
+        // Get database name from current configuration
+        $dbName = config("database.connections.{$driver}.database") ?? 'database';
+        
+        // 1. Get all tables based on the driver
         $tables = [];
-        foreach ($tablesQuery as $tableObj) {
-            $tables[] = array_values((array)$tableObj)[0];
+        if ($driver === 'sqlite') {
+            $tablesQuery = DB::select("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'migrations'");
+            foreach ($tablesQuery as $tableObj) {
+                $tables[] = $tableObj->name;
+            }
+        } else {
+            $tablesQuery = DB::select('SHOW TABLES');
+            foreach ($tablesQuery as $tableObj) {
+                $tables[] = array_values((array)$tableObj)[0];
+            }
         }
 
         if (empty($tables)) {
@@ -35,15 +45,28 @@ class BackupService
         $sqlDump = "-- Crete Developments Portfolio Database Backup\n";
         $sqlDump .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
         $sqlDump .= "-- Database: " . $dbName . "\n";
+        $sqlDump .= "-- Driver: " . $driver . "\n";
         $sqlDump .= "-- ------------------------------------------------------\n\n";
         
         // Enable foreign key checks safety wrapper
-        $sqlDump .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+        if ($driver === 'sqlite') {
+            $sqlDump .= "PRAGMA foreign_keys = OFF;\n\n";
+        } else {
+            $sqlDump .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+        }
 
         foreach ($tables as $table) {
             // Get create table statement
-            $createStatementQuery = DB::select("SHOW CREATE TABLE `{$table}`");
-            $createStatement = array_values((array)$createStatementQuery[0])[1]; // Second column contains 'Create Table' SQL statement
+            if ($driver === 'sqlite') {
+                $createStatementQuery = DB::select("SELECT sql FROM sqlite_master WHERE type='table' AND name = ?", [$table]);
+                if (empty($createStatementQuery)) {
+                    continue;
+                }
+                $createStatement = $createStatementQuery[0]->sql;
+            } else {
+                $createStatementQuery = DB::select("SHOW CREATE TABLE `{$table}`");
+                $createStatement = array_values((array)$createStatementQuery[0])[1]; // Second column contains 'Create Table' SQL statement
+            }
             
             $sqlDump .= "--\n";
             $sqlDump .= "-- Table structure for table `{$table}`\n";
@@ -83,7 +106,11 @@ class BackupService
         }
 
         // Restore foreign key checks
-        $sqlDump .= "SET FOREIGN_KEY_CHECKS=1;\n";
+        if ($driver === 'sqlite') {
+            $sqlDump .= "PRAGMA foreign_keys = ON;\n";
+        } else {
+            $sqlDump .= "SET FOREIGN_KEY_CHECKS=1;\n";
+        }
 
         // 3. Compress into ZIP file
         $backupDir = storage_path('app/backups');
