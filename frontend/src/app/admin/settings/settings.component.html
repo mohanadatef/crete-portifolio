@@ -428,6 +428,29 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Custom Slide Layout Settings (Alignment & Animation) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-200 pt-3">
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-600 mb-1">Text Alignment / محاذاة الكلام</label>
+                    <select [(ngModel)]="media.align" [name]="'hero-media-align-' + mIdx" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                      <option value="center">Center / في المنتصف</option>
+                      <option value="left">Left / اليسار</option>
+                      <option value="right">Right / اليمين</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-600 mb-1">Text Animation Style / حركة دخول النصوص</label>
+                    <select [(ngModel)]="media.animate" [name]="'hero-media-animate-' + mIdx" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                      <option value="words">Words Slide Up / انزلاق الكلمات للأعلى (للغة العربية والانجليزية)</option>
+                      <option value="letters">Letters Slide Up / انزلاق الحروف للأعلى (للغة الإنجليزية فقط)</option>
+                      <option value="fade">Simple Fade In / ظهور وتلاشي بسيط (آمن للغتين)</option>
+                      <option value="slide">Block Slide Up / انزلاق الكتلة للأعلى (آمن للغتين)</option>
+                      <option value="none">No Animation / بدون حركة (ثابت)</option>
+                    </select>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -610,6 +633,26 @@
               <input type="text" [(ngModel)]="settings['web_secondary_color']" placeholder="#1e3678" class="w-40 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
             </div>
             <p class="text-[10px] text-gray-400 mt-1.5">This sets the base layout colors for footer panels, dark cards, headers and text headers.</p>
+          </div>
+
+          <!-- Web Dark Background Color -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Website Dark Background Theme (Navy/Dark Base)</label>
+            <div class="flex items-center gap-3">
+              <input type="color" [(ngModel)]="settings['web_dark_bg_color']" class="h-10 w-20 border rounded-lg cursor-pointer p-0 bg-transparent">
+              <input type="text" [(ngModel)]="settings['web_dark_bg_color']" placeholder="#0a1628" class="w-40 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1.5">This sets the background color of dark layouts, stats grids, and section overlays.</p>
+          </div>
+
+          <!-- Web Light Background Color -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Website Light Background Theme (Cream/Light Accent)</label>
+            <div class="flex items-center gap-3">
+              <input type="color" [(ngModel)]="settings['web_light_bg_color']" class="h-10 w-20 border rounded-lg cursor-pointer p-0 bg-transparent">
+              <input type="text" [(ngModel)]="settings['web_light_bg_color']" placeholder="#f8f6f1" class="w-40 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1.5">This sets the light background colors for location showcases and section panels.</p>
           </div>
 
           <!-- Admin primary theme color -->

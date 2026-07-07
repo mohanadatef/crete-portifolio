@@ -1,1 +1,0 @@
-import{a as o}from"./chunk-XRB3P4OW.js";import{Gc as a,Q as e,W as i}from"./chunk-ILVBQLCD.js";var n=class t{http=i(a);apiUrl=o.apiUrl;submitLead(r){return this.http.post(`${this.apiUrl}/public/leads`,r)}static \u0275fac=function(p){return new(p||t)};static \u0275prov=e({token:t,factory:t.\u0275fac,providedIn:"root"})};export{n as a};

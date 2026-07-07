@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, AfterViewInit, OnDestroy, signal, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit, OnDestroy, signal, PLATFORM_ID, Pipe, PipeTransform } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -10,10 +10,32 @@ import { PageService } from '../../core/services/page.service';
 import { Page } from '../../core/models/models';
 import * as AOS from 'aos';
 
+@Pipe({
+  name: 'splitWords',
+  standalone: true
+})
+export class SplitWordsPipe implements PipeTransform {
+  transform(value: string | null | undefined): string[] {
+    if (!value) return [];
+    return value.trim().split(/\s+/);
+  }
+}
+
+@Pipe({
+  name: 'splitText',
+  standalone: true
+})
+export class SplitTextPipe implements PipeTransform {
+  transform(value: string | null | undefined): string[] {
+    if (!value) return [];
+    return Array.from(value);
+  }
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule, TranslatePipe, TranslateDirective],
+  imports: [RouterLink, CommonModule, TranslatePipe, TranslateDirective, SplitWordsPipe, SplitTextPipe],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -57,6 +79,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     btn2_text_en?: string;
     btn2_text_ar?: string;
     btn2_link?: string;
+    align?: string;
+    animate?: string;
   }>>([]);
   activeMediaIndex = signal<number>(0);
   private slideshowInterval: any;
@@ -114,6 +138,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      document.documentElement.classList.add('home-snap-active');
+    }
     this.settingService.getPublicSettings().subscribe(settings => {
       const data = settings?.data || settings;
       if (data) {
@@ -147,7 +174,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
                 btn2_enabled: item.btn2_enabled !== undefined ? !!item.btn2_enabled : true,
                 btn2_text_en: item.btn2_text_en || 'Contact Us',
                 btn2_text_ar: item.btn2_text_ar || 'اتصل بنا',
-                btn2_link: item.btn2_link || '/contact'
+                btn2_link: item.btn2_link || '/contact',
+                align: item.align || 'center',
+                animate: typeof item.animate === 'string' ? item.animate : (item.animate === false ? 'none' : 'words')
               })));
             }
           } catch (e) {
@@ -171,7 +200,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
             btn2_enabled: true,
             btn2_text_en: 'Contact Us',
             btn2_text_ar: 'اتصل بنا',
-            btn2_link: '/contact'
+            btn2_link: '/contact',
+            align: 'center',
+            animate: 'words'
           });
         }
         this.heroMedia.set(mediaList);
@@ -219,10 +250,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
                 label_ar: item.label_ar || ''
               }));
               this.stats.set(list);
-              // Trigger immediately if viewport intersection already occurred
-              if (this.hasIntersected) {
-                this.animateCounters();
-              }
+              this.setupStatsObserver();
             }
           } catch (e) {
             console.error('Failed to parse company_stats setting', e);
@@ -290,6 +318,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   scrollObserver: IntersectionObserver | null = null;
+  statsObserver: IntersectionObserver | null = null;
 
   setupScrollReveal() {
     if (typeof window !== 'undefined') {
@@ -321,6 +350,34 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  setupStatsObserver() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    
+    // Defer check to ensure Angular finishes rendering stats-section
+    setTimeout(() => {
+      const statsSection = document.querySelector('#stats-section');
+      if (!statsSection) {
+        return;
+      }
+
+      if (this.statsObserver) {
+        this.statsObserver.disconnect();
+      }
+
+      this.statsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            this.animateCounters();
+            this.statsObserver?.disconnect();
+            this.statsObserver = null;
+          }
+        });
+      }, { threshold: 0.1 });
+
+      this.statsObserver.observe(statsSection);
+    }, 150);
+  }
+
   ngAfterViewInit() {
     if (isPlatformBrowser(this.platformId)) {
       AOS.init({
@@ -335,51 +392,48 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (typeof window !== 'undefined') {
-      // 1. Stats Counter Animation Observer
-      const statsSection = document.querySelector('#stats-section');
-      if (statsSection) {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              this.hasIntersected = true;
-              this.animateCounters();
-              observer.unobserve(statsSection);
-            }
-          });
-        }, { threshold: 0.1 });
-        observer.observe(statsSection);
-      }
-
-      // 2. Scroll-driven Animations Observer
+      // 1. Setup Scroll-driven Animations Observer
       this.setupScrollReveal();
+      // 2. Setup Stats intersection observer
+      this.setupStatsObserver();
     }
   }
 
   animateCounters() {
-    const list = [...this.stats()];
-    list.forEach((stat, idx) => {
+    this.counterTimers.forEach(t => clearInterval(t));
+    this.counterTimers = [];
+
+    const initialList = this.stats().map(s => ({ ...s, current: 0 }));
+    this.stats.set(initialList);
+
+    initialList.forEach((stat, idx) => {
       const target = stat.number;
-      if (target === 0) {
-        return;
-      }
-      
-      let currentVal = 0;
-      const duration = 2000; // 2 seconds animation
-      const steps = 60;
-      const increment = Math.ceil(target / steps);
-      const stepTime = duration / steps;
-      
+      if (target <= 0) return;
+
+      const duration = 1800; // 1.8 seconds animation
+      const frameRate = 60;
+      const totalFrames = Math.round((duration / 1000) * frameRate);
+      let frame = 0;
+
       const timer = setInterval(() => {
-        currentVal += increment;
-        if (currentVal >= target) {
-          list[idx] = { ...list[idx], current: target };
-          this.stats.set([...list]);
+        frame++;
+        const progress = frame / totalFrames;
+        const easeOutProgress = 1 - Math.pow(1 - progress, 3); // Cubic Ease Out
+        const currentVal = Math.round(easeOutProgress * target);
+
+        this.stats.update(currentStats => {
+          const updated = [...currentStats];
+          if (updated[idx]) {
+            updated[idx] = { ...updated[idx], current: Math.min(currentVal, target) };
+          }
+          return updated;
+        });
+
+        if (frame >= totalFrames) {
           clearInterval(timer);
-        } else {
-          list[idx] = { ...list[idx], current: currentVal };
-          this.stats.set([...list]);
         }
-      }, stepTime);
+      }, 1000 / frameRate);
+
       this.counterTimers.push(timer);
     });
   }
@@ -388,16 +442,38 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.stopHeroSlideshow();
     if (!isPlatformBrowser(this.platformId)) return;
     if (this.heroMedia().length <= 1) return;
+
+    const currentSlide = this.heroMedia()[this.activeMediaIndex()];
+    if (currentSlide && currentSlide.type === 'video') {
+      // For video slides, we wait for the video to end naturally,
+      // but setup a 2-minute safety timeout so it doesn't get stuck.
+      this.slideshowInterval = setTimeout(() => {
+        this.nextHeroSlide();
+      }, 120000);
+      return;
+    }
     
     this.slideshowInterval = setInterval(() => {
-      const nextIndex = (this.activeMediaIndex() + 1) % this.heroMedia().length;
-      this.activeMediaIndex.set(nextIndex);
+      this.nextHeroSlide();
     }, 6000);
+  }
+
+  nextHeroSlide() {
+    const nextIndex = (this.activeMediaIndex() + 1) % this.heroMedia().length;
+    this.activeMediaIndex.set(nextIndex);
+    this.startHeroSlideshow();
+  }
+
+  onHeroVideoEnded() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.nextHeroSlide();
+    }
   }
 
   stopHeroSlideshow() {
     if (this.slideshowInterval) {
       clearInterval(this.slideshowInterval);
+      clearTimeout(this.slideshowInterval);
       this.slideshowInterval = null;
     }
   }
@@ -408,9 +484,15 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (isPlatformBrowser(this.platformId)) {
+      document.documentElement.classList.remove('home-snap-active');
+    }
     this.counterTimers.forEach(t => clearInterval(t));
     if (this.scrollObserver) {
       this.scrollObserver.disconnect();
+    }
+    if (this.statsObserver) {
+      this.statsObserver.disconnect();
     }
     this.stopHeroSlideshow();
   }

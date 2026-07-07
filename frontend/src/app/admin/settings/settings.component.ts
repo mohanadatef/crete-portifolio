@@ -143,6 +143,8 @@ export class SettingsComponent implements OnInit {
     btn2_text_en?: string;
     btn2_text_ar?: string;
     btn2_link?: string;
+    align?: string;
+    animate?: string;
   }> = [];
 
   status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
@@ -167,6 +169,11 @@ export class SettingsComponent implements OnInit {
             }
           });
         }
+        
+        this.settings['web_primary_color'] = this.settings['web_primary_color'] || '#c89f45';
+        this.settings['web_secondary_color'] = this.settings['web_secondary_color'] || '#1e3678';
+        this.settings['web_dark_bg_color'] = this.settings['web_dark_bg_color'] || '#0a1628';
+        this.settings['web_light_bg_color'] = this.settings['web_light_bg_color'] || '#f8f6f1';
         
         if (this.settings['social_links']) {
           try {
@@ -235,7 +242,9 @@ export class SettingsComponent implements OnInit {
               btn2_enabled: item.btn2_enabled !== undefined ? !!item.btn2_enabled : true,
               btn2_text_en: item.btn2_text_en || 'Contact Us',
               btn2_text_ar: item.btn2_text_ar || 'اتصل بنا',
-              btn2_link: item.btn2_link || '/contact'
+              btn2_link: item.btn2_link || '/contact',
+              align: item.align || 'center',
+              animate: typeof item.animate === 'string' ? item.animate : (item.animate === false ? 'none' : 'words')
             }));
           } catch (e) {
             this.heroMediaList = [];
@@ -378,6 +387,8 @@ export class SettingsComponent implements OnInit {
         if (isPlatformBrowser(this.platformId)) {
           document.documentElement.style.setProperty('--crete-gold', this.settings['web_primary_color']);
           document.documentElement.style.setProperty('--crete-blue', this.settings['web_secondary_color']);
+          document.documentElement.style.setProperty('--crete-navy', this.settings['web_dark_bg_color']);
+          document.documentElement.style.setProperty('--crete-cream', this.settings['web_light_bg_color']);
           // Dynamically apply font family updates live
           this.seoService.applyFonts(this.settings);
         }
@@ -599,7 +610,9 @@ export class SettingsComponent implements OnInit {
       btn2_enabled: true,
       btn2_text_en: 'Contact Us',
       btn2_text_ar: 'اتصل بنا',
-      btn2_link: '/contact'
+      btn2_link: '/contact',
+      align: 'center',
+      animate: 'words'
     });
   }
 

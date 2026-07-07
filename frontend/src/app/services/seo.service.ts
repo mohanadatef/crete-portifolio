@@ -30,13 +30,19 @@ export class SeoService {
           this.injectGoogleTag(data['google_tag']);
         }
 
-        // Apply primary and secondary colors dynamically in browser
+        // Apply primary, secondary, and background colors dynamically in browser
         if (typeof window !== 'undefined') {
           if (data['web_primary_color']) {
             document.documentElement.style.setProperty('--crete-gold', data['web_primary_color']);
           }
           if (data['web_secondary_color']) {
             document.documentElement.style.setProperty('--crete-blue', data['web_secondary_color']);
+          }
+          if (data['web_dark_bg_color']) {
+            document.documentElement.style.setProperty('--crete-navy', data['web_dark_bg_color']);
+          }
+          if (data['web_light_bg_color']) {
+            document.documentElement.style.setProperty('--crete-cream', data['web_light_bg_color']);
           }
         }
 

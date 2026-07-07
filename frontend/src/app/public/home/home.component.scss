@@ -1,8 +1,17 @@
-// Keyframes for premium fadeInUp animation
+// =========================================================================
+// PREMIUM UI/UX ANIMATION SYSTEM & EASING CURVES
+// =========================================================================
+
+// High-end custom easing curves (Leica & Apple standard)
+$ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+$ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+$ease-in-out-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+// Keyframes
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -10,16 +19,101 @@
   }
 }
 
-// Fade in up class
-.animate-fade-in-up {
-  animation: fadeInUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+@keyframes scrollDot {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(14px);
+    opacity: 0;
+  }
 }
 
-// Reveal on Scroll Animations
+@keyframes rotatePulse {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.2;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.05);
+    opacity: 0.35;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 0.2;
+  }
+}
+
+@keyframes rotatePulseReverse {
+  0% {
+    transform: rotate(360deg) scale(1);
+    opacity: 0.15;
+  }
+  50% {
+    transform: rotate(180deg) scale(0.95);
+    opacity: 0.25;
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.15;
+  }
+}
+
+@keyframes floatBob {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes goldShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+// -------------------------------------------------------------------------
+// HERO DECORATIVES & INDICATORS
+// -------------------------------------------------------------------------
+
+.hero-ring-1 {
+  animation: rotatePulse 28s linear infinite;
+  will-change: transform, opacity;
+}
+
+.hero-ring-2 {
+  animation: rotatePulseReverse 38s linear infinite;
+  will-change: transform, opacity;
+}
+
+.scroll-mouse-indicator {
+  .mouse-wheel {
+    animation: scrollDot 2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  }
+}
+
+// -------------------------------------------------------------------------
+// REVEAL ON SCROLL CLASSES (FALLBACK & ADDITIONAL CONTROL)
+// -------------------------------------------------------------------------
 .reveal-on-scroll {
   opacity: 0;
-  transform: translateY(50px);
-  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(35px);
+  transition: opacity 1.2s $ease-out-expo, transform 1.2s $ease-out-expo;
   will-change: transform, opacity;
 
   &.is-visible {
@@ -28,34 +122,109 @@
   }
 
   // Stagger delays for grid cascades
-  &.stagger-1 {
-    transition-delay: 100ms;
-  }
-  &.stagger-2 {
-    transition-delay: 250ms;
-  }
-  &.stagger-3 {
-    transition-delay: 400ms;
-  }
+  &.stagger-1 { transition-delay: 100ms; }
+  &.stagger-2 { transition-delay: 200ms; }
+  &.stagger-3 { transition-delay: 300ms; }
 }
 
-// Hover effects and micro-interactions on project cards
-.project-img-wrap {
-  position: relative;
-  img {
-    transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-}
+// -------------------------------------------------------------------------
+// STATS CARDS OVERHAUL
+// -------------------------------------------------------------------------
+.stats-card {
+  transition: all 0.5s $ease-out-expo;
+  will-change: transform, box-shadow, border-color, background-color;
 
-article.group {
   &:hover {
-    .project-img-wrap img {
-      transform: scale(1.08);
+    transform: translateY(-5px);
+    border-color: rgba(200, 159, 69, 0.35); // Gold glow
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5), 0 0 15px rgba(200, 159, 69, 0.05);
+
+    .stats-line {
+      width: 2.5rem !important;
+      background-color: #c89f45 !important;
     }
   }
 }
 
-// Shimmer effect on Gold badges
+// -------------------------------------------------------------------------
+// PROJECT CARDS OVERHAUL
+// -------------------------------------------------------------------------
+.project-img-wrap {
+  position: relative;
+  img {
+    transition: transform 1.6s $ease-out-expo;
+    will-change: transform;
+  }
+}
+
+article.group {
+  transition: all 0.6s $ease-out-expo;
+  will-change: transform, box-shadow, border-color;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px -20px rgba(10, 22, 40, 0.12), 0 0 25px rgba(200, 159, 69, 0.08);
+    border-color: rgba(200, 159, 69, 0.15);
+
+    .project-img-wrap img {
+      transform: scale(1.06) rotate(0.5deg);
+    }
+  }
+}
+
+// -------------------------------------------------------------------------
+// PARTNERS STAGGERED FLOAT
+// -------------------------------------------------------------------------
+.partner-card-float {
+  transition: all 0.5s $ease-out-expo;
+
+  @for $i from 0 through 12 {
+    &.float-delay-#{$i} {
+      animation: floatBob 6s ease-in-out infinite;
+      animation-delay: #{$i * 0.4}s;
+    }
+  }
+
+  &:hover {
+    transform: scale(1.03) translateY(-4px) !important;
+    border-color: rgba(200, 159, 69, 0.45);
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 15px 30px -10px rgba(200, 159, 69, 0.1);
+    animation-play-state: paused !important;
+  }
+}
+
+// -------------------------------------------------------------------------
+// INTERACTIVE FILTER TABS
+// -------------------------------------------------------------------------
+.filter-tab {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 100%;
+    height: 2px;
+    background-color: #c89f45;
+    transition: transform 0.4s $ease-out-expo;
+    transform-origin: center;
+  }
+
+  &:hover::after {
+    transform: translateX(-50%) scaleX(0.7);
+  }
+
+  &.active::after {
+    transform: translateX(-50%) scaleX(1);
+  }
+}
+
+// -------------------------------------------------------------------------
+// SHIMMER BADGES
+// -------------------------------------------------------------------------
 .badge-gold {
   background: linear-gradient(135deg, #c89f45 0%, #e0bd6a 50%, #c89f45 100%);
   background-size: 200% auto;
@@ -73,14 +242,105 @@ article.group {
   }
 }
 
-@keyframes goldShimmer {
-  0% {
-    background-position: 0% 50%;
+// -------------------------------------------------------------------------
+// WORDS SLIDE UP ANIMATION (alashraaf.com Mirror)
+// -------------------------------------------------------------------------
+.words-slide-up {
+  display: inline-flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+  line-height: inherit;
+
+  .thegem-heading-word-wrap {
+    display: inline-flex;
+    overflow: hidden;
+    line-height: inherit;
+    vertical-align: bottom;
+    margin-right: 0.25em;
+
+    html[dir="rtl"] & {
+      margin-right: 0;
+      margin-left: 0.25em;
+    }
   }
-  50% {
-    background-position: 100% 50%;
+
+  .thegem-heading-word {
+    display: inline-flex;
+    transform: translateY(100%);
+    transition: none;
+    will-change: transform;
+    line-height: inherit;
   }
-  100% {
-    background-position: 0% 50%;
+
+  &.aos-animate {
+    .thegem-heading-word {
+      animation: thegemHeadingWordsSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  }
+}
+
+@keyframes thegemHeadingWordsSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+// -------------------------------------------------------------------------
+// LETTERS SLIDE UP ANIMATION (alashraaf.com Mirror)
+// -------------------------------------------------------------------------
+.letters-slide-up {
+  display: inline-flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+  line-height: inherit;
+
+  .thegem-heading-letter-wrap {
+    display: inline-flex;
+    overflow: hidden;
+    line-height: inherit;
+    vertical-align: bottom;
+  }
+
+  .thegem-heading-letter {
+    display: inline-flex;
+    transform: translateY(100%);
+    transition: none;
+    will-change: transform;
+    line-height: inherit;
+  }
+
+  &.aos-animate {
+    .thegem-heading-letter {
+      animation: thegemHeadingLettersSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  }
+}
+
+@keyframes thegemHeadingLettersSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+// -------------------------------------------------------------------------
+// HERO CONTAINER TRANSITION STYLES
+// -------------------------------------------------------------------------
+.hero-text-container {
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease-out;
+  will-change: transform, opacity;
+
+  &.anim-fade {
+    transition: opacity 1.5s ease-out !important;
+    transform: none !important;
+  }
+
+  &.anim-slide {
+    transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease-out !important;
   }
 }

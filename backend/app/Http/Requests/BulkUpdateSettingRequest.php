@@ -14,6 +14,8 @@ class BulkUpdateSettingRequest extends FormRequest
         'google_conversion_id',
         'web_primary_color',
         'web_secondary_color',
+        'web_dark_bg_color',
+        'web_light_bg_color',
         'admin_primary_color',
         'available_languages',
         'recaptcha_site_key',

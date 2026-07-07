@@ -12,7 +12,13 @@
       
       <!-- Video Element -->
       <ng-container *ngIf="media.type === 'video'">
-        <video *ngIf="activeMediaIndex() === mIdx" autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover scale-105 transition-transform duration-[8000ms] ease-out">
+        <video *ngIf="activeMediaIndex() === mIdx" 
+               [autoplay]="true" 
+               [loop]="heroMedia().length === 1" 
+               [muted]="true" 
+               playsinline
+               (ended)="onHeroVideoEnded()"
+               class="absolute inset-0 w-full h-full object-cover scale-105 transition-transform duration-[8000ms] ease-out">
           <source [src]="media.url" type="video/mp4">
         </video>
       </ng-container>
@@ -27,30 +33,100 @@
       <!-- Dark Overlay -->
       <div class="hero-overlay absolute inset-0 bg-gradient-to-br from-[#0a1628]/95 via-[#1e3678]/85 to-[#0a1628]/90 z-10"></div>
 
-      <!-- Slide content wrapper -->
-      <div class="relative z-20 text-center px-6 max-w-5xl mx-auto transition-all duration-1000 transform"
-           [ngClass]="{'translate-y-0 opacity-100': activeMediaIndex() === mIdx, 'translate-y-8 opacity-0': activeMediaIndex() !== mIdx}">
+      <!-- Slide content wrapper (Supports Align: left, center, right & Animate: words, letters, fade, slide, none) -->
+      <div class="relative z-20 px-6 w-full max-w-5xl mx-auto flex flex-col hero-text-container"
+           [ngClass]="{
+             'items-start text-left rtl:items-end rtl:text-right': media.align === 'left',
+             'items-end text-right rtl:items-start rtl:text-left': media.align === 'right',
+             'items-center text-center': !media.align || media.align === 'center',
+             
+             'anim-fade': media.animate === 'fade',
+             'anim-slide': media.animate === 'slide' || !media.animate,
+             'transform-none': media.animate === 'none' || media.animate === 'words' || media.animate === 'letters',
+             
+             'translate-y-0 opacity-100': media.animate === 'none' || media.animate === 'words' || media.animate === 'letters' || activeMediaIndex() === mIdx,
+             'translate-y-20 opacity-0': (media.animate === 'slide' || !media.animate) && activeMediaIndex() !== mIdx,
+             'opacity-0': media.animate === 'fade' && activeMediaIndex() !== mIdx
+           }">
         
-        <!-- Eyebrow -->
-        <div class="inline-flex items-center gap-3 mb-6">
+        <!-- Eyebrow (Only shown if title or subtitle is provided) -->
+        <div *ngIf="translate.currentLang() === 'ar' ? (media.title_ar || media.subtitle_ar) : (media.title_en || media.subtitle_en)"
+             class="inline-flex items-center gap-3 mb-6">
           <span class="h-px w-10 bg-[#c89f45]"></span>
           <span class="text-[#c89f45] uppercase tracking-[0.35em] text-xs font-semibold">{{ siteName() }}</span>
           <span class="h-px w-10 bg-[#c89f45]"></span>
         </div>
 
-        <!-- Headline -->
-        <h1 class="font-bold text-5xl sm:text-6xl md:text-7xl xl:text-8xl text-white leading-[1.08] tracking-tight mb-6"
+        <!-- Headline (Only shown if provided) -->
+        <!-- Option 1: Word-by-word animation -->
+        <h1 *ngIf="(translate.currentLang() === 'ar' ? media.title_ar : media.title_en) && (media.animate === 'words' || !media.animate)"
+            class="words-slide-up font-bold text-5xl sm:text-6xl md:text-7xl xl:text-8xl text-white leading-[1.08] tracking-tight mb-6"
+            [class.aos-animate]="activeMediaIndex() === mIdx"
+            [ngClass]="{
+              'text-left rtl:text-right': media.align === 'left',
+              'text-right rtl:text-left': media.align === 'right',
+              'text-center mx-auto': !media.align || media.align === 'center'
+            }"
             style="font-family: 'Playfair Display', Georgia, serif;">
-          {{ translate.currentLang() === 'ar' ? (media.title_ar || heroTitleAr()) : (media.title_en || heroTitleEn()) }}
+          <span *ngFor="let word of (translate.currentLang() === 'ar' ? media.title_ar : media.title_en) | splitWords; let i = index"
+                class="thegem-heading-word-wrap">
+            <span class="thegem-heading-word" [style.animation-delay.ms]="i * 50">
+              {{ word }}
+            </span>
+          </span>
         </h1>
 
-        <!-- Subtitle -->
-        <p class="text-gray-300 text-lg sm:text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed mb-10">
-          {{ translate.currentLang() === 'ar' ? (media.subtitle_ar || heroSubtitleAr()) : (media.subtitle_en || heroSubtitleEn()) }}
+        <!-- Option 2: Letter-by-letter animation -->
+        <h1 *ngIf="(translate.currentLang() === 'ar' ? media.title_ar : media.title_en) && media.animate === 'letters'"
+            class="letters-slide-up font-bold text-5xl sm:text-6xl md:text-7xl xl:text-8xl text-white leading-[1.08] tracking-tight mb-6"
+            [class.aos-animate]="activeMediaIndex() === mIdx"
+            [ngClass]="{
+              'text-left rtl:text-right': media.align === 'left',
+              'text-right rtl:text-left': media.align === 'right',
+              'text-center mx-auto': !media.align || media.align === 'center'
+            }"
+            style="font-family: 'Playfair Display', Georgia, serif;">
+          <span *ngFor="let char of (translate.currentLang() === 'ar' ? media.title_ar : media.title_en) | splitText; let i = index"
+                [class.thegem-heading-letter-wrap]="char !== ' '"
+                [style.display]="char === ' ' ? 'inline-block' : 'inline-flex'">
+            <span *ngIf="char !== ' '" class="thegem-heading-letter" [style.animation-delay.ms]="i * 15">
+              {{ char }}
+            </span>
+            <span *ngIf="char === ' '">&nbsp;</span>
+          </span>
+        </h1>
+
+        <!-- Option 3: Normal display (Fade, Slide or None) -->
+        <h1 *ngIf="(translate.currentLang() === 'ar' ? media.title_ar : media.title_en) && media.animate !== 'words' && media.animate !== 'letters' && media.animate"
+            class="font-bold text-5xl sm:text-6xl md:text-7xl xl:text-8xl text-white leading-[1.08] tracking-tight mb-6"
+            [ngClass]="{
+              'text-left rtl:text-right': media.align === 'left',
+              'text-right rtl:text-left': media.align === 'right',
+              'text-center mx-auto': !media.align || media.align === 'center'
+            }"
+            style="font-family: 'Playfair Display', Georgia, serif;">
+          {{ translate.currentLang() === 'ar' ? media.title_ar : media.title_en }}
+        </h1>
+
+        <!-- Subtitle (Only shown if provided and aligned correctly) -->
+        <p *ngIf="translate.currentLang() === 'ar' ? media.subtitle_ar : media.subtitle_en"
+           class="text-gray-300 text-lg sm:text-xl md:text-2xl font-light max-w-2xl leading-relaxed mb-10"
+           [ngClass]="{
+             'text-left rtl:text-right': media.align === 'left',
+             'text-right rtl:text-left': media.align === 'right',
+             'text-center mx-auto': !media.align || media.align === 'center'
+           }">
+          {{ translate.currentLang() === 'ar' ? media.subtitle_ar : media.subtitle_en }}
         </p>
 
-        <!-- CTAs -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <!-- CTAs (Only shown if at least one button is enabled) -->
+        <div *ngIf="media.btn1_enabled || media.btn2_enabled"
+             class="flex flex-col sm:flex-row gap-4 w-full"
+             [ngClass]="{
+               'justify-start items-start sm:items-center rtl:justify-end rtl:items-end': media.align === 'left',
+               'justify-end items-end sm:items-center rtl:justify-start rtl:items-start': media.align === 'right',
+               'justify-center items-center': !media.align || media.align === 'center'
+             }">
           <!-- Button 1 -->
           <a *ngIf="media.btn1_enabled" [routerLink]="media.btn1_link"
              class="group inline-flex items-center gap-3 bg-[#c89f45] hover:bg-[#b8902e] text-[#0a1628] font-bold px-9 py-4 text-sm uppercase tracking-[0.2em] transition-all duration-300 shadow-lg shadow-[#c89f45]/20 hover:shadow-[#c89f45]/40 hover:-translate-y-0.5">
@@ -78,8 +154,8 @@
   <div class="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-transparent via-[#c89f45] to-transparent opacity-60 z-40"></div>
 
   <!-- Decorative rings -->
-  <div class="absolute bottom-[-120px] right-[-120px] w-[420px] h-[420px] rounded-full border border-[#c89f45]/20 pointer-events-none z-40"></div>
-  <div class="absolute bottom-[-80px] right-[-80px] w-[280px] h-[280px] rounded-full border border-[#c89f45]/15 pointer-events-none z-40"></div>
+  <div class="absolute bottom-[-120px] right-[-120px] w-[420px] h-[420px] rounded-full border border-[#c89f45]/20 pointer-events-none z-40 hero-ring-1"></div>
+  <div class="absolute bottom-[-80px] right-[-80px] w-[280px] h-[280px] rounded-full border border-[#c89f45]/15 pointer-events-none z-40 hero-ring-2"></div>
 
   <!-- Hero Indicators / Dots -->
   <div *ngIf="heroMedia().length > 1" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-50 flex gap-2.5">
@@ -91,11 +167,11 @@
   </div>
 
   <!-- Scroll indicator -->
-  <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 animate-bounce">
-    <span class="text-white/40 text-[10px] uppercase tracking-widest">Scroll</span>
-    <svg class="w-5 h-5 text-[#c89f45]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-    </svg>
+  <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2">
+    <span class="text-white/40 text-[9px] uppercase tracking-[0.25em] font-medium">Scroll</span>
+    <div class="w-6 h-10 border border-[#c89f45]/50 rounded-full flex justify-center p-1.5 opacity-60 hover:opacity-100 transition-opacity duration-300 scroll-mouse-indicator">
+      <div class="w-1.5 h-1.5 bg-[#c89f45] rounded-full mouse-wheel"></div>
+    </div>
   </div>
 </section>
 
@@ -103,7 +179,7 @@
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!--  LEGACY & STATS SPLIT SECTION (Mirroring alashraaf.com)        -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<section id="stats-section" *ngIf="(stats() && stats().length > 0) || legacyTitleEn() || legacyTitleAr()" class="py-24 bg-[#0a1628] text-white relative overflow-hidden">
+<section id="stats-section" *ngIf="(stats() && stats().length > 0) || legacyTitleEn() || legacyTitleAr()" class="py-24 bg-[var(--crete-navy)] text-white relative overflow-hidden">
   
   <!-- Left Side Gold Blur -->
   <div class="absolute left-[-200px] top-[10%] w-[500px] h-[500px] rounded-full bg-[#c89f45]/5 blur-[120px] pointer-events-none"></div>
@@ -117,8 +193,13 @@
           <span class="h-px w-8 bg-[#c89f45]"></span>
           <span class="text-[#c89f45] uppercase tracking-[0.25em] text-xs font-semibold">A Legacy of Trust</span>
         </div>
-        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight" style="font-family: 'Playfair Display', Georgia, serif;">
-          {{ translate.currentLang() === 'ar' ? legacyTitleAr() : legacyTitleEn() }}
+        <h2 data-aos="words-slide-up" class="words-slide-up text-3xl sm:text-4xl md:text-5xl font-bold leading-tight" style="font-family: 'Playfair Display', Georgia, serif;">
+          <span *ngFor="let word of (translate.currentLang() === 'ar' ? legacyTitleAr() : legacyTitleEn()) | splitWords; let i = index"
+                class="thegem-heading-word-wrap">
+            <span class="thegem-heading-word" [style.animation-delay.ms]="i * 60">
+              {{ word }}
+            </span>
+          </span>
         </h2>
         <p class="text-gray-400 text-sm leading-relaxed max-w-lg">
           {{ translate.currentLang() === 'ar' ? legacyDescAr() : legacyDescEn() }}
@@ -131,15 +212,18 @@
       </div>
 
       <!-- Right Column: Stats Grid -->
-      <div class="grid grid-cols-2 gap-6 sm:gap-8" data-aos="fade-left">
-        <div *ngFor="let stat of stats()" class="p-6 bg-white/[0.03] border border-white/5 rounded-2xl hover:border-[#c89f45]/30 hover:bg-white/[0.05] transition-all duration-300 group">
+      <div class="grid grid-cols-2 gap-6 sm:gap-8">
+        <div *ngFor="let stat of stats(); let idx = index"
+             [attr.data-aos-delay]="idx * 150"
+             data-aos="fade-up"
+             class="p-6 bg-white/[0.03] border border-white/5 rounded-2xl stats-card group">
           <span class="block text-[#c89f45] text-3xl sm:text-4xl font-bold mb-2" style="font-family: 'Playfair Display', Georgia, serif;">
             {{ stat.current }}<span class="text-xl sm:text-2xl">{{ stat.suffix }}</span>
           </span>
           <span class="block text-white/50 text-[10px] sm:text-xs uppercase tracking-widest leading-relaxed">
             {{ translate.currentLang() === 'ar' ? (stat.label_ar || stat.label_en) : (stat.label_en || stat.label_ar) }}
           </span>
-          <div class="w-6 h-px bg-[#c89f45]/20 group-hover:bg-[#c89f45] group-hover:w-10 transition-all duration-300 mt-4"></div>
+          <div class="w-6 h-px bg-[#c89f45]/20 stats-line transition-all duration-300 mt-4"></div>
         </div>
       </div>
 
@@ -151,7 +235,7 @@
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!--  LOCATION-BASED SHOWCASE SECTION                               -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<section class="py-28 bg-[#f8f6f1] relative overflow-hidden">
+<section class="py-28 bg-[var(--crete-cream)] relative overflow-hidden">
 
   <!-- Watermark -->
   <div class="absolute top-10 right-0 text-[160px] font-bold text-[#1e3678]/[0.02] leading-none select-none pointer-events-none hidden lg:block"
@@ -166,9 +250,14 @@
         <span class="text-[#c89f45] uppercase tracking-[0.3em] text-xs font-semibold">Projects Showcase</span>
         <span class="h-px w-8 bg-[#c89f45]"></span>
       </div>
-      <h2 class="text-4xl sm:text-5xl font-bold text-[#1e3678] tracking-tight leading-tight"
+      <h2 data-aos="words-slide-up" class="words-slide-up text-4xl sm:text-5xl font-bold text-[#1e3678] tracking-tight leading-tight"
           style="font-family: 'Playfair Display', Georgia, serif;">
-        {{ translate.currentLang() === 'ar' ? 'مشاريعنا العقارية' : 'Our Real Estate Portfolio' }}
+        <span *ngFor="let word of (translate.currentLang() === 'ar' ? 'مشاريعنا العقارية' : 'Our Real Estate Portfolio') | splitWords; let i = index"
+              class="thegem-heading-word-wrap">
+          <span class="thegem-heading-word" [style.animation-delay.ms]="i * 60">
+            {{ word }}
+          </span>
+        </span>
       </h2>
       <div class="mt-5 flex items-center gap-3">
         <div class="h-px w-16 bg-[#c89f45]"></div>
@@ -182,15 +271,15 @@
          class="flex flex-wrap items-center justify-center gap-8 md:gap-12 mb-16 border-b border-[#1e3678]/10 pb-4">
       
       <button (click)="selectLocation('All')"
-              [class]="selectedLocation() === 'All' ? 'text-[#c89f45] font-bold border-b-2 border-[#c89f45]' : 'text-gray-400 hover:text-[#1e3678] font-semibold'"
-              class="pb-3 text-xs sm:text-sm uppercase tracking-[0.25em] transition-all duration-300">
+              [class]="selectedLocation() === 'All' ? 'text-[#c89f45] font-bold active' : 'text-gray-400 hover:text-[#1e3678] font-semibold'"
+              class="pb-3 text-xs sm:text-sm uppercase tracking-[0.25em] transition-all duration-300 filter-tab">
         {{ translate.currentLang() === 'ar' ? 'الكل' : 'All Locations' }}
       </button>
       
       <button *ngFor="let loc of locations"
               (click)="selectLocation(loc.en)"
-              [class]="selectedLocation() === loc.en ? 'text-[#c89f45] font-bold border-b-2 border-[#c89f45]' : 'text-gray-400 hover:text-[#1e3678] font-semibold'"
-              class="pb-3 text-xs sm:text-sm uppercase tracking-[0.25em] transition-all duration-300">
+              [class]="selectedLocation() === loc.en ? 'text-[#c89f45] font-bold active' : 'text-gray-400 hover:text-[#1e3678] font-semibold'"
+              class="pb-3 text-xs sm:text-sm uppercase tracking-[0.25em] transition-all duration-300 filter-tab">
         {{ translate.currentLang() === 'ar' ? loc.ar : loc.en }}
       </button>
     </div>
@@ -324,9 +413,14 @@
         <span class="text-[#c89f45] uppercase tracking-[0.3em] text-xs font-semibold">Live Site Updates</span>
         <span class="h-px w-8 bg-[#c89f45]"></span>
       </div>
-      <h2 class="text-4xl sm:text-5xl font-bold text-[#1e3678] tracking-tight leading-tight"
+      <h2 data-aos="words-slide-up" class="words-slide-up text-4xl sm:text-5xl font-bold text-[#1e3678] tracking-tight leading-tight"
           style="font-family: 'Playfair Display', Georgia, serif;">
-        {{ translate.currentLang() === 'ar' ? 'تحديثات الأعمال الإنشائية لمشاريعنا' : 'Construction Work Updates' }}
+        <span *ngFor="let word of (translate.currentLang() === 'ar' ? 'تحديثات الأعمال الإنشائية لمشاريعنا' : 'Construction Work Updates') | splitWords; let i = index"
+              class="thegem-heading-word-wrap">
+          <span class="thegem-heading-word" [style.animation-delay.ms]="i * 60">
+            {{ word }}
+          </span>
+        </span>
       </h2>
       <div class="mt-5 flex items-center gap-3">
         <div class="h-px w-16 bg-[#c89f45]"></div>
@@ -340,7 +434,7 @@
       <div *ngFor="let update of constructionUpdates(); let idx = index"
            [attr.data-aos-delay]="idx * 150"
            data-aos="fade-up"
-           class="group bg-[#f8f6f1] border border-gray-150 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
+           class="group bg-[var(--crete-cream)] border border-gray-150 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
         
         <!-- Image with progress label -->
         <div class="relative h-56 overflow-hidden">
@@ -390,7 +484,7 @@
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!--  SUCCESS SIGNS & PARTNERS (Mirroring alashraaf.com)            -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<section *ngIf="partners() && partners().length > 0" class="py-24 bg-[#0a1628] text-white relative overflow-hidden">
+<section *ngIf="partners() && partners().length > 0" class="py-24 bg-[var(--crete-navy)] text-white relative overflow-hidden">
   
   <div class="absolute right-[-100px] bottom-0 w-[400px] h-[400px] rounded-full bg-[#c89f45]/5 blur-[100px] pointer-events-none"></div>
 
@@ -399,8 +493,13 @@
     <!-- Title -->
     <div class="space-y-3 mb-16">
       <span class="text-[#c89f45] uppercase tracking-[0.25em] text-xs font-bold block">Collaboration & Quality</span>
-      <h2 class="text-2xl sm:text-3xl font-bold tracking-wider leading-relaxed" style="font-family: 'Playfair Display', Georgia, serif;">
-        {{ translate.currentLang() === 'ar' ? 'وراء كل جهد عظيم، علامات نجاح عظيمة' : 'BEHIND EVERY GREAT EFFORT, THERE ARE GREAT SIGNS OF SUCCESS' }}
+      <h2 data-aos="words-slide-up" class="words-slide-up text-2xl sm:text-3xl font-bold tracking-wider leading-relaxed" style="font-family: 'Playfair Display', Georgia, serif;">
+        <span *ngFor="let word of (translate.currentLang() === 'ar' ? 'وراء كل جهد عظيم، علامات نجاح عظيمة' : 'BEHIND EVERY GREAT EFFORT, THERE ARE GREAT SIGNS OF SUCCESS') | splitWords; let i = index"
+              class="thegem-heading-word-wrap">
+          <span class="thegem-heading-word" [style.animation-delay.ms]="i * 45">
+            {{ word }}
+          </span>
+        </span>
       </h2>
       <div class="w-16 h-0.5 bg-[#c89f45] mx-auto mt-4"></div>
     </div>
@@ -410,7 +509,8 @@
       <div *ngFor="let partner of partners(); let idx = index"
            [attr.data-aos-delay]="idx * 100"
            data-aos="fade-up"
-           class="p-8 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-[#c89f45]/40 hover:bg-white/[0.04] transition-all duration-300 group cursor-default">
+           [ngClass]="'float-delay-' + (idx % 5)"
+           class="p-8 bg-white/[0.02] border border-white/5 rounded-2xl partner-card-float group cursor-default">
         <!-- Mock Icon badge -->
         <span class="block text-white/20 group-hover:text-[#c89f45] text-4xl font-black mb-3 transition-colors duration-300" style="font-family: 'Playfair Display', serif;">
           {{ partner.logoText }}
@@ -431,7 +531,7 @@
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!--  FOOTER BAND                                                   -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="bg-[#081120] py-8 border-t border-white/5">
+<div class="bg-[var(--crete-navy)] py-8 border-t border-white/5" style="filter: brightness(85%);">
   <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
     <p class="text-white/30 text-xs uppercase tracking-widest">© 2026 Crete Developments. All rights reserved.</p>
     <div class="flex items-center gap-2">

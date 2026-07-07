@@ -125,9 +125,13 @@ export class PublicLayoutComponent implements OnInit {
           // Apply website colors dynamically
           const primary = settings.web_primary_color || '#c89f45';
           const secondary = settings.web_secondary_color || '#1e3678';
+          const darkBg = settings.web_dark_bg_color || '#0a1628';
+          const lightBg = settings.web_light_bg_color || '#f8f6f1';
           if (isPlatformBrowser(this.platformId)) {
             this.document.documentElement.style.setProperty('--crete-gold', primary);
             this.document.documentElement.style.setProperty('--crete-blue', secondary);
+            this.document.documentElement.style.setProperty('--crete-navy', darkBg);
+            this.document.documentElement.style.setProperty('--crete-cream', lightBg);
           }
 
           if (settings.social_links) {
