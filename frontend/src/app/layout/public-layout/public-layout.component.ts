@@ -1,11 +1,13 @@
 import { Component, inject, OnInit, signal, computed, PLATFORM_ID } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { TranslateService, TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 import { DOCUMENT, CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { LayoutService } from '../../services/layout.service';
 import { Title } from '@angular/platform-browser';
+import { filter } from 'rxjs/operators';
+import * as AOS from 'aos';
 
 @Component({
   selector: 'app-public-layout',
@@ -22,6 +24,7 @@ export class PublicLayoutComponent implements OnInit {
   private http = inject(HttpClient);
   private titleService = inject(Title);
   private platformId = inject(PLATFORM_ID);
+  private router = inject(Router);
 
   // Settings properties
   siteName = signal<string>('CRETE');
@@ -74,6 +77,22 @@ export class PublicLayoutComponent implements OnInit {
   ngOnInit() {
     this.loadPublicSettings();
     this.loadPublicPages();
+
+    if (isPlatformBrowser(this.platformId)) {
+      AOS.init({
+        duration: 1000,
+        once: true,
+        mirror: false
+      });
+
+      this.router.events.pipe(
+        filter(event => event instanceof NavigationEnd)
+      ).subscribe(() => {
+        setTimeout(() => {
+          AOS.refresh();
+        }, 150);
+      });
+    }
   }
 
   loadPublicSettings() {
