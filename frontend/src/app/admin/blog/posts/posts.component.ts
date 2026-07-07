@@ -29,7 +29,7 @@ export class PostsComponent implements OnInit {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    return this.backendUrl + imagePath;
+    return this.backendUrl + (imagePath.startsWith('/') ? '' : '/') + imagePath;
   }
 
   currentPage = 1;

@@ -44,7 +44,7 @@ export class ProjectsComponent implements OnInit {
     if (path.startsWith('http://') || path.startsWith('https://')) {
       return path;
     }
-    return this.backendUrl + path;
+    return this.backendUrl + (path.startsWith('/') ? '' : '/') + path;
   }
   
   filters: {

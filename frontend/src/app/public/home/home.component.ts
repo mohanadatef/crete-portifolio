@@ -104,7 +104,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     if (path.startsWith('http://') || path.startsWith('https://')) {
       return path;
     }
-    return this.backendUrl + path;
+    return this.backendUrl + (path.startsWith('/') ? '' : '/') + path;
   }
 
   legacyTitleEn = signal<string>('');
