@@ -1,0 +1,76 @@
+{
+  "NAV": {
+    "HOME": "Home",
+    "ABOUT": "About Us",
+    "PROJECTS": "Projects",
+    "BLOG": "Blog",
+    "CONTACT": "Contact Us",
+    "GET_STARTED": "Get Started"
+  },
+  "HOME": {
+    "HERO_TITLE": "Crete Developments",
+    "HERO_SUBTITLE": "Premium Real Estate Developments.",
+    "EXPLORE_PROJECTS": "Explore Projects",
+    "LATEST_PROJECTS": "Latest Projects",
+    "NO_PROJECTS": "No projects available yet.",
+    "DETAILS": "Details \u2192"
+  },
+  "PROJECTS": {
+    "TITLE": "Discover our exclusive real estate portfolio",
+    "TYPE": "Type",
+    "ALL_TYPES": "All Types",
+    "RESIDENTIAL": "Residential",
+    "COMMERCIAL": "Commercial",
+    "MIN_PRICE": "Min Price",
+    "MAX_PRICE": "Max Price",
+    "BEDROOMS": "Bedrooms",
+    "ANY": "Any",
+    "FILTER_BTN": "Filter Projects",
+    "LOADING": "Loading...",
+    "ERROR": "Failed to load projects. Please try again later.",
+    "NOT_FOUND": "No projects found matching your criteria.",
+    "AVAILABLE": "Available",
+    "SOLD_OUT": "Sold Out",
+    "BEDS": "Beds",
+    "BATHS": "Baths",
+    "SQM": "sqm",
+    "INQUIRE": "Inquire Now \u2192"
+  },
+  "CONTACT": {
+    "TITLE": "Contact Us",
+    "SUBTITLE": "We'd love to hear from you. Leave us a message and we'll get back to you shortly.",
+    "GET_IN_TOUCH": "Get in Touch",
+    "GET_IN_TOUCH_DESC": "Fill out the form and our real estate experts will assist you with finding your dream property.",
+    "ADDRESS": "Dubai, United Arab Emirates",
+    "SEND_MESSAGE": "Send us a Message",
+    "NAME": "Full Name",
+    "EMAIL": "Email Address",
+    "PHONE": "Phone Number",
+    "MESSAGE": "Message",
+    "SEND": "Send Message",
+    "SENDING": "Sending...",
+    "CONSENT_AGREE": "I agree to the",
+    "PRIVACY_POLICY": "Privacy Policy",
+    "CONSENT_DESC": "We collect this data to contact you regarding your inquiry.",
+    "SUCCESS": "Thank you! Your message has been sent successfully. We will contact you soon.",
+    "ERROR": "An error occurred. Please try again later."
+  },
+  "BLOG": {
+    "TITLE": "Our Blog",
+    "SUBTITLE": "Read the latest news and insights from our team.",
+    "READ_MORE": "Read full story",
+    "BACK_TO_BLOG": "Back to Blog",
+    "LOADING": "Loading...",
+    "ERROR": "Error loading blog post",
+    "NOT_FOUND": "No blog posts found",
+    "CHECK_BACK": "Check back later for new updates.",
+    "CATEGORY": "Category",
+    "PUBLISHED_ON": "Published on",
+    "VIEWS": "views"
+  },
+  "THANK_YOU": {
+    "TITLE": "Thank You!",
+    "SUBTITLE": "Your application has been successfully submitted. Our team will review your information and get back to you shortly.",
+    "RETURN_HOME": "Return to Homepage"
+  }
+}

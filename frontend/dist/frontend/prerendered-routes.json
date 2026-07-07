@@ -1,0 +1,28 @@
+{
+  "routes": [
+    "/",
+    "/about",
+    "/admin",
+    "/admin/blog/categories",
+    "/admin/blog/posts",
+    "/admin/blog/posts/create",
+    "/admin/dashboard",
+    "/admin/features",
+    "/admin/landing-pages",
+    "/admin/leads",
+    "/admin/login",
+    "/admin/pages",
+    "/admin/pages/create",
+    "/admin/project-types",
+    "/admin/projects",
+    "/admin/projects/create",
+    "/admin/reports",
+    "/admin/roles",
+    "/admin/settings",
+    "/admin/support",
+    "/admin/users",
+    "/blog",
+    "/contact",
+    "/projects"
+  ]
+}
