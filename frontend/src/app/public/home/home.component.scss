@@ -344,3 +344,12 @@ article.group {
     transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease-out !important;
   }
 }
+
+// Dynamic transparent overlay matching the user's custom navy background
+.hero-overlay {
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--crete-navy) 95%, transparent) 0%, 
+    color-mix(in srgb, var(--crete-navy) 60%, transparent) 50%, 
+    color-mix(in srgb, var(--crete-navy) 90%, transparent) 100%
+  ) !important;
+}

@@ -26,6 +26,37 @@ use App\Modules\User\Controllers\RoleController;
 
 Route::prefix('v1')->group(function () {
     // Public APIs
+    Route::get('/public/fix-symlink', function () {
+        try {
+            $link = public_path('storage');
+            if (file_exists($link) || is_link($link)) {
+                if (is_link($link)) {
+                    @unlink($link);
+                } else if (is_dir($link)) {
+                    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                        @rmdir($link);
+                    } else {
+                        @unlink($link);
+                    }
+                }
+            }
+            if (file_exists($link)) {
+                @rename($link, $link . '_backup_' . time());
+            }
+            \Illuminate\Support\Facades\Artisan::call('storage:link');
+            return response()->json([
+                'success' => true,
+                'message' => 'Symlink fixed successfully on the server.',
+                'output' => \Illuminate\Support\Facades\Artisan::output()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    });
+
     Route::get('/public/pages', [PageController::class, 'indexPublic']);
     Route::get('/public/pages/{slug}', [PageController::class, 'showPublic']);
     Route::get('/public/settings', [SettingController::class, 'indexPublic']);
