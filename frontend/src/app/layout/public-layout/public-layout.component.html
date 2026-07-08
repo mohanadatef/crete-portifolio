@@ -206,7 +206,7 @@
 
 
   <!-- ═══════════════════════════════════════════════════════════ FOOTER -->
-  <footer *ngIf="layoutService.showHeaderFooter()" class="bg-[#0d1f4a] text-gray-300">
+  <footer *ngIf="layoutService.showHeaderFooter()" class="bg-[var(--crete-navy)] text-gray-300">
 
     <!-- Top footer grid -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
@@ -438,7 +438,7 @@
     </div>
 
     <!-- ── Bottom Bar ───────────────────────────────────────────────── -->
-    <div class="border-t border-white/10">
+    <div class="border-t border-white/10" style="background: rgba(0, 0, 0, 0.15);">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
         <p class="text-gray-500 text-xs">
           &copy; 2026 <span class="text-gray-400 font-semibold">{{ siteName() }}</span> Developments. All rights reserved.
