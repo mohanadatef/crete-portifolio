@@ -30,7 +30,7 @@ class StoreProjectRequest extends FormRequest
             'delivery_date' => 'nullable|date',
             'developer' => 'nullable|string',
             'images' => 'required|array|min:1',
-            'images.*' => 'file|mimes:jpg,jpeg,png,webp,mp4,webm,ogg,mov|max:20480',
+            'images.*' => 'file|mimes:jpg,jpeg,png,webp,mp4,webm,ogg,mov|max:102400',
             'primary_image_index' => 'nullable|integer',
             'units' => 'nullable|array',
             'units.*.title_ar' => 'nullable|string',

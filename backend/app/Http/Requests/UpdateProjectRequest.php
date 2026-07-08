@@ -31,7 +31,7 @@ class UpdateProjectRequest extends FormRequest
             'delivery_date' => 'nullable|date',
             'developer' => 'nullable|string',
             'images' => 'nullable|array',
-            'images.*' => 'file|mimes:jpg,jpeg,png,webp,mp4,webm,ogg,mov|max:20480',
+            'images.*' => 'file|mimes:jpg,jpeg,png,webp,mp4,webm,ogg,mov|max:102400',
             'primary_image_index' => 'nullable|integer',
             'primary_image_id' => 'nullable|integer',
             'units' => 'nullable|array',
