@@ -107,6 +107,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.backendUrl + (path.startsWith('/') ? '' : '/') + path;
   }
 
+  isVideo(path: string | null | undefined): boolean {
+    if (!path) return false;
+    const lower = path.toLowerCase();
+    return lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.ogg') || lower.endsWith('.mov') || lower.includes('/video/');
+  }
+
   legacyTitleEn = signal<string>('');
   legacyTitleAr = signal<string>('');
   legacyDescEn = signal<string>('');

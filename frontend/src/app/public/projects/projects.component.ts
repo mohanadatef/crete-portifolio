@@ -46,6 +46,12 @@ export class ProjectsComponent implements OnInit {
     }
     return this.backendUrl + (path.startsWith('/') ? '' : '/') + path;
   }
+
+  isVideo(path: string | null | undefined): boolean {
+    if (!path) return false;
+    const lower = path.toLowerCase();
+    return lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.ogg') || lower.endsWith('.mov') || lower.includes('/video/');
+  }
   
   filters: {
     project_type_id: string;

@@ -100,14 +100,19 @@
     <div *ngIf="status === 'success' && projects.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <div *ngFor="let project of projects" class="premium-card group">
 
-        <!-- Image -->
+        <!-- Image/Video -->
         <div class="project-img-wrap relative h-60">
-          <img
-            loading="lazy"
-            [src]="getProjectImageUrl(project)"
-            [alt]="project.title_en"
-            class="w-full h-full object-cover"
-          >
+          <ng-container *ngIf="isVideo(getProjectImageUrl(project)); else showProjImg">
+            <video [src]="getProjectImageUrl(project)" class="w-full h-full object-cover" [autoplay]="true" [loop]="true" [muted]="true" playsinline></video>
+          </ng-container>
+          <ng-template #showProjImg>
+            <img
+              loading="lazy"
+              [src]="getProjectImageUrl(project)"
+              [alt]="project.title_en"
+              class="w-full h-full object-cover"
+            >
+          </ng-template>
           <!-- Dark gradient overlay -->
           <div class="absolute inset-0 bg-gradient-to-t from-[#0d1f4a]/80 via-transparent to-transparent"></div>
         </div>

@@ -90,6 +90,12 @@ export class ProjectDetailsComponent implements OnInit {
     return this.backendUrl + (imagePath.startsWith('/') ? '' : '/') + imagePath;
   }
 
+  isVideo(path: string | null | undefined): boolean {
+    if (!path) return false;
+    const lower = path.toLowerCase();
+    return lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.ogg') || lower.endsWith('.mov') || lower.includes('/video/');
+  }
+
   stripHtml(html?: string): string {
     if (!html) return '';
     return html.replace(/<[^>]*>/g, '').trim().substring(0, 160);
